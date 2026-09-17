@@ -80,6 +80,7 @@
 - 감사 증거대장의 레코드 수·끝점·evidence digest를 고정하는 읽기 전용 체크포인트
 - Pattern Foundry Release Manifest Binding을 비배포 clean-room manifest 초안으로 적용
 - 생산자·공격자·판정자·승인자를 분리하고 critical failure를 veto하는 합성 benchmark
+- benchmark 영수증의 memory·in-memory SQLite 계약 동등성을 검증하는 합성 parity harness
 
 자세한 내용은 [ARKAON 통제형 부트스트랩](docs/01-arkaon-governed-bootstrap.md)을 참고합니다.
 

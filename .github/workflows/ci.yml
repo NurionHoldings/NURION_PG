@@ -164,6 +164,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_arkaon_release_evidence_manifest_draft_evidence.py
       - name: Verify ARKAON role-separated release benchmark
         run: PYTHONPATH=src python scripts/run_arkaon_role_separated_release_benchmark_evidence.py
+      - name: Verify ARKAON benchmark receipt repository parity
+        run: PYTHONPATH=src python scripts/run_arkaon_benchmark_receipt_repository_parity_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -304,5 +306,7 @@ jobs:
             build/arkaon-release-evidence-manifest-draft-evidence.json.sha256
             build/arkaon-role-separated-release-benchmark-evidence.json
             build/arkaon-role-separated-release-benchmark-evidence.json.sha256
+            build/arkaon-benchmark-receipt-repository-parity-evidence.json
+            build/arkaon-benchmark-receipt-repository-parity-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
