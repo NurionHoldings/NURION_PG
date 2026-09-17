@@ -216,6 +216,28 @@ class SyntheticWebhookIntake:
         self.receipts: list[IntakeReceipt] = []
         self._lock = RLock()
 
+    def verify_only(
+        self, envelope: WebhookEnvelope, *, received_at: datetime
+    ) -> str:
+        """Verify an envelope without accepting, storing, or applying it."""
+        with self._lock:
+            if received_at.tzinfo is None:
+                raise GovernanceRejected("timezone-aware receipt time required")
+            self._verify(envelope, received_at=received_at)
+            return envelope.envelope_digest
+
+    def verify_quarantined_only(
+        self, envelope: WebhookEnvelope, *, now: datetime
+    ) -> str:
+        """Reverify immutable quarantined material against current key state."""
+        with self._lock:
+            if now.tzinfo is None:
+                raise GovernanceRejected("timezone-aware retry time required")
+            self._verify(envelope, received_at=now)
+            key = self.key_registry.resolve(envelope.provider_id, envelope.key_id, at=now)
+            self._verify_signature(envelope, key)
+            return envelope.envelope_digest
+
     def ingest(self, envelope: WebhookEnvelope, *, received_at: datetime) -> IntakeReceipt:
         with self._lock:
             if received_at.tzinfo is None:
@@ -259,15 +281,8 @@ class SyntheticWebhookIntake:
             envelope = stored.envelope
             if now.tzinfo is None:
                 raise GovernanceRejected("timezone-aware retry time required")
-            age = now - envelope.occurred_at
-            if age > self.max_age or age < -self.future_skew:
-                stored.decision = WebhookDecision.BLOCKED
-                return self._receipt(
-                    envelope, WebhookDecision.BLOCKED, "expired_or_future_event"
-                )
             try:
-                key = self.key_registry.resolve(envelope.provider_id, envelope.key_id, at=now)
-                self._verify_signature(envelope, key)
+                self.verify_quarantined_only(envelope, now=now)
             except GovernanceRejected as exc:
                 stored.decision = WebhookDecision.BLOCKED
                 return self._receipt(envelope, WebhookDecision.BLOCKED, str(exc))
