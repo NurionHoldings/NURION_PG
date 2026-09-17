@@ -81,6 +81,13 @@ class DurableInboxReceipt:
     automatic_application_allowed: bool = False
 
 
+@dataclass(frozen=True)
+class AcceptedDurableWebhook:
+    envelope: WebhookEnvelope
+    acceptance_receipt_digest: str
+    automatic_application_allowed: bool = False
+
+
 class SyntheticSQLiteWebhookInbox:
     """Durable synthetic inbox; acceptance never applies a payment result."""
 
@@ -541,6 +548,40 @@ class SyntheticSQLiteWebhookInbox:
             if row is None:
                 raise GovernanceRejected("unknown durable inbox event")
             return WebhookDecision(row["decision"])
+
+    def accepted_event(self, event_id: str) -> AcceptedDurableWebhook:
+        """Return an integrity-bound accepted event without applying it."""
+        with self._lock:
+            if not self.verify_receipt_chain():
+                raise GovernanceRejected("durable inbox receipt chain is invalid")
+            row = self._connection.execute(
+                "SELECT * FROM synthetic_webhook_events WHERE event_id = ?",
+                (event_id,),
+            ).fetchone()
+            if row is None or row["decision"] != WebhookDecision.ACCEPTED.value:
+                raise GovernanceRejected("accepted durable inbox event required")
+            try:
+                envelope = self._envelope_from_row(row)
+            except (GovernanceRejected, KeyError, TypeError, ValueError) as exc:
+                raise GovernanceRejected("stored accepted envelope is corrupt") from exc
+            if envelope.envelope_digest != row["envelope_digest"]:
+                raise GovernanceRejected("stored accepted envelope digest mismatch")
+            receipt = self._connection.execute(
+                """
+                SELECT receipt_digest, envelope_digest, automatic_application_allowed
+                FROM synthetic_webhook_receipts
+                WHERE event_id = ? AND decision = ?
+                ORDER BY receipt_sequence DESC LIMIT 1
+                """,
+                (event_id, WebhookDecision.ACCEPTED.value),
+            ).fetchone()
+            if (
+                receipt is None
+                or receipt["envelope_digest"] != envelope.envelope_digest
+                or receipt["automatic_application_allowed"] != 0
+            ):
+                raise GovernanceRejected("accepted event receipt binding is invalid")
+            return AcceptedDurableWebhook(envelope, receipt["receipt_digest"])
 
     def verify_receipt_chain(self) -> bool:
         with self._lock:
