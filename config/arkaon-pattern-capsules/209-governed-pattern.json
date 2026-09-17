@@ -1,0 +1,21 @@
+{
+  "feature": 209,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.tenant-bound-ownership",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "scope_contract_required",
+    "scope_tamper_rejected",
+    "scope_operational_authority_absent"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_209_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "51e3aa7873240496f671fdacc962419ce535226819f2593bc7bc682ee4492e86"
+}

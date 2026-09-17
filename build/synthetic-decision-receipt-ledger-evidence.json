@@ -1,0 +1,28 @@
+{
+  "actual_operator_decision_recording_method_present": false,
+  "application_method_present": false,
+  "audit_chain_valid": true,
+  "audit_head_digest": "339a242a2d082b9dae274eef7082bbc659a87377c1304f713c81e13464011526",
+  "code_change_method_present": false,
+  "database_engine": "SQLite",
+  "decision_counts": {
+    "AUTHORIZE_SYNTHETIC_IMPLEMENTATION_PROPOSAL_DRAFT": 1,
+    "HOLD": 0,
+    "REJECT": 0
+  },
+  "execution_method_present": false,
+  "maximum_state": "SYNTHETIC_RECEIPT_RECORDED",
+  "metadata_valid": true,
+  "money_movement_executed": false,
+  "packet_state_change_method_present": false,
+  "production_activation_allowed": false,
+  "receipt_digests": [
+    "cf351b72620605a431e4da20ef10ff1719ee52dad48cef7095aa99631eb138ca"
+  ],
+  "record_bindings_valid": true,
+  "report_digest": "7959e2a7a57af35927906feafeec8b29c640ba4aadadda36b4b96d348e0c5146",
+  "schema": "nurion.pg.synthetic-decision-receipt-ledger-evidence.v1",
+  "schema_digest": "7530a2b57915f9e40959668e37b73d5b7aa729f17cb2f4d351a445648ebdb923",
+  "schema_version": 1,
+  "synthetic_evidence_only": true
+}
