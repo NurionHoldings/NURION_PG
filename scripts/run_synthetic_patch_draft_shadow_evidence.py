@@ -13,6 +13,7 @@ from nurion_pg.synthetic_patch_draft_review_docket import (
 from nurion_pg.synthetic_patch_draft_shadow import (
     MAXIMUM_PATCH_DRAFT_SHADOW_DECISION,
     PatchDraftShadowDecision,
+    SyntheticPatchDraftShadowAssessment,
     SyntheticPatchDraftShadowBook,
     SyntheticPatchDraftShadowFixture,
 )
@@ -22,7 +23,7 @@ from run_synthetic_patch_draft_review_docket_evidence import (
 )
 
 
-def main() -> None:
+def main() -> tuple[SyntheticPatchDraftShadowBook, SyntheticPatchDraftShadowAssessment]:
     policy = read_json("config/synthetic-patch-draft-shadow-policy.json")
     forbidden = (
         "patch_content_allowed", "diff_content_allowed",
@@ -125,6 +126,7 @@ def main() -> None:
     digest = sha256(payload.encode("utf-8")).hexdigest()
     output.with_suffix(".json.sha256").write_text(digest + "\n", encoding="ascii")
     print(f"synthetic patch draft shadow: PASS {digest}")
+    return book, assessment
 
 
 if __name__ == "__main__":
