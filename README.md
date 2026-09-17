@@ -44,6 +44,7 @@
 - 검토된 Patch Draft Shadow와 거버넌스 증거를 묶되 제한승격 승인권은 갖지 않는 운영자 판단 패킷
 - 서명된 합성 Patch Draft 제한승격 의사의 계약만 검증하고 실제 결정을 기록하지 않는 수신계층
 - 검증된 Patch Draft 제한승격 의사를 실제 승인과 분리해 보관하는 위변조 탐지 영속 수신대장
+- 합성 제한승격 수신증에서 평가군·관찰창·rollback을 제한한 비실행 계획만 만드는 ARKAON 초안 계층
 
 자세한 내용은 [ARKAON 통제형 부트스트랩](docs/01-arkaon-governed-bootstrap.md)을 참고합니다.
 
