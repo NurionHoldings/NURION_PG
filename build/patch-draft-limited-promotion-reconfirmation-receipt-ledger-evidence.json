@@ -1,0 +1,41 @@
+{
+  "actual_operator_reconfirmation_recording_method_present": false,
+  "application_method_present": false,
+  "audit_chain_valid": true,
+  "audit_head_digest": "0dde9ea89cbded4dbaac92ed273da84c2196e9832196abf5834c3862acd1cf85",
+  "automatic_deploy_method_present": false,
+  "automatic_merge_method_present": false,
+  "candidate_content_present": false,
+  "credentials_used": false,
+  "database_engine": "SQLite",
+  "decision_counts": {
+    "HOLD": 0,
+    "RECONFIRM_SYNTHETIC_PATCH_DRAFT_LIMITED_PROMOTION": 1,
+    "REJECT": 0
+  },
+  "diff_content_present": false,
+  "execution_method_present": false,
+  "external_blocker_close_method_present": false,
+  "filesystem_write_method_present": false,
+  "maximum_state": "SYNTHETIC_PATCH_DRAFT_LIMITED_PROMOTION_RECONFIRMATION_RECEIPT_RECORDED",
+  "metadata_valid": true,
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "money_movement_executed": false,
+  "network_access_method_present": false,
+  "packet_state_change_method_present": false,
+  "patch_content_present": false,
+  "personal_data_used": false,
+  "production_activation_allowed": false,
+  "receipt_digests": [
+    "d40eee359d631123fbce34baef59ddd7d5cb90101c32abf98bf5119dc1b102f2"
+  ],
+  "record_bindings_valid": true,
+  "report_digest": "f8a1814e3bb585e3378e502c8efffd47f168feeb4320abc1b759a56d6840a425",
+  "safety_baseline_relaxation_method_present": false,
+  "schema": "nurion.pg.synthetic-patch-draft-limited-promotion-reconfirmation-receipt-ledger-evidence.v1",
+  "schema_digest": "ac0f6992882f71b05f4fc8ba58c738c022a6187e06b016577ceade3e659231f6",
+  "schema_version": 1,
+  "source_code_change_method_present": false,
+  "synthetic_activation_allowed": false,
+  "synthetic_evidence_only": true
+}

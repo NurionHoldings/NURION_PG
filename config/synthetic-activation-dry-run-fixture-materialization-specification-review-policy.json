@@ -1,0 +1,9 @@
+{"schema":"nurion.pg.synthetic-activation-dry-run-fixture-materialization-specification-review-policy.v1","mode":"UNREGISTERED_SYNTHETIC_ONLY",
+ "required_input_state":"SYNTHETIC_ACTIVATION_DRY_RUN_FIXTURE_MATERIALIZATION_SPECIFICATION_DRAFTED",
+ "allowed_review_decisions":["PASS","HOLD","REJECT"],
+ "maximum_state":"READY_FOR_SYNTHETIC_ACTIVATION_DRY_RUN_FIXTURE_MATERIALIZATION_DRY_RUN_PLAN",
+ "independent_eternian_review_required":true,"fixture_content_allowed":false,"fixture_bytes_allowed":false,
+ "filesystem_path_allowed":false,"fixture_materialization_allowed":false,"fixture_creation_allowed":false,
+ "filesystem_write_allowed":false,"dry_run_execution_allowed":false,"activation_allowed":false,"rollback_execution_allowed":false,
+ "network_access_allowed":false,"payment_execution_allowed":false,"money_movement_allowed":false,"automatic_merge_allowed":false,
+ "automatic_deploy_allowed":false,"production_activation_allowed":false,"real_credentials_allowed":false,"real_personal_data_allowed":false}
