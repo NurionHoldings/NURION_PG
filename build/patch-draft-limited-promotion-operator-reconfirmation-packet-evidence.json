@@ -1,0 +1,31 @@
+{
+  "application_method_present": false,
+  "automatic_deploy_method_present": false,
+  "automatic_merge_method_present": false,
+  "candidate_content_present": false,
+  "credentials_used": false,
+  "diff_content_present": false,
+  "execution_method_present": false,
+  "external_blocker_close_method_present": false,
+  "filesystem_write_method_present": false,
+  "maximum_state": "AWAITING_PATCH_DRAFT_LIMITED_PROMOTION_OPERATOR_RECONFIRMATION",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "money_movement_executed": false,
+  "network_access_method_present": false,
+  "operator_reconfirmation_method_present": false,
+  "operator_reconfirmation_recorded": false,
+  "packet_chain_valid": true,
+  "packet_count": 1,
+  "packet_digests": [
+    "51c1a121fb2e08b09241e379da8cd789bd502c38a79f29f9787efd74a0c78ee3"
+  ],
+  "patch_content_present": false,
+  "personal_data_used": false,
+  "production_activation_allowed": false,
+  "report_digest": "56b78b1db3b53290dd91cb01369acccfe382b1b669aa8006e4e710528bf48c1c",
+  "requested_scope": "SYNTHETIC_PATCH_DRAFT_LIMITED_PROMOTION_RECONFIRMATION_ONLY",
+  "safety_baseline_relaxation_method_present": false,
+  "schema": "nurion.pg.patch-draft-limited-promotion-operator-reconfirmation-packet-evidence.v1",
+  "source_code_change_method_present": false,
+  "synthetic_activation_allowed": false
+}
