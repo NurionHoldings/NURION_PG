@@ -1,0 +1,31 @@
+{
+  "schema": "nurion.pg.patch-draft-limited-promotion-shadow-policy.v1",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "required_input_state": "READY_FOR_SYNTHETIC_PATCH_DRAFT_LIMITED_PROMOTION_SHADOW",
+  "maximum_decision": "PROPOSED_FOR_ETERNIAN_REVIEW",
+  "rollback_decision": "ROLLBACK_REQUIRED",
+  "synthetic_observation_only": true,
+  "exact_cohort_size_required": true,
+  "eternian_review_required": true,
+  "rollback_triggers": [
+    "ANY_SAFETY_INVARIANT_FAILURE",
+    "ANY_EVIDENCE_CHAIN_FAILURE",
+    "ANY_SYNTHETIC_REGRESSION",
+    "ANY_UNEXPECTED_SIDE_EFFECT"
+  ],
+  "candidate_content_allowed": false,
+  "patch_content_allowed": false,
+  "diff_content_allowed": false,
+  "source_code_change_allowed": false,
+  "filesystem_write_allowed": false,
+  "automatic_application_allowed": false,
+  "safety_baseline_relaxation_allowed": false,
+  "execution_allowed": false,
+  "synthetic_activation_allowed": false,
+  "payment_execution_allowed": false,
+  "money_movement_allowed": false,
+  "production_activation_allowed": false,
+  "network_access_allowed": false,
+  "real_credentials_allowed": false,
+  "real_personal_data_allowed": false
+}
