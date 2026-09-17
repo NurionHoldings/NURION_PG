@@ -51,6 +51,12 @@ class FixtureMaterializationPlanTests(unittest.TestCase):
         resources,sd,ledger,docket,review=reviewed_source();object.__setattr__(review,"findings_digest","f"*64)
         with self.assertRaises(GovernanceRejected):SyntheticActivationDryRunFixtureMaterializationPlanBook().plan_from_review(docket,review.draft.draft_id,planned_at=NOW)
         close_sources(resources,sd,ledger)
+    def test_fully_rehashed_lineage_tampering_is_detected(self):
+        resources,sd,ledger,docket,review=reviewed_source();book=SyntheticActivationDryRunFixtureMaterializationPlanBook();item=book.plan_from_review(docket,review.draft.draft_id,planned_at=NOW)
+        object.__setattr__(item,"source_draft_digest","f"*64)
+        object.__setattr__(item,"plan_id","synthetic:activation-dry-run-fixture-materialization-plan:"+canonical_digest(
+            {"draft_id":item.source_draft_id,"draft_digest":item.source_draft_digest,"review_digest":item.source_review_digest,"scope":FIXTURE_MATERIALIZATION_PLAN_SCOPE})[:32])
+        object.__setattr__(item,"plan_digest",canonical_digest(item.digest_value()));self.assertFalse(book.verify_plan_chain());close_sources(resources,sd,ledger)
     def test_source_change_discards_plan(self):
         resources,sd,ledger,docket,review=reviewed_source();book=SyntheticActivationDryRunFixtureMaterializationPlanBook();original=docket.evidence;calls=0
         def changing():
