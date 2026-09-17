@@ -1,0 +1,21 @@
+{
+  "feature": 286,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.release-manifest-binding",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "persistence_contract_required",
+    "persistence_tamper_rejected",
+    "persistence_operational_authority_absent"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_286_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "6d96ac9331d142fa4f3d2dc78837b8e1146022b63c9015df266992e282cdaaf8"
+}
