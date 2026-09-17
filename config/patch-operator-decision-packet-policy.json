@@ -1,0 +1,38 @@
+{
+  "schema": "nurion.pg.synthetic-patch-operator-decision-packet-policy.v1",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "required_source_state": "READY_FOR_OPERATOR_DECISION",
+  "maximum_state": "AWAITING_OPERATOR_DECISION",
+  "validity_days": 7,
+  "requested_scope": "SYNTHETIC_PATCH_DRAFT_ONLY",
+  "allowed_decisions": [
+    "AUTHORIZE_SYNTHETIC_PATCH_DRAFT",
+    "HOLD",
+    "REJECT"
+  ],
+  "required_acknowledgements": [
+    "SYNTHETIC_ONLY",
+    "NO_PATCH_CONTENT_IN_PACKET",
+    "NO_CODE_CHANGE_OR_APPLICATION",
+    "NO_PAYMENT_EXECUTION_OR_MONEY_MOVEMENT",
+    "NO_REAL_DATA_OR_CREDENTIALS",
+    "NO_MAIN_MERGE_OR_DEPLOYMENT",
+    "EXPLICIT_OPERATOR_DECISION_REQUIRED",
+    "SEPARATE_PATCH_REVIEW_REQUIRED",
+    "NO_PRODUCTION_PROMOTION"
+  ],
+  "operator_decision_recording_allowed": false,
+  "patch_content_allowed": false,
+  "external_blocker_auto_close_allowed": false,
+  "code_change_allowed": false,
+  "automatic_application_allowed": false,
+  "safety_baseline_relaxation_allowed": false,
+  "payment_execution_allowed": false,
+  "money_movement_allowed": false,
+  "automatic_merge_allowed": false,
+  "automatic_deploy_allowed": false,
+  "production_activation_allowed": false,
+  "network_access_allowed": false,
+  "real_credentials_allowed": false,
+  "real_personal_data_allowed": false
+}
