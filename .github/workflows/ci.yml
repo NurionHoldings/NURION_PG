@@ -132,6 +132,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_activation_dry_run_fixture_draft_evidence.py
       - name: Verify independent activation dry-run fixture draft review
         run: PYTHONPATH=src python scripts/run_synthetic_activation_dry_run_fixture_draft_review_evidence.py
+      - name: Verify metadata-only activation dry-run fixture materialization plan
+        run: PYTHONPATH=src python scripts/run_synthetic_activation_dry_run_fixture_materialization_plan_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -240,5 +242,7 @@ jobs:
             build/synthetic-activation-dry-run-fixture-draft-evidence.json.sha256
             build/synthetic-activation-dry-run-fixture-draft-review-evidence.json
             build/synthetic-activation-dry-run-fixture-draft-review-evidence.json.sha256
+            build/synthetic-activation-dry-run-fixture-materialization-plan-evidence.json
+            build/synthetic-activation-dry-run-fixture-materialization-plan-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
