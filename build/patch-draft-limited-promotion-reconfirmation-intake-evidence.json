@@ -1,0 +1,33 @@
+{
+  "application_method_present": false,
+  "assessment_chain_valid": true,
+  "automatic_deploy_method_present": false,
+  "automatic_merge_method_present": false,
+  "candidate_content_present": false,
+  "credentials_used": false,
+  "decision_counts": {
+    "HOLD": 0,
+    "RECONFIRM_SYNTHETIC_PATCH_DRAFT_LIMITED_PROMOTION": 1,
+    "REJECT": 0
+  },
+  "diff_content_present": false,
+  "execution_method_present": false,
+  "external_blocker_close_method_present": false,
+  "filesystem_write_method_present": false,
+  "maximum_state": "SYNTHETIC_PATCH_DRAFT_LIMITED_PROMOTION_RECONFIRMATION_VALIDATED",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "money_movement_executed": false,
+  "network_access_method_present": false,
+  "operator_reconfirmation_recording_method_present": false,
+  "packet_state_changed": false,
+  "patch_content_present": false,
+  "personal_data_used": false,
+  "production_activation_allowed": false,
+  "report_digest": "5458a11439879f66c53fd24ad2f564341f43fc0101c6f90a9a7b2bc273d8a14b",
+  "safety_baseline_relaxation_method_present": false,
+  "schema": "nurion.pg.synthetic-patch-draft-limited-promotion-reconfirmation-intake-evidence.v1",
+  "signing_method_present": false,
+  "source_code_change_method_present": false,
+  "synthetic_activation_allowed": false,
+  "synthetic_verification_only": true
+}
