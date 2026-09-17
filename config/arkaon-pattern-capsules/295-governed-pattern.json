@@ -1,0 +1,21 @@
+{
+  "feature": 295,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.nonce-replay-defense",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "recovery_contract_required",
+    "recovery_tamper_rejected",
+    "recovery_operational_authority_absent"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_295_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "548e6146ffbf4263b496c72eff9a2e8f08162e49433199df1b0818bd89efb3fc"
+}
