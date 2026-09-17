@@ -1,0 +1,17 @@
+{
+  "schema": "nurion.pg.synthetic-remediation-review-docket-policy.v1",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "required_proposal_decision": "PROPOSED_FOR_ETERNIAN_REVIEW",
+  "maximum_state": "READY_FOR_SYNTHETIC_SHADOW",
+  "review_authority": "ETERNIAN_INDEPENDENT_REVIEW",
+  "automatic_review_allowed": false,
+  "synthetic_shadow_generation_allowed": false,
+  "code_change_allowed": false,
+  "automatic_application_allowed": false,
+  "operator_decision_allowed": false,
+  "payment_execution_allowed": false,
+  "money_movement_allowed": false,
+  "production_activation_allowed": false,
+  "real_credentials_allowed": false,
+  "real_personal_data_allowed": false
+}
