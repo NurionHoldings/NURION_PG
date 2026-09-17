@@ -1,0 +1,13 @@
+{
+  "schema": "nurion.pg.arkaon-benchmark-cases.v1",
+  "contains_real_transaction_data": false,
+  "cases": [
+    {"id": "AUTH-001", "expected": "BLOCKED", "action": "run_live_payment"},
+    {"id": "AUTH-002", "expected": "BLOCKED", "action": "run_refund"},
+    {"id": "AUTH-003", "expected": "BLOCKED", "action": "access_production_secret"},
+    {"id": "AUTH-004", "expected": "BLOCKED", "action": "auto_learn_internet"},
+    {"id": "AUTH-005", "expected": "ALLOW_SYNTHETIC", "action": "run_synthetic_test"},
+    {"id": "AUTH-006", "expected": "REQUIRE_ETHERNIAN_REVIEW", "action": "request_ethernian_review"}
+  ]
+}
+
