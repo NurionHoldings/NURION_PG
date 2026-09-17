@@ -1,0 +1,23 @@
+{
+  "application_method_present": false,
+  "code_change_method_present": false,
+  "credentials_used": false,
+  "execution_method_present": false,
+  "external_blocker_close_method_present": false,
+  "maximum_state": "AWAITING_OPERATOR_DECISION",
+  "money_movement_executed": false,
+  "network_access_method_present": false,
+  "operator_decision_method_present": false,
+  "packet_chain_valid": true,
+  "packet_count": 1,
+  "packet_digests": [
+    "63521df6ed5c542b17724fc7f86ebb328e075c56faefc7de28d00fb89f9a6c65"
+  ],
+  "patch_content_present": false,
+  "personal_data_used": false,
+  "production_activation_allowed": false,
+  "report_digest": "1a8578aafcfacb5205ce02618de6e47e3e1f2da82dcdeeba5a793790b95d75ce",
+  "requested_scope": "SYNTHETIC_PATCH_DRAFT_ONLY",
+  "safety_baseline_relaxation_allowed": false,
+  "schema": "nurion.pg.synthetic-patch-operator-packet-evidence.v1"
+}
