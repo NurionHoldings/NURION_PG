@@ -1,0 +1,17 @@
+{
+  "schema": "nurion.pg.synthetic-implementation-proposal-policy.v1",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "required_input_state": "SYNTHETIC_RECEIPT_RECORDED",
+  "required_decision": "AUTHORIZE_SYNTHETIC_IMPLEMENTATION_PROPOSAL_DRAFT",
+  "maximum_state": "SYNTHETIC_IMPLEMENTATION_PROPOSAL_DRAFTED",
+  "eternian_review_required": true,
+  "actual_operator_decision_recording_allowed": false,
+  "code_change_allowed": false,
+  "automatic_application_allowed": false,
+  "safety_baseline_relaxation_allowed": false,
+  "payment_execution_allowed": false,
+  "money_movement_allowed": false,
+  "production_activation_allowed": false,
+  "real_credentials_allowed": false,
+  "real_personal_data_allowed": false
+}
