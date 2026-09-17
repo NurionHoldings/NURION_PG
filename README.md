@@ -74,6 +74,7 @@
 - 내용 없는 materialization Dry-run scenario를 독립심사해 expectation 준비까지만 허용하는 검토대장
 - 통과한 scenario 심사에서 관찰값·결과 없이 expectation digest만 고정하는 초안
 - 관찰값 없는 expectation을 독립심사해 assertion 준비까지만 허용하는 검토대장
+- 통과한 expectation 심사에서 평가·결과 없이 assertion digest만 고정하는 초안
 
 자세한 내용은 [ARKAON 통제형 부트스트랩](docs/01-arkaon-governed-bootstrap.md)을 참고합니다.
 
