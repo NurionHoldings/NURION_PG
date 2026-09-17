@@ -168,9 +168,17 @@ class SyntheticActivationDryRunDesignReviewDocket:
         with self._lock:
             previous="0"*64
             for sequence,item in enumerate(self._records,1):
+                pending=item.state is DryRunDesignReviewState.PENDING_ETERNIAN_REVIEW
+                review_fields=(item.review_id,item.reviewer_id,item.decision,item.findings_digest,item.reviewed_at,item.review_digest)
                 if (item.sequence!=sequence or item.previous_digest!=previous
                     or item.submission_digest!=canonical_digest(item.submission_value())
-                    or item.design.design_digest!=canonical_digest(item.design.digest_value())): return False
+                    or item.design.design_digest!=canonical_digest(item.design.digest_value())
+                    or item.design.state!=DRY_RUN_DESIGN_STATE or item.design.scope!=DRY_RUN_DESIGN_SCOPE
+                    or (pending and any(v is not None for v in review_fields))
+                    or (not pending and (any(v is None for v in review_fields)
+                        or not isinstance(item.decision,DryRunDesignReviewDecision)
+                        or item.state is not _STATE_BY_DECISION[item.decision]
+                        or item.review_digest!=canonical_digest(item.review_value())))): return False
                 previous=item.submission_digest
             return len(self._records)==len(self._by_design) and all(self._by_design.get(i.design.design_id) is i for i in self._records)
 

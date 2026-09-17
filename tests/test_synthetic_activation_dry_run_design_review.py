@@ -71,6 +71,11 @@ class SyntheticActivationDryRunDesignReviewTests(unittest.TestCase):
         with self.assertRaises(GovernanceRejected): pass_review(docket,design)
         close_sources(resources,sd,ledger)
 
+    def test_rehashed_review_tampering_is_detected(self):
+        resources,sd,ledger,book,design=design_source(); docket=SyntheticActivationDryRunDesignReviewDocket(); docket.submit(book,design.design_id,submitted_at=NOW)
+        item=pass_review(docket,design); object.__setattr__(item,"findings_digest","f"*64)
+        self.assertFalse(docket.verify_chain()); close_sources(resources,sd,ledger)
+
     def test_evidence_caps_authority(self):
         resources,sd,ledger,book,design=design_source(); docket=SyntheticActivationDryRunDesignReviewDocket(); docket.submit(book,design.design_id,submitted_at=NOW); pass_review(docket,design)
         evidence=docket.evidence(); self.assertEqual(evidence["maximum_state"],DESIGN_REVIEW_MAXIMUM_STATE); self.assertTrue(evidence["review_chain_valid"])
