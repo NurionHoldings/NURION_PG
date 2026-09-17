@@ -168,6 +168,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_arkaon_benchmark_receipt_repository_parity_evidence.py
       - name: Verify ARKAON pattern capsule portfolio
         run: PYTHONPATH=src python scripts/run_arkaon_pattern_capsule_evidence.py
+      - name: Verify synthetic dispute evidence freeze
+        run: PYTHONPATH=src python scripts/run_synthetic_dispute_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
