@@ -1,0 +1,7 @@
+{"schema":"nurion.pg.arkaon-benchmark-receipt-repository-parity-policy.v1","mode":"UNREGISTERED_SYNTHETIC_ONLY",
+ "foundry_commit":"24ae4a601ee449649e40804119fa37667f731076","foundry_pattern_id":"apf.public.repository-contract-parity",
+ "foundry_package_hash":"e1757d7a82ed9844f04c4a49fedc9c95111dca17b7efcf247c3cd6ba5eb88fbc",
+ "foundry_pattern_status":"ETHERNIAN_REVIEW_REQUIRED","adapters":["MEMORY","SQLITE_MEMORY_ONLY"],
+ "maximum_state":"SYNTHETIC_PG_BENCHMARK_RECEIPT_REPOSITORY_CONTRACT_PARITY_VERIFIED",
+ "postgresql_adapter_allowed":false,"production_database_allowed":false,"network_access_allowed":false,
+ "release_approval_allowed":false,"automatic_merge_allowed":false,"real_credentials_allowed":false}
