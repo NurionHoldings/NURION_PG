@@ -1,0 +1,248 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "feat/**"
+      - "fix/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  governed-bootstrap:
+    name: ARKAON governed synthetic bootstrap
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+      - name: Compile source
+        run: python -m compileall -q src scripts tests
+      - name: Unit and policy tests
+        run: PYTHONPATH=src python -m unittest discover -s tests -v
+      - name: Validate governance manifests
+        run: PYTHONPATH=src python scripts/validate_governance.py
+      - name: Generate deterministic bootstrap evidence
+        run: PYTHONPATH=src python scripts/run_bootstrap_evidence.py
+      - name: Validate official regulatory evidence registry
+        run: PYTHONPATH=src python scripts/run_regulatory_evidence.py
+      - name: Verify synthetic ledger invariants
+        run: PYTHONPATH=src python scripts/run_synthetic_ledger_evidence.py
+      - name: Verify synthetic Payment Intent lifecycle
+        run: PYTHONPATH=src python scripts/run_payment_lifecycle_evidence.py
+      - name: Verify synthetic webhook intake and quarantine
+        run: PYTHONPATH=src python scripts/run_webhook_intake_evidence.py
+      - name: Verify synthetic durable webhook inbox
+        run: PYTHONPATH=src python scripts/run_durable_webhook_inbox_evidence.py
+      - name: Verify synthetic webhook command proposals
+        run: PYTHONPATH=src python scripts/run_webhook_command_proposal_evidence.py
+      - name: Verify synthetic proposal review docket
+        run: PYTHONPATH=src python scripts/run_proposal_review_docket_evidence.py
+      - name: Verify read-only synthetic reconciliation monitor
+        run: PYTHONPATH=src python scripts/run_reconciliation_monitor_evidence.py
+      - name: Verify durable synthetic reconciliation case docket
+        run: PYTHONPATH=src python scripts/run_reconciliation_case_docket_evidence.py
+      - name: Verify non-executable synthetic remediation proposals
+        run: PYTHONPATH=src python scripts/run_reconciliation_remediation_proposal_evidence.py
+      - name: Verify synthetic remediation review docket
+        run: PYTHONPATH=src python scripts/run_remediation_review_docket_evidence.py
+      - name: Verify remediation synthetic shadow evaluation
+        run: PYTHONPATH=src python scripts/run_remediation_synthetic_shadow_evidence.py
+      - name: Verify synthetic shadow review docket
+        run: PYTHONPATH=src python scripts/run_remediation_shadow_review_docket_evidence.py
+      - name: Verify non-authorizing operator decision packets
+        run: PYTHONPATH=src python scripts/run_operator_decision_packet_evidence.py
+      - name: Verify synthetic operator decision intent intake
+        run: PYTHONPATH=src python scripts/run_operator_decision_intake_evidence.py
+      - name: Verify durable synthetic decision receipt ledger
+        run: PYTHONPATH=src python scripts/run_operator_decision_receipt_ledger_evidence.py
+      - name: Verify non-executable synthetic implementation proposal drafts
+        run: PYTHONPATH=src python scripts/run_synthetic_implementation_proposal_evidence.py
+      - name: Verify durable synthetic implementation proposal review docket
+        run: PYTHONPATH=src python scripts/run_synthetic_implementation_review_evidence.py
+      - name: Verify metadata-only synthetic patch shadow evaluation
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_shadow_evidence.py
+      - name: Verify durable synthetic patch shadow review docket
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_shadow_review_docket_evidence.py
+      - name: Verify non-authorizing synthetic patch operator packets
+        run: PYTHONPATH=src python scripts/run_patch_operator_decision_packet_evidence.py
+      - name: Verify synthetic patch operator decision intent
+        run: PYTHONPATH=src python scripts/run_patch_operator_decision_intake_evidence.py
+      - name: Verify durable synthetic patch decision receipt ledger
+        run: PYTHONPATH=src python scripts/run_patch_operator_decision_receipt_ledger_evidence.py
+      - name: Verify metadata-only synthetic patch draft manifests
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_manifest_evidence.py
+      - name: Verify durable synthetic patch draft review docket
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_review_docket_evidence.py
+      - name: Verify metadata-only synthetic patch draft shadow
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_shadow_evidence.py
+      - name: Verify durable synthetic patch draft shadow review docket
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_shadow_review_docket_evidence.py
+      - name: Verify non-authorizing patch draft promotion operator packet
+        run: PYTHONPATH=src python scripts/run_patch_draft_promotion_operator_packet_evidence.py
+      - name: Verify patch draft promotion operator intent
+        run: PYTHONPATH=src python scripts/run_patch_draft_promotion_decision_intake_evidence.py
+      - name: Verify durable patch draft promotion intent receipt ledger
+        run: PYTHONPATH=src python scripts/run_patch_draft_promotion_receipt_ledger_evidence.py
+      - name: Verify metadata-only synthetic patch draft limited promotion plan
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_limited_promotion_plan_evidence.py
+      - name: Verify durable synthetic patch draft limited promotion review
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_limited_promotion_review_evidence.py
+      - name: Verify synthetic patch draft limited promotion shadow
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_limited_promotion_shadow_evidence.py
+      - name: Verify durable synthetic patch draft limited promotion shadow review
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_limited_promotion_shadow_review_evidence.py
+      - name: Verify non-authorizing limited promotion operator reconfirmation packet
+        run: PYTHONPATH=src python scripts/run_patch_draft_limited_promotion_operator_reconfirmation_packet_evidence.py
+      - name: Verify limited promotion operator reconfirmation intent
+        run: PYTHONPATH=src python scripts/run_patch_draft_limited_promotion_reconfirmation_intake_evidence.py
+      - name: Verify durable limited promotion reconfirmation receipt ledger
+        run: PYTHONPATH=src python scripts/run_patch_draft_limited_promotion_reconfirmation_receipt_ledger_evidence.py
+      - name: Verify metadata-only limited promotion activation manifest
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_limited_promotion_activation_manifest_evidence.py
+      - name: Verify durable limited promotion activation final review
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_limited_promotion_activation_review_evidence.py
+      - name: Verify non-authorizing limited promotion activation operator packet
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_limited_promotion_activation_operator_packet_evidence.py
+      - name: Verify limited promotion activation operator intent
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_limited_promotion_activation_intake_evidence.py
+      - name: Verify durable limited promotion activation receipt ledger
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_limited_promotion_activation_receipt_ledger_evidence.py
+      - name: Verify metadata-only limited promotion activation draft
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_limited_promotion_activation_draft_evidence.py
+      - name: Verify independent activation draft review docket
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_limited_promotion_activation_draft_review_evidence.py
+      - name: Verify metadata-only activation dry-run design
+        run: PYTHONPATH=src python scripts/run_synthetic_activation_dry_run_design_evidence.py
+      - name: Verify independent activation dry-run design review
+        run: PYTHONPATH=src python scripts/run_synthetic_activation_dry_run_design_review_evidence.py
+      - name: Verify metadata-only activation dry-run fixture proposal
+        run: PYTHONPATH=src python scripts/run_synthetic_activation_dry_run_fixture_proposal_evidence.py
+      - name: Verify independent activation dry-run fixture proposal review
+        run: PYTHONPATH=src python scripts/run_synthetic_activation_dry_run_fixture_proposal_review_evidence.py
+      - name: Verify non-materialized activation dry-run fixture draft
+        run: PYTHONPATH=src python scripts/run_synthetic_activation_dry_run_fixture_draft_evidence.py
+      - name: Verify independent activation dry-run fixture draft review
+        run: PYTHONPATH=src python scripts/run_synthetic_activation_dry_run_fixture_draft_review_evidence.py
+      - name: Verify metadata-only activation dry-run fixture materialization plan
+        run: PYTHONPATH=src python scripts/run_synthetic_activation_dry_run_fixture_materialization_plan_evidence.py
+      - name: Verify clean source formatting
+        run: git diff --check
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: arkaon-bootstrap-evidence
+          path: |
+            build/arkaon-bootstrap-evidence.json
+            build/arkaon-bootstrap-evidence.json.sha256
+            build/regulatory-evidence-report.json
+            build/regulatory-evidence-report.json.sha256
+            build/synthetic-ledger-evidence.json
+            build/synthetic-ledger-evidence.json.sha256
+            build/synthetic-payment-lifecycle-evidence.json
+            build/synthetic-payment-lifecycle-evidence.json.sha256
+            build/synthetic-webhook-intake-evidence.json
+            build/synthetic-webhook-intake-evidence.json.sha256
+            build/synthetic-durable-webhook-inbox-evidence.json
+            build/synthetic-durable-webhook-inbox-evidence.json.sha256
+            build/synthetic-webhook-command-proposal-evidence.json
+            build/synthetic-webhook-command-proposal-evidence.json.sha256
+            build/synthetic-proposal-review-docket-evidence.json
+            build/synthetic-proposal-review-docket-evidence.json.sha256
+            build/synthetic-reconciliation-monitor-evidence.json
+            build/synthetic-reconciliation-monitor-evidence.json.sha256
+            build/synthetic-reconciliation-case-docket-evidence.json
+            build/synthetic-reconciliation-case-docket-evidence.json.sha256
+            build/synthetic-remediation-proposal-evidence.json
+            build/synthetic-remediation-proposal-evidence.json.sha256
+            build/synthetic-remediation-review-docket-evidence.json
+            build/synthetic-remediation-review-docket-evidence.json.sha256
+            build/synthetic-remediation-shadow-evidence.json
+            build/synthetic-remediation-shadow-evidence.json.sha256
+            build/synthetic-shadow-review-docket-evidence.json
+            build/synthetic-shadow-review-docket-evidence.json.sha256
+            build/synthetic-operator-decision-packet-evidence.json
+            build/synthetic-operator-decision-packet-evidence.json.sha256
+            build/synthetic-operator-decision-intake-evidence.json
+            build/synthetic-operator-decision-intake-evidence.json.sha256
+            build/synthetic-decision-receipt-ledger-evidence.json
+            build/synthetic-decision-receipt-ledger-evidence.json.sha256
+            build/synthetic-implementation-proposal-evidence.json
+            build/synthetic-implementation-proposal-evidence.json.sha256
+            build/synthetic-implementation-review-evidence.json
+            build/synthetic-implementation-review-evidence.json.sha256
+            build/synthetic-patch-shadow-evidence.json
+            build/synthetic-patch-shadow-evidence.json.sha256
+            build/synthetic-patch-shadow-review-docket-evidence.json
+            build/synthetic-patch-shadow-review-docket-evidence.json.sha256
+            build/synthetic-patch-operator-packet-evidence.json
+            build/synthetic-patch-operator-packet-evidence.json.sha256
+            build/synthetic-patch-operator-intake-evidence.json
+            build/synthetic-patch-operator-intake-evidence.json.sha256
+            build/synthetic-patch-decision-receipt-ledger-evidence.json
+            build/synthetic-patch-decision-receipt-ledger-evidence.json.sha256
+            build/synthetic-patch-draft-manifest-evidence.json
+            build/synthetic-patch-draft-manifest-evidence.json.sha256
+            build/synthetic-patch-draft-review-evidence.json
+            build/synthetic-patch-draft-review-evidence.json.sha256
+            build/synthetic-patch-draft-shadow-evidence.json
+            build/synthetic-patch-draft-shadow-evidence.json.sha256
+            build/synthetic-patch-draft-shadow-review-evidence.json
+            build/synthetic-patch-draft-shadow-review-evidence.json.sha256
+            build/patch-draft-promotion-operator-packet-evidence.json
+            build/patch-draft-promotion-operator-packet-evidence.json.sha256
+            build/patch-draft-promotion-decision-intake-evidence.json
+            build/patch-draft-promotion-decision-intake-evidence.json.sha256
+            build/patch-draft-promotion-receipt-ledger-evidence.json
+            build/patch-draft-promotion-receipt-ledger-evidence.json.sha256
+            build/synthetic-patch-draft-limited-promotion-plan-evidence.json
+            build/synthetic-patch-draft-limited-promotion-plan-evidence.json.sha256
+            build/synthetic-patch-draft-limited-promotion-review-evidence.json
+            build/synthetic-patch-draft-limited-promotion-review-evidence.json.sha256
+            build/synthetic-patch-draft-limited-promotion-shadow-evidence.json
+            build/synthetic-patch-draft-limited-promotion-shadow-evidence.json.sha256
+            build/synthetic-patch-draft-limited-promotion-shadow-review-evidence.json
+            build/synthetic-patch-draft-limited-promotion-shadow-review-evidence.json.sha256
+            build/patch-draft-limited-promotion-operator-reconfirmation-packet-evidence.json
+            build/patch-draft-limited-promotion-operator-reconfirmation-packet-evidence.json.sha256
+            build/patch-draft-limited-promotion-reconfirmation-intake-evidence.json
+            build/patch-draft-limited-promotion-reconfirmation-intake-evidence.json.sha256
+            build/patch-draft-limited-promotion-reconfirmation-receipt-ledger-evidence.json
+            build/patch-draft-limited-promotion-reconfirmation-receipt-ledger-evidence.json.sha256
+            build/synthetic-patch-draft-limited-promotion-activation-manifest-evidence.json
+            build/synthetic-patch-draft-limited-promotion-activation-manifest-evidence.json.sha256
+            build/synthetic-patch-draft-limited-promotion-activation-review-evidence.json
+            build/synthetic-patch-draft-limited-promotion-activation-review-evidence.json.sha256
+            build/synthetic-patch-draft-limited-promotion-activation-operator-packet-evidence.json
+            build/synthetic-patch-draft-limited-promotion-activation-operator-packet-evidence.json.sha256
+            build/synthetic-patch-draft-limited-promotion-activation-intake-evidence.json
+            build/synthetic-patch-draft-limited-promotion-activation-intake-evidence.json.sha256
+            build/synthetic-patch-draft-limited-promotion-activation-receipt-ledger-evidence.json
+            build/synthetic-patch-draft-limited-promotion-activation-receipt-ledger-evidence.json.sha256
+            build/synthetic-patch-draft-limited-promotion-activation-draft-evidence.json
+            build/synthetic-patch-draft-limited-promotion-activation-draft-evidence.json.sha256
+            build/synthetic-patch-draft-limited-promotion-activation-draft-review-evidence.json
+            build/synthetic-patch-draft-limited-promotion-activation-draft-review-evidence.json.sha256
+            build/synthetic-activation-dry-run-design-evidence.json
+            build/synthetic-activation-dry-run-design-evidence.json.sha256
+            build/synthetic-activation-dry-run-design-review-evidence.json
+            build/synthetic-activation-dry-run-design-review-evidence.json.sha256
+            build/synthetic-activation-dry-run-fixture-proposal-evidence.json
+            build/synthetic-activation-dry-run-fixture-proposal-evidence.json.sha256
+            build/synthetic-activation-dry-run-fixture-proposal-review-evidence.json
+            build/synthetic-activation-dry-run-fixture-proposal-review-evidence.json.sha256
+            build/synthetic-activation-dry-run-fixture-draft-evidence.json
+            build/synthetic-activation-dry-run-fixture-draft-evidence.json.sha256
+            build/synthetic-activation-dry-run-fixture-draft-review-evidence.json
+            build/synthetic-activation-dry-run-fixture-draft-review-evidence.json.sha256
+            build/synthetic-activation-dry-run-fixture-materialization-plan-evidence.json
+            build/synthetic-activation-dry-run-fixture-materialization-plan-evidence.json.sha256
+          if-no-files-found: error
+          retention-days: 14
