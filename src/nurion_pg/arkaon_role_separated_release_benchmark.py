@@ -46,6 +46,9 @@ class ArkaonRoleSeparatedReleaseBenchmark:
 def record_role_separated_benchmark(manifest:ArkaonReleaseEvidenceManifestDraft,results:tuple[RoleResult,...],*,
     attack_findings_digest:str,judge_observed_attack_findings_digest:str,recorded_at:datetime)->ArkaonRoleSeparatedReleaseBenchmark:
     if not isinstance(manifest,ArkaonReleaseEvidenceManifestDraft):raise GovernanceRejected("typed release manifest draft required")
+    if not isinstance(results,tuple) or any(not isinstance(r,RoleResult) for r in results):
+        raise GovernanceRejected("typed role result tuple required")
+    for result in results:result.validate()
     manifest.__post_init__();outcome=BenchmarkOutcome.PASS if all(r.passed and not r.critical_failure for r in results) else BenchmarkOutcome.HOLD
     values={"manifest_digest":manifest.manifest_digest,"results":[{"role":r.role.value,"actor_id":r.actor_id,
         "result_digest":r.result_digest,"passed":r.passed,"critical_failure":r.critical_failure} for r in results],

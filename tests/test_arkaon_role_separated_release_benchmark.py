@@ -17,6 +17,7 @@ class RoleSeparatedBenchmarkTests(unittest.TestCase):
     def test_duplicate_actor_fails_closed(self):
         r=list(results());r[-1]=RoleResult(BenchmarkRole.APPROVER,r[0].actor_id,h(b"approver"),True)
         with self.assertRaises(GovernanceRejected):record_role_separated_benchmark(manifest(),tuple(r),attack_findings_digest=h(b"f"),judge_observed_attack_findings_digest=h(b"f"),recorded_at=NOW)
+        with self.assertRaises(GovernanceRejected):record_role_separated_benchmark(manifest(),(object(),),attack_findings_digest=h(b"f"),judge_observed_attack_findings_digest=h(b"f"),recorded_at=NOW)
     def test_hidden_findings_fail_and_critical_failure_holds(self):
         with self.assertRaises(GovernanceRejected):record_role_separated_benchmark(manifest(),results(),attack_findings_digest=h(b"f"),judge_observed_attack_findings_digest=h(b"hidden"),recorded_at=NOW)
         item=record_role_separated_benchmark(manifest(),results(True),attack_findings_digest=h(b"f"),judge_observed_attack_findings_digest=h(b"f"),recorded_at=NOW)
