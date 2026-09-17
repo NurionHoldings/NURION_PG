@@ -1,0 +1,17 @@
+{
+  "actual_operator_decision_recording_method_present": false,
+  "application_method_present": false,
+  "code_change_method_present": false,
+  "eternian_review_required": true,
+  "execution_method_present": false,
+  "maximum_state": "SYNTHETIC_IMPLEMENTATION_PROPOSAL_DRAFTED",
+  "money_movement_executed": false,
+  "production_activation_allowed": false,
+  "proposal_chain_valid": true,
+  "proposal_count": 1,
+  "proposal_digests": [
+    "38edd2fb421701a203868c01f3135b52302ead11209db410be9bde66fdcb0fde"
+  ],
+  "report_digest": "0e9f68a340d611d5b4641842d71db36f25aedf806569f678fdfeebaeda25a1a4",
+  "schema": "nurion.pg.synthetic-implementation-proposal-evidence.v1"
+}
