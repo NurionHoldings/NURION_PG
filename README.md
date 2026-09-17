@@ -61,6 +61,7 @@
 - 통과한 활성화 초안 심사에서 범위·관찰·rollback 안전 게이트만 고정하는 비실행 Dry-run 설계
 - 합성 활성화 Dry-run 설계를 독립심사해 fixture 제안 준비까지만 허용하는 검토대장
 - 통과한 설계 심사에서 fixture 내용 없이 schema·입력·기대결과 digest만 만드는 비생성 제안
+- 비생성 fixture 제안을 독립심사해 fixture 초안 준비까지만 허용하는 검토대장
 
 자세한 내용은 [ARKAON 통제형 부트스트랩](docs/01-arkaon-governed-bootstrap.md)을 참고합니다.
 
