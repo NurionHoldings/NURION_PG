@@ -358,13 +358,14 @@ class SyntheticPatchShadowBook:
                 self._assessments.append(assessment)
                 self._by_proposal[proposal_id] = assessment
                 created = True
-        after = docket.evidence()["report_digest"]
-        if before != after:
-            if created:
-                with self._lock:
+            after = docket.evidence()["report_digest"]
+            if before != after:
+                if created:
                     self._assessments.pop()
                     self._by_proposal.pop(proposal_id, None)
-            raise GovernanceRejected("implementation review changed during patch shadow")
+                raise GovernanceRejected(
+                    "implementation review changed during patch shadow"
+                )
         return assessment
 
     @staticmethod
