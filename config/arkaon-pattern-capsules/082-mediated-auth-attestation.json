@@ -1,0 +1,21 @@
+{
+  "feature": 82,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.mediated-auth-attestation",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "request_fingerprint_required",
+    "action_binding_required",
+    "grant_reference_required"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_82_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "5a732abc0f598140043fad67247f643b759447f957f8217f8c964485a3862a03"
+}
