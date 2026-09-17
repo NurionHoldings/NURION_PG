@@ -1,0 +1,13 @@
+{
+  "schema": "nurion.arkaon.workspace.v1",
+  "platform_id": "NURION_PG",
+  "display_name": "누리온PG",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "analysis_roots": ["src", "tests", "config", "governance", "docs"],
+  "forbidden_roots": ["build", ".git"],
+  "production_change_allowed": false,
+  "operational_data_collection_allowed": false,
+  "automatic_learning_allowed": false,
+  "operator_approval_required": true
+}
+
