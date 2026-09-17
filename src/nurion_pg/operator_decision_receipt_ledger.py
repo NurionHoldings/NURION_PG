@@ -109,6 +109,29 @@ class SyntheticDecisionReceipt:
         ):
             raise GovernanceRejected("valid non-authorizing synthetic receipt required")
 
+    def digest_value(self) -> dict[str, object]:
+        return {
+            "receipt_id": self.receipt_id,
+            "assessment_id": self.assessment_id,
+            "assessment_digest": self.assessment_digest,
+            "envelope_id": self.envelope_id,
+            "envelope_digest": self.envelope_digest,
+            "packet_id": self.packet_id,
+            "packet_digest": self.packet_digest,
+            "operator_id": self.operator_id,
+            "decision": self.decision.value,
+            "state": self.state,
+            "recorded_at": self.recorded_at.isoformat(),
+            "actual_operator_decision_recorded": False,
+            "packet_state_changed": False,
+            "code_change_allowed": False,
+            "automatic_application_allowed": False,
+            "execution_allowed": False,
+        }
+
+    def receipt_digest(self) -> str:
+        return canonical_digest(self.digest_value())
+
 
 def _valid_digest(value: object) -> bool:
     return (
@@ -499,6 +522,16 @@ class SyntheticOperatorDecisionReceiptLedger:
                 "GROUP BY decision"
             ):
                 counts[row["decision"]] = row["count"]
+            receipts = [
+                self._record_from_row(row)
+                for row in self._connection.execute(
+                    "SELECT * FROM synthetic_decision_receipts ORDER BY receipt_id"
+                )
+            ]
+            latest_audit = self._connection.execute(
+                "SELECT audit_digest FROM synthetic_decision_receipt_audit "
+                "ORDER BY audit_sequence DESC LIMIT 1"
+            ).fetchone()
             value = {
                 "schema": "nurion.pg.synthetic-decision-receipt-ledger-evidence.v1",
                 "database_engine": "SQLite",
@@ -506,6 +539,12 @@ class SyntheticOperatorDecisionReceiptLedger:
                 "schema_digest": canonical_digest(DECISION_RECEIPT_SCHEMA_SQL),
                 "metadata_valid": self.verify_metadata(),
                 "decision_counts": counts,
+                "receipt_digests": [receipt.receipt_digest() for receipt in receipts],
+                "audit_head_digest": (
+                    latest_audit["audit_digest"]
+                    if latest_audit is not None
+                    else "0" * 64
+                ),
                 "audit_chain_valid": self.verify_audit_chain(),
                 "record_bindings_valid": self.verify_record_bindings(),
                 "maximum_state": RECEIPT_STATE,

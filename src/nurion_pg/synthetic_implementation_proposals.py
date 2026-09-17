@@ -40,26 +40,7 @@ def _valid_digest(value: object) -> bool:
 
 
 def _receipt_digest(receipt: SyntheticDecisionReceipt) -> str:
-    return canonical_digest(
-        {
-            "receipt_id": receipt.receipt_id,
-            "assessment_id": receipt.assessment_id,
-            "assessment_digest": receipt.assessment_digest,
-            "envelope_id": receipt.envelope_id,
-            "envelope_digest": receipt.envelope_digest,
-            "packet_id": receipt.packet_id,
-            "packet_digest": receipt.packet_digest,
-            "operator_id": receipt.operator_id,
-            "decision": receipt.decision.value,
-            "state": receipt.state,
-            "recorded_at": receipt.recorded_at.isoformat(),
-            "actual_operator_decision_recorded": False,
-            "packet_state_changed": False,
-            "code_change_allowed": False,
-            "automatic_application_allowed": False,
-            "execution_allowed": False,
-        }
-    )
+    return receipt.receipt_digest()
 
 
 @dataclass(frozen=True)

@@ -234,9 +234,13 @@ class OperatorDecisionReceiptLedgerTests(unittest.TestCase):
     def test_evidence_proves_synthetic_receipt_only(self):
         case, remediation, docket, intake, envelope, _ = validated_intake()
         ledger = SyntheticOperatorDecisionReceiptLedger(":memory:")
-        ledger.record_from_intake(intake, envelope.envelope_id, recorded_at=NOW)
+        receipt = ledger.record_from_intake(
+            intake, envelope.envelope_id, recorded_at=NOW
+        )
         evidence = ledger.evidence()
         self.assertTrue(evidence["metadata_valid"])
+        self.assertEqual(evidence["receipt_digests"], [receipt.receipt_digest()])
+        self.assertNotEqual(evidence["audit_head_digest"], "0" * 64)
         self.assertTrue(evidence["synthetic_evidence_only"])
         self.assertTrue(evidence["audit_chain_valid"])
         self.assertTrue(evidence["record_bindings_valid"])
