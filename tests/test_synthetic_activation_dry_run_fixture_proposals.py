@@ -47,6 +47,10 @@ class FixtureProposalTests(unittest.TestCase):
         resources,sd,ledger,docket,review=proposal_source();book=SyntheticActivationDryRunFixtureProposalBook();item=book.propose_from_review(docket,review.design.design_id,proposed_at=NOW)
         object.__setattr__(item,"fixture_content_present",True);object.__setattr__(item,"proposal_digest",canonical_digest(item.digest_value()))
         self.assertFalse(book.verify_proposal_chain());close_sources(resources,sd,ledger)
+    def test_rehashed_identity_tampering_is_detected(self):
+        resources,sd,ledger,docket,review=proposal_source();book=SyntheticActivationDryRunFixtureProposalBook();item=book.propose_from_review(docket,review.design.design_id,proposed_at=NOW)
+        object.__setattr__(item,"proposal_id","synthetic:activation-dry-run-fixture-proposal:"+"f"*32);object.__setattr__(item,"proposal_digest",canonical_digest(item.digest_value()))
+        self.assertFalse(book.verify_proposal_chain());close_sources(resources,sd,ledger)
     def test_source_change_discards_proposal(self):
         resources,sd,ledger,docket,review=proposal_source();book=SyntheticActivationDryRunFixtureProposalBook();original=docket.evidence;calls=0
         def changing():

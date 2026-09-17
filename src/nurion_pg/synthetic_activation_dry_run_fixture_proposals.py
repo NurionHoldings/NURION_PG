@@ -17,7 +17,9 @@ FIXTURE_PROPOSAL_GATES=("PASSED_DRY_RUN_DESIGN_REVIEW_ONLY","EXACT_DESIGN_AND_RE
 
 def _valid_digest(v:object)->bool:return isinstance(v,str) and len(v)==64 and all(c in "0123456789abcdef" for c in v)
 def _proposal_id(r:SyntheticActivationDryRunDesignReviewRecord)->str:
-    return "synthetic:activation-dry-run-fixture-proposal:"+canonical_digest({"design_id":r.design.design_id,"design_digest":r.design.design_digest,"review_digest":r.review_digest,"scope":FIXTURE_PROPOSAL_SCOPE})[:32]
+    return _proposal_id_values(r.design.design_id,r.design.design_digest,r.review_digest)
+def _proposal_id_values(design_id:str,design_digest:str,review_digest:str)->str:
+    return "synthetic:activation-dry-run-fixture-proposal:"+canonical_digest({"design_id":design_id,"design_digest":design_digest,"review_digest":review_digest,"scope":FIXTURE_PROPOSAL_SCOPE})[:32]
 
 @dataclass(frozen=True)
 class SyntheticActivationDryRunFixtureProposal:
@@ -85,7 +87,11 @@ class SyntheticActivationDryRunFixtureProposalBook:
             previous="0"*64
             for sequence,item in enumerate(self._proposals,1):
                 if (item.sequence!=sequence or item.previous_digest!=previous or item.proposal_digest!=canonical_digest(item.digest_value())
+                    or item.proposal_id!=_proposal_id_values(item.source_design_id,item.source_design_digest,item.source_review_digest)
                     or item.required_gates!=FIXTURE_PROPOSAL_GATES or item.state!=FIXTURE_PROPOSAL_STATE or item.scope!=FIXTURE_PROPOSAL_SCOPE
+                    or not all(_valid_digest(v) for v in (item.source_design_digest,item.source_review_digest,item.fixture_schema_digest,
+                        item.synthetic_input_digest,item.expected_result_digest,item.rollback_expectation_digest))
+                    or not item.synthetic_only or not item.separate_review_required
                     or any((item.fixture_content_present,item.fixture_file_created,item.dry_run_executed,item.activation_recorded,item.rollback_executed,
                             item.network_accessed,item.money_movement_executed,item.production_activation_allowed))):return False
                 previous=item.proposal_digest
