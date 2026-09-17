@@ -43,6 +43,7 @@
 - Patch Draft Shadow 결과와 독립심사를 영속 고정해 운영자 재판단 준비까지만 허용하는 대장
 - 검토된 Patch Draft Shadow와 거버넌스 증거를 묶되 제한승격 승인권은 갖지 않는 운영자 판단 패킷
 - 서명된 합성 Patch Draft 제한승격 의사의 계약만 검증하고 실제 결정을 기록하지 않는 수신계층
+- 검증된 Patch Draft 제한승격 의사를 실제 승인과 분리해 보관하는 위변조 탐지 영속 수신대장
 
 자세한 내용은 [ARKAON 통제형 부트스트랩](docs/01-arkaon-governed-bootstrap.md)을 참고합니다.
 
