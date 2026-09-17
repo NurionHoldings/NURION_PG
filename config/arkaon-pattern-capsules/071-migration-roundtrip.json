@@ -1,0 +1,21 @@
+{
+  "feature": 71,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.migration-roundtrip",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "upgrade_invariants_required",
+    "downgrade_invariants_required",
+    "synthetic_schema_only"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_71_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "7deb9267804f7bcecdec58281c9e5c2a76bea599b03c4cac15d6149fc09edcf7"
+}
