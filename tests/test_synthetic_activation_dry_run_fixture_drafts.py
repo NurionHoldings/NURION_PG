@@ -42,6 +42,10 @@ class FixtureDraftTests(unittest.TestCase):
         object.__setattr__(item,"draft_id","synthetic:activation-dry-run-fixture-draft:"+"f"*32);object.__setattr__(item,"draft_digest",canonical_digest(item.digest_value()));self.assertFalse(book.verify_draft_chain());close_sources(resources,sd,ledger)
         resources,sd,ledger,docket,review=source();book=SyntheticActivationDryRunFixtureDraftBook();item=book.draft_from_review(docket,review.proposal.proposal_id,drafted_at=NOW)
         object.__setattr__(item,"fixture_content_present",True);object.__setattr__(item,"draft_digest",canonical_digest(item.digest_value()));self.assertFalse(book.verify_draft_chain());close_sources(resources,sd,ledger)
+    def test_rehashed_blueprint_tampering_is_detected(self):
+        resources,sd,ledger,docket,review=source();book=SyntheticActivationDryRunFixtureDraftBook();item=book.draft_from_review(docket,review.proposal.proposal_id,drafted_at=NOW)
+        object.__setattr__(item,"blueprint_digest","f"*64);object.__setattr__(item,"draft_digest",canonical_digest(item.digest_value()))
+        self.assertFalse(book.verify_draft_chain());close_sources(resources,sd,ledger)
     def test_source_change_discards_draft(self):
         resources,sd,ledger,docket,review=source();book=SyntheticActivationDryRunFixtureDraftBook();original=docket.evidence;calls=0
         def changing():

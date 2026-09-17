@@ -15,6 +15,8 @@ def _valid(v:object)->bool:return isinstance(v,str) and len(v)==64 and all(c in 
 def _id_values(proposal_id:str,proposal_digest:str,review_digest:str)->str:
     return "synthetic:activation-dry-run-fixture-draft:"+canonical_digest({"proposal_id":proposal_id,"proposal_digest":proposal_digest,"review_digest":review_digest,"scope":FIXTURE_DRAFT_SCOPE})[:32]
 def _id(r:SyntheticActivationDryRunFixtureProposalReviewRecord)->str:return _id_values(r.proposal.proposal_id,r.proposal.proposal_digest,r.review_digest)
+def _blueprint(schema:str,synthetic_input:str,expected:str,rollback:str)->str:
+    return canonical_digest({"schema":schema,"input":synthetic_input,"expected":expected,"rollback":rollback,"materialized":False})
 
 @dataclass(frozen=True)
 class SyntheticActivationDryRunFixtureDraft:
@@ -57,7 +59,7 @@ class SyntheticActivationDryRunFixtureDraftBook:
             if not self.verify_draft_chain():raise GovernanceRejected("existing fixture draft chain invalid")
             old=self._by_review.get(review.review_digest)
             if old is not None:return old
-            blueprint=canonical_digest({"schema":p.fixture_schema_digest,"input":p.synthetic_input_digest,"expected":p.expected_result_digest,"rollback":p.rollback_expectation_digest,"materialized":False})
+            blueprint=_blueprint(p.fixture_schema_digest,p.synthetic_input_digest,p.expected_result_digest,p.rollback_expectation_digest)
             previous=self._drafts[-1].draft_digest if self._drafts else "0"*64;did=_id(review)
             values={"sequence":len(self._drafts)+1,"draft_id":did,"source_proposal_id":p.proposal_id,"source_proposal_digest":p.proposal_digest,
                 "source_review_id":review.review_id,"source_review_digest":review.review_digest,"fixture_schema_digest":p.fixture_schema_digest,
@@ -76,6 +78,7 @@ class SyntheticActivationDryRunFixtureDraftBook:
             for n,i in enumerate(self._drafts,1):
                 if (i.sequence!=n or i.previous_digest!=previous or i.draft_id!=_id_values(i.source_proposal_id,i.source_proposal_digest,i.source_review_digest)
                     or i.draft_digest!=canonical_digest(i.digest_value()) or i.required_gates!=FIXTURE_DRAFT_GATES or i.state!=FIXTURE_DRAFT_STATE or i.scope!=FIXTURE_DRAFT_SCOPE
+                    or i.blueprint_digest!=_blueprint(i.fixture_schema_digest,i.synthetic_input_digest,i.expected_result_digest,i.rollback_expectation_digest)
                     or not i.synthetic_only or not i.separate_review_required or any((i.fixture_content_present,i.fixture_serialized,i.fixture_file_created,
                         i.dry_run_executed,i.activation_recorded,i.rollback_executed,i.network_accessed,i.money_movement_executed,i.production_activation_allowed))):return False
                 previous=i.draft_digest
