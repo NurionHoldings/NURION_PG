@@ -1,0 +1,32 @@
+{
+  "activation_method_present": false,
+  "activation_scope": "EXACT_SYNTHETIC_FIXTURE_COHORT_ONLY",
+  "actual_operator_reconfirmation_recorded": false,
+  "automatic_deploy_method_present": false,
+  "automatic_merge_method_present": false,
+  "candidate_content_present": false,
+  "credentials_used": false,
+  "diff_content_present": false,
+  "eternian_final_review_required": true,
+  "execution_method_present": false,
+  "external_blocker_close_method_present": false,
+  "filesystem_written": false,
+  "manifest_chain_valid": true,
+  "manifest_count": 1,
+  "manifest_digests": [
+    "47735a7d2cd494f2ead0e19f42ed26a068f34fc3b27e0a8ac5622578adc439a9"
+  ],
+  "maximum_state": "SYNTHETIC_LIMITED_PROMOTION_ACTIVATION_MANIFEST_DRAFTED",
+  "money_movement_executed": false,
+  "network_access_method_present": false,
+  "patch_content_present": false,
+  "personal_data_used": false,
+  "production_activation_allowed": false,
+  "report_digest": "1710b4c58222e03442cf48330ffa9720fffe71dce9baad3f36e851f5264395d0",
+  "rollback_execution_method_present": false,
+  "safety_baseline_relaxation_allowed": false,
+  "schema": "nurion.pg.synthetic-patch-draft-limited-promotion-activation-manifest-evidence.v1",
+  "source_code_changed": false,
+  "synthetic_only": true,
+  "validated_reconfirmation_receipt_only": true
+}
