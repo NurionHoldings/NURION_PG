@@ -1,0 +1,27 @@
+{
+  "application_method_present": false,
+  "assessment_chain_valid": true,
+  "assessment_digests": [
+    "8617db45ab6211813d613b09ee98a559ca20625adefd911b732ce128fa8d03bd"
+  ],
+  "credentials_used": false,
+  "decision_counts": {
+    "BLOCKED": 0,
+    "HUMAN_REVIEW": 0,
+    "PROPOSED_FOR_ETERNIAN_REVIEW": 1
+  },
+  "diff_content_present": false,
+  "execution_method_present": false,
+  "filesystem_written": false,
+  "maximum_decision": "PROPOSED_FOR_ETERNIAN_REVIEW",
+  "money_movement_executed": false,
+  "network_access_method_present": false,
+  "patch_content_present": false,
+  "personal_data_used": false,
+  "production_activation_allowed": false,
+  "report_digest": "8fe06691f2ae4ba8792b232d634f1594e3790aa1fe0c8e218bd6b7489833d2ee",
+  "safety_baseline_relaxation_method_present": false,
+  "schema": "nurion.pg.synthetic-patch-draft-shadow-evidence.v1",
+  "source_code_changed": false,
+  "source_docket_state_changed": false
+}
