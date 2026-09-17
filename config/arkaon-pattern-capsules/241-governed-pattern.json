@@ -1,0 +1,21 @@
+{
+  "feature": 241,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.license-obligation-gate",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "provenance_contract_required",
+    "provenance_tamper_rejected",
+    "provenance_operational_authority_absent"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_241_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "f805456f4471ebfb15624c7d7c2b26b66d625be8eae6eced2c39e20e26bb406b"
+}
