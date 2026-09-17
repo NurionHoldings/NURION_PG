@@ -1,0 +1,21 @@
+{
+  "feature": 130,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.candidate-not-asset",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "integrity_binding_required",
+    "integrity_tamper_rejected",
+    "integrity_non_operational"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_130_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "cc205f8d6538aa116e12aceef1f5516164a93eeb9fc5ab0ade930a577c5a8acf"
+}
