@@ -60,6 +60,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_remediation_shadow_review_docket_evidence.py
       - name: Verify non-authorizing operator decision packets
         run: PYTHONPATH=src python scripts/run_operator_decision_packet_evidence.py
+      - name: Verify synthetic operator decision intent intake
+        run: PYTHONPATH=src python scripts/run_operator_decision_intake_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -96,5 +98,7 @@ jobs:
             build/synthetic-shadow-review-docket-evidence.json.sha256
             build/synthetic-operator-decision-packet-evidence.json
             build/synthetic-operator-decision-packet-evidence.json.sha256
+            build/synthetic-operator-decision-intake-evidence.json
+            build/synthetic-operator-decision-intake-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
