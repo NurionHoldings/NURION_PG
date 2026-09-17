@@ -1,0 +1,31 @@
+{
+  "schema": "nurion.pg.patch-draft-promotion-decision-intake-policy.v1",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "operator_id": "synthetic:operator:CHOI_IN_SEOK",
+  "signature_algorithm": "HMAC-SHA256_SYNTHETIC_ONLY",
+  "envelope_validity_minutes": 10,
+  "maximum_future_skew_seconds": 30,
+  "required_packet_scope": "SYNTHETIC_PATCH_DRAFT_LIMITED_PROMOTION_ONLY",
+  "allowed_decisions": [
+    "AUTHORIZE_SYNTHETIC_PATCH_DRAFT_LIMITED_PROMOTION",
+    "HOLD",
+    "REJECT"
+  ],
+  "maximum_state": "SYNTHETIC_PATCH_DRAFT_PROMOTION_DECISION_VALIDATED",
+  "synthetic_verification_only": true,
+  "signing_allowed": false,
+  "operator_decision_recording_allowed": false,
+  "packet_state_change_allowed": false,
+  "patch_content_allowed": false,
+  "diff_content_allowed": false,
+  "source_code_change_allowed": false,
+  "filesystem_write_allowed": false,
+  "automatic_application_allowed": false,
+  "safety_baseline_relaxation_allowed": false,
+  "payment_execution_allowed": false,
+  "money_movement_allowed": false,
+  "production_activation_allowed": false,
+  "network_access_allowed": false,
+  "real_credentials_allowed": false,
+  "real_personal_data_allowed": false
+}
