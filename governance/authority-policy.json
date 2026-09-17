@@ -1,0 +1,33 @@
+{
+  "schema": "nurion.pg.arkaon-authority.v1",
+  "platform_id": "NURION_PG",
+  "default_decision": "BLOCKED",
+  "allowed_synthetic_actions": [
+    "read_public_official_source",
+    "create_draft",
+    "propose_change",
+    "run_synthetic_test",
+    "generate_evidence"
+  ],
+  "review_only_actions": ["request_ethernian_review"],
+  "forbidden_actions": [
+    "run_live_payment",
+    "run_refund",
+    "run_payout",
+    "access_production_secret",
+    "access_real_personal_data",
+    "approve_merchant",
+    "sign_contract",
+    "change_fee_or_settlement",
+    "contact_external_party",
+    "merge_main",
+    "deploy_production",
+    "modify_self",
+    "lower_safety_threshold",
+    "delete_failed_test",
+    "auto_learn_internet"
+  ],
+  "internet_is_untrusted_input": true,
+  "operator_final_authority": true
+}
+
