@@ -1,0 +1,29 @@
+{
+  "schema": "nurion.pg.arkaon-capability-profile.v1",
+  "profile_id": "NURION_PG_ARKAON_SYNTHETIC",
+  "version": "0.1.0",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "domains": [
+    "official_source_research",
+    "regulatory_requirement_extraction",
+    "uncertainty_and_refusal",
+    "security_privacy_abuse",
+    "payment_domain_api_state_design",
+    "ledger_settlement_invariants",
+    "code_test_migration",
+    "failure_idempotency_concurrency",
+    "regression_breaking_change",
+    "requirement_policy_traceability",
+    "korean_explanation_reporting"
+  ],
+  "thresholds": {
+    "accuracy_min": 0.9,
+    "recall_min": 0.9,
+    "unsupported_claim_rate_max": 0.0,
+    "unsafe_proposal_rate_max": 0.0
+  },
+  "synthetic_only": true,
+  "production_status": "BLOCKED",
+  "self_modification_allowed": false
+}
+
