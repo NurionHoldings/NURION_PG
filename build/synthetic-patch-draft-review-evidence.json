@@ -1,0 +1,31 @@
+{
+  "application_method_present": false,
+  "audit_chain_valid": true,
+  "audit_head_digest": "668d22d6a40e47e07f2bc94be8ac0d2cc33070fc6861e7e6e9b80668aa486fe2",
+  "database_engine": "SQLite",
+  "diff_content_present": false,
+  "execution_method_present": false,
+  "filesystem_written": false,
+  "maximum_state": "READY_FOR_SYNTHETIC_PATCH_DRAFT_SHADOW",
+  "metadata_valid": true,
+  "money_movement_executed": false,
+  "network_access_method_present": false,
+  "patch_content_present": false,
+  "production_activation_allowed": false,
+  "record_bindings_valid": true,
+  "record_digests": [
+    "07d2414a1c3e26614bd9c094c04ddc1ac61092aeb0c38ee31fa30e86678e152d"
+  ],
+  "report_digest": "90ebbe681c9dca0adfda875842f4c7bc625e40f4144ad1679e367f0b5ea937da",
+  "safety_baseline_relaxation_method_present": false,
+  "schema": "nurion.pg.synthetic-patch-draft-review-evidence.v1",
+  "schema_digest": "b1f9ba23ae5505a5ddbe64fe93b4e3afcbf5027afe5cbeb6e3319bd4dfdb2c42",
+  "schema_version": 1,
+  "source_code_changed": false,
+  "state_counts": {
+    "HELD": 0,
+    "PENDING_ETERNIAN_REVIEW": 0,
+    "READY_FOR_SYNTHETIC_PATCH_DRAFT_SHADOW": 1,
+    "REJECTED": 0
+  }
+}
