@@ -209,6 +209,8 @@ class SyntheticOperatorDecisionReceiptLedger:
     ) -> SyntheticDecisionReceipt:
         if recorded_at.tzinfo is None:
             raise GovernanceRejected("timezone-aware synthetic receipt time required")
+        if not isinstance(intake, SyntheticOperatorDecisionIntake):
+            raise GovernanceRejected("typed synthetic operator decision intake required")
         if not intake.verify_assessment_chain():
             raise GovernanceRejected("operator intent assessment chain is invalid")
         matches = [
@@ -303,7 +305,8 @@ class SyntheticOperatorDecisionReceiptLedger:
     @staticmethod
     def _validate_assessment(assessment: OperatorDecisionIntentAssessment) -> None:
         if (
-            assessment.validation_state != "SYNTHETIC_DECISION_VALIDATED"
+            not isinstance(assessment, OperatorDecisionIntentAssessment)
+            or assessment.validation_state != "SYNTHETIC_DECISION_VALIDATED"
             or assessment.assessment_digest != canonical_digest(assessment.digest_value())
             or assessment.packet_state_changed
             or assessment.operator_decision_recorded

@@ -38,6 +38,16 @@ class OperatorDecisionReceiptLedgerTests(unittest.TestCase):
         with self.assertRaises(GovernanceRejected):
             SyntheticOperatorDecisionReceiptLedger("postgresql://prod/operator")
 
+    def test_requires_typed_validated_intake(self):
+        ledger = SyntheticOperatorDecisionReceiptLedger(":memory:")
+        with self.assertRaises(GovernanceRejected):
+            ledger.record_from_intake(
+                object(),
+                "synthetic:operator-decision-envelope:fake",
+                recorded_at=NOW,
+            )
+        ledger.close()
+
     def test_validated_intent_is_durably_receipted_without_authority(self):
         case, remediation, docket, intake, envelope, assessment = validated_intake()
         ledger = SyntheticOperatorDecisionReceiptLedger(":memory:")
