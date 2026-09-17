@@ -45,6 +45,10 @@ class MaterializationDryRunPlanReviewTests(unittest.TestCase):
         resources,sd,ledger,book,plan=plan_source();docket=SyntheticActivationDryRunFixtureMaterializationDryRunPlanReviewDocket()
         docket.submit(book,plan.plan_id,submitted_at=NOW);item=review(docket,plan);object.__setattr__(item,"reviewed_at",NOW-timedelta(seconds=1))
         object.__setattr__(item,"review_digest",canonical_digest(item.review_value()));self.assertFalse(docket.verify_chain());close_sources(resources,sd,ledger)
+    def test_fully_rehashed_submission_time_tampering_is_detected(self):
+        resources,sd,ledger,book,plan=plan_source();docket=SyntheticActivationDryRunFixtureMaterializationDryRunPlanReviewDocket()
+        item=docket.submit(book,plan.plan_id,submitted_at=NOW);object.__setattr__(item,"submitted_at",NOW-timedelta(seconds=1))
+        object.__setattr__(item,"submission_digest",canonical_digest(item.submission_value()));self.assertFalse(docket.verify_chain());close_sources(resources,sd,ledger)
     def test_rehashed_plan_and_nested_lineage_tampering_detected(self):
         for field,value in (("plan_id","synthetic:activation-dry-run-fixture-materialization-dry-run-plan:"+"f"*32),
             ("dry_run_contract_digest","f"*64),("synthetic_only",False),("fixture_content_present",True),("filesystem_written",True),("dry_run_executed",True)):

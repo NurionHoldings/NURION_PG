@@ -110,6 +110,7 @@ class SyntheticActivationDryRunFixtureMaterializationDryRunPlanReviewDocket:
             for n,i in enumerate(self._records,1):
                 pending=i.state is MaterializationDryRunPlanReviewState.PENDING_ETERNIAN_REVIEW;fields=(i.review_id,i.reviewer_id,i.decision,i.findings_digest,i.reviewed_at,i.review_digest)
                 if (i.sequence!=n or i.previous_digest!=previous or not _valid_plan(i.plan)
+                    or i.submitted_at.tzinfo is None or i.submitted_at<i.plan.planned_at
                     or i.submission_digest!=canonical_digest(i.submission_value()) or (pending and any(v is not None for v in fields))
                     or (not pending and (any(v is None for v in fields) or not i._valid_final()))):return False
                 previous=i.submission_digest
