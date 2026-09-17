@@ -236,7 +236,7 @@ class SyntheticImplementationProposalTests(unittest.TestCase):
         object.__setattr__(
             proposal, "proposal_digest", canonical_digest(proposal.digest_value())
         )
-        self.assertTrue(book.verify_proposal_chain())
+        self.assertFalse(book.verify_proposal_chain())
         with self.assertRaises(GovernanceRejected):
             book.draft_from_receipt(
                 ledger, receipt.receipt_id, draft_scopes=SCOPES, drafted_at=NOW

@@ -43,6 +43,21 @@ def _receipt_digest(receipt: SyntheticDecisionReceipt) -> str:
     return receipt.receipt_digest()
 
 
+def _proposal_id(
+    source_receipt_id: str,
+    source_receipt_digest: str,
+    draft_scopes: tuple[str, ...],
+) -> str:
+    identity = canonical_digest(
+        {
+            "source_receipt_id": source_receipt_id,
+            "source_receipt_digest": source_receipt_digest,
+            "draft_scopes": list(draft_scopes),
+        }
+    )
+    return "synthetic:implementation-proposal-draft:" + identity[:32]
+
+
 @dataclass(frozen=True)
 class SyntheticImplementationProposalDraft:
     sequence: int
@@ -70,8 +85,11 @@ class SyntheticImplementationProposalDraft:
     def __post_init__(self) -> None:
         if (
             self.sequence <= 0
-            or not self.proposal_id.startswith(
-                "synthetic:implementation-proposal-draft:"
+            or self.proposal_id
+            != _proposal_id(
+                self.source_receipt_id,
+                self.source_receipt_digest,
+                self.draft_scopes,
             )
             or not self.source_receipt_id.startswith(
                 "synthetic:operator-decision-receipt:"
@@ -202,15 +220,10 @@ class SyntheticImplementationProposalBook:
                     if self._proposals
                     else "0" * 64
                 )
-                identity = canonical_digest(
-                    {
-                        "source_receipt_id": receipt.receipt_id,
-                        "source_receipt_digest": source_digest,
-                        "draft_scopes": list(draft_scopes),
-                    }
-                )
-                proposal_id = (
-                    "synthetic:implementation-proposal-draft:" + identity[:32]
+                proposal_id = _proposal_id(
+                    receipt.receipt_id,
+                    source_digest,
+                    draft_scopes,
                 )
                 value = {
                     "sequence": sequence,
@@ -268,6 +281,12 @@ class SyntheticImplementationProposalBook:
                 if (
                     proposal.sequence != sequence
                     or proposal.previous_digest != previous
+                    or proposal.proposal_id
+                    != _proposal_id(
+                        proposal.source_receipt_id,
+                        proposal.source_receipt_digest,
+                        proposal.draft_scopes,
+                    )
                     or proposal.proposal_digest
                     != canonical_digest(proposal.digest_value())
                     or proposal.state != IMPLEMENTATION_PROPOSAL_STATE

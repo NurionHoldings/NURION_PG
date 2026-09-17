@@ -1,0 +1,27 @@
+{
+  "actual_operator_decision_recording_method_present": false,
+  "application_method_present": false,
+  "audit_chain_valid": true,
+  "audit_head_digest": "ca55781847371788d11d19688bd2edb15eba66e6641a00595f7518c834cf0be4",
+  "code_change_method_present": false,
+  "database_engine": "SQLite",
+  "execution_method_present": false,
+  "maximum_state": "READY_FOR_SYNTHETIC_PATCH_SHADOW",
+  "metadata_valid": true,
+  "money_movement_executed": false,
+  "production_activation_allowed": false,
+  "record_bindings_valid": true,
+  "record_digests": [
+    "f18f230f2789dbd2443016040fb2e592bd1e956c04f50cbeedda7559a93e6942"
+  ],
+  "report_digest": "aeeda90554ad088bfb16ed019d6b609793203f0f2bffe8fd5e99190bfd1eb8a2",
+  "schema": "nurion.pg.synthetic-implementation-review-evidence.v1",
+  "schema_digest": "3729cf63126b013353baf3e27cae71576251afe05dce93db9866a74b0dd9a607",
+  "schema_version": 1,
+  "state_counts": {
+    "HELD": 0,
+    "PENDING_ETERNIAN_REVIEW": 0,
+    "READY_FOR_SYNTHETIC_PATCH_SHADOW": 1,
+    "REJECTED": 0
+  }
+}
