@@ -1,0 +1,21 @@
+{
+  "feature": 265,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.hash-chained-ledger",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "idempotency_contract_required",
+    "idempotency_tamper_rejected",
+    "idempotency_operational_authority_absent"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_265_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "3c23bac4997555256b9a732ae98acd3a33665d0af6fd078c2664b00a13633bd2"
+}
