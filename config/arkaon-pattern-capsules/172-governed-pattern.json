@@ -1,0 +1,21 @@
+{
+  "feature": 172,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.clean-room-analog-synthesis",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "recovery_binding_required",
+    "recovery_tamper_rejected",
+    "recovery_non_operational"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_172_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "17a2bb848a8e3e2383edc4e840ce2a5651ae091630554631f81e81a671b45ca6"
+}
