@@ -64,6 +64,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_operator_decision_intake_evidence.py
       - name: Verify durable synthetic decision receipt ledger
         run: PYTHONPATH=src python scripts/run_operator_decision_receipt_ledger_evidence.py
+      - name: Verify non-executable synthetic implementation proposal drafts
+        run: PYTHONPATH=src python scripts/run_synthetic_implementation_proposal_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -104,5 +106,7 @@ jobs:
             build/synthetic-operator-decision-intake-evidence.json.sha256
             build/synthetic-decision-receipt-ledger-evidence.json
             build/synthetic-decision-receipt-ledger-evidence.json.sha256
+            build/synthetic-implementation-proposal-evidence.json
+            build/synthetic-implementation-proposal-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
