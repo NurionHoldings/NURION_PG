@@ -1,0 +1,25 @@
+{
+  "application_method_present": false,
+  "assessment_chain_valid": true,
+  "code_change_method_present": false,
+  "credentials_used": false,
+  "decision_counts": {
+    "AUTHORIZE_SYNTHETIC_PATCH_DRAFT": 1,
+    "HOLD": 0,
+    "REJECT": 0
+  },
+  "execution_method_present": false,
+  "maximum_state": "SYNTHETIC_PATCH_DECISION_VALIDATED",
+  "money_movement_executed": false,
+  "network_access_method_present": false,
+  "operator_decision_recording_method_present": false,
+  "packet_state_changed": false,
+  "patch_content_present": false,
+  "personal_data_used": false,
+  "production_activation_allowed": false,
+  "report_digest": "1179163f9e41b245160dd8d85a8c09988e2b873d449b673d23d52f671e3c4d38",
+  "safety_baseline_relaxation_allowed": false,
+  "schema": "nurion.pg.synthetic-patch-operator-intake-evidence.v1",
+  "signing_method_present": false,
+  "synthetic_verification_only": true
+}
