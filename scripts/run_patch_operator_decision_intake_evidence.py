@@ -86,7 +86,10 @@ from run_operator_decision_intake_evidence import (
 )
 
 
-def main() -> None:
+def main() -> tuple[
+    SyntheticPatchOperatorDecisionIntake,
+    SyntheticPatchOperatorDecisionEnvelope,
+]:
     policy = read_json(
         "config/patch-operator-decision-intake-policy.json"
     )
@@ -572,6 +575,7 @@ def main() -> None:
     digest = sha256(payload.encode("utf-8")).hexdigest()
     output.with_suffix(".json.sha256").write_text(digest + "\n", encoding="ascii")
     print(f"synthetic patch operator intake: PASS {digest}")
+    return patch_intake, patch_envelope
 
 
 if __name__ == "__main__":

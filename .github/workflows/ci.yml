@@ -76,6 +76,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_patch_operator_decision_packet_evidence.py
       - name: Verify synthetic patch operator decision intent
         run: PYTHONPATH=src python scripts/run_patch_operator_decision_intake_evidence.py
+      - name: Verify durable synthetic patch decision receipt ledger
+        run: PYTHONPATH=src python scripts/run_patch_operator_decision_receipt_ledger_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -128,5 +130,7 @@ jobs:
             build/synthetic-patch-operator-packet-evidence.json.sha256
             build/synthetic-patch-operator-intake-evidence.json
             build/synthetic-patch-operator-intake-evidence.json.sha256
+            build/synthetic-patch-decision-receipt-ledger-evidence.json
+            build/synthetic-patch-decision-receipt-ledger-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
