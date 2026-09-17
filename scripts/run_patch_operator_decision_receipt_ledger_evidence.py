@@ -7,6 +7,10 @@ import tempfile
 from hashlib import sha256
 from pathlib import Path
 
+from nurion_pg.patch_operator_decision_intake import (
+    SyntheticPatchOperatorDecisionEnvelope,
+    SyntheticPatchOperatorDecisionIntake,
+)
 from nurion_pg.patch_operator_decision_receipt_ledger import (
     PATCH_RECEIPT_STATE,
     SyntheticPatchDecisionReceiptLedger,
@@ -17,7 +21,10 @@ from run_patch_operator_decision_intake_evidence import (
 )
 
 
-def main() -> None:
+def main() -> tuple[
+    SyntheticPatchOperatorDecisionIntake,
+    SyntheticPatchOperatorDecisionEnvelope,
+]:
     policy = read_json("config/patch-operator-decision-receipt-ledger-policy.json")
     forbidden = (
         "actual_operator_decision_recording_allowed",
@@ -99,6 +106,7 @@ def main() -> None:
     digest = sha256(payload.encode("utf-8")).hexdigest()
     output.with_suffix(".json.sha256").write_text(digest + "\n", encoding="ascii")
     print(f"synthetic patch decision receipt ledger: PASS {digest}")
+    return intake, envelope
 
 
 if __name__ == "__main__":
