@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from nurion_pg.arkaon.governance import Action, ArkaonGovernor, AuthorityDecision
@@ -36,9 +37,14 @@ def main() -> None:
     assert len({item["id"] for item in blockers["blockers"]}) == len(blockers["blockers"])
     assert AuthorityDecision.BLOCKED.value == "BLOCKED"
     assert Action.RUN_LIVE_PAYMENT.value in authority["forbidden_actions"]
+    workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    uses = re.findall(r"^\s*- uses: ([^\s#]+)", workflow, flags=re.MULTILINE)
+    assert uses, "at least one GitHub Action is required"
+    assert all(re.fullmatch(r"[^@\s]+@[0-9a-f]{40}", item) for item in uses), (
+        "GitHub Actions must be pinned to full commit SHAs"
+    )
     print("governance manifests: PASS")
 
 
 if __name__ == "__main__":
     main()
-
