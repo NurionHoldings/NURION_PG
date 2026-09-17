@@ -113,6 +113,23 @@ class ReconciliationCaseRecord:
             raise GovernanceRejected("valid non-repairing synthetic reconciliation case required")
 
 
+@dataclass(frozen=True)
+class ReadyReconciliationCaseSource:
+    case_id: str
+    report_digest: str
+    review_digest: str
+    report_json: str
+
+    def __post_init__(self) -> None:
+        if (
+            not self.case_id.startswith("synthetic:reconciliation-case:")
+            or not _valid_digest(self.report_digest)
+            or not _valid_digest(self.review_digest)
+            or not self.report_json
+        ):
+            raise GovernanceRejected("complete ready reconciliation case source required")
+
+
 def _valid_digest(value: object) -> bool:
     return (
         isinstance(value, str)
@@ -494,6 +511,46 @@ class SyntheticReconciliationCaseDocket:
     def get(self, case_id: str) -> ReconciliationCaseRecord:
         with self._lock:
             return self._get_record(case_id)
+
+    def ready_source(self, case_id: str) -> ReadyReconciliationCaseSource:
+        """Return an integrity-bound confirmed case without changing its state."""
+        with self._lock:
+            if not self.verify_audit_chain() or not self.verify_record_bindings():
+                raise GovernanceRejected("reconciliation case evidence is invalid")
+            row = self._connection.execute(
+                "SELECT * FROM synthetic_reconciliation_cases WHERE case_id = ?", (case_id,)
+            ).fetchone()
+            if (
+                row is None
+                or row["state"]
+                != ReconciliationCaseState.READY_FOR_REMEDIATION_PROPOSAL.value
+            ):
+                raise GovernanceRejected("confirmed reconciliation case source required")
+            record = self._record_from_row(row)
+            review = self._connection.execute(
+                """
+                SELECT * FROM synthetic_reconciliation_case_reviews WHERE case_id = ?
+                """,
+                (case_id,),
+            ).fetchone()
+            if review is None or review["decision"] != "CONFIRM":
+                raise GovernanceRejected("confirmed Eternian case review required")
+            review_value = {
+                "review_id": review["review_id"],
+                "case_id": review["case_id"],
+                "reviewer_id": review["reviewer_id"],
+                "decision": review["decision"],
+                "findings_digest": review["findings_digest"],
+                "reviewed_at": review["reviewed_at"],
+            }
+            if canonical_digest(review_value) != review["review_digest"]:
+                raise GovernanceRejected("confirmed case review digest mismatch")
+            return ReadyReconciliationCaseSource(
+                record.case_id,
+                record.report_digest,
+                review["review_digest"],
+                row["report_json"],
+            )
 
     def verify_audit_chain(self) -> bool:
         with self._lock:
