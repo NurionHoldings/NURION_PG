@@ -1,0 +1,22 @@
+{
+  "schema": "nurion.pg.arkaon-promotion.v1",
+  "stages": [
+    "BASELINE",
+    "PROPOSAL",
+    "SYNTHETIC_SHADOW",
+    "ETHERNIAN_REVIEW",
+    "OPERATOR_APPROVED",
+    "LIMITED_PROMOTION",
+    "ROLLED_BACK"
+  ],
+  "separation_of_duties": {
+    "proposal_actor": "ARKAON",
+    "independent_reviewer": "ETHERNIAN",
+    "final_decider": "CHOI_IN_SEOK_OPERATOR"
+  },
+  "limited_scope_prefix": "synthetic:",
+  "production_promotion_allowed": false,
+  "automatic_merge_allowed": false,
+  "automatic_deploy_allowed": false
+}
+
