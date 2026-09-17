@@ -106,7 +106,9 @@ class SyntheticFixtureMaterializationDryRunScenarioReviewDocket:
     def evidence(self)->dict[str,object]:
         with self._lock:
             v={"schema":"nurion.pg.synthetic-fixture-materialization-dry-run-scenario-review-evidence.v1","mode":"UNREGISTERED_SYNTHETIC_ONLY",
-               "record_count":len(self._records),"review_chain_valid":self.verify_chain(),"maximum_state":SCENARIO_REVIEW_MAXIMUM_STATE,
+               "record_count":len(self._records),"submission_digests":[i.submission_digest for i in self._records],
+               "review_digests":[i.review_digest for i in self._records if i.review_digest],
+               "review_chain_valid":self.verify_chain(),"maximum_state":SCENARIO_REVIEW_MAXIMUM_STATE,
                "fixture_materialization_method_present":False,"filesystem_write_method_present":False,"dry_run_execution_method_present":False,
                "activation_method_present":False,"network_access_method_present":False,"automatic_merge_method_present":False,
                "automatic_deploy_method_present":False,"credentials_used":False,"personal_data_used":False,"money_movement_executed":False,

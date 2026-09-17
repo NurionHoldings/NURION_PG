@@ -41,7 +41,7 @@ class ScenarioReviewTests(unittest.TestCase):
         resources,sd,ledger,book,scenario=scenario_source();docket=SyntheticFixtureMaterializationDryRunScenarioReviewDocket()
         docket.submit(book,scenario.scenario_id,submitted_at=NOW);first=review(docket,scenario);self.assertIs(review(docket,scenario),first)
         with self.assertRaises(GovernanceRejected):review(docket,scenario,ScenarioReviewDecision.HOLD)
-        e=docket.evidence();self.assertTrue(e["review_chain_valid"])
+        e=docket.evidence();self.assertTrue(e["review_chain_valid"]);self.assertEqual(e["submission_digests"],[first.submission_digest]);self.assertEqual(e["review_digests"],[first.review_digest])
         for key in e:
             if key.endswith("_present") or key.endswith("_allowed") or key.endswith("_executed") or key.endswith("_used"):self.assertFalse(e[key])
         close_sources(resources,sd,ledger)
