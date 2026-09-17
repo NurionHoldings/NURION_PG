@@ -1,0 +1,104 @@
+{
+  "schema": "nurion.pg.regulatory-evidence-registry.v1",
+  "platform_status": "UNREGISTERED_SYNTHETIC_ONLY",
+  "retrieved_at": "2026-09-17T00:00:00+09:00",
+  "automatic_update_allowed": false,
+  "operational_use_allowed": false,
+  "sources": [
+    {
+      "evidence_id": "REG-LAW-001",
+      "url": "https://www.law.go.kr/법령/전자금융거래법",
+      "title": "전자금융거래법",
+      "authority": "PRIMARY_LAW",
+      "publisher": "국가법령정보센터",
+      "published_on": null,
+      "revalidate_after": "2026-10-17T00:00:00+09:00",
+      "document_version": "CURRENT_AT_RETRIEVAL",
+      "claims": [],
+      "claim_snapshot_digest": null,
+      "official_verified": true,
+      "content_capture_complete": false,
+      "conflicts_with": []
+    },
+    {
+      "evidence_id": "REG-LAW-002",
+      "url": "https://www.law.go.kr/법령/전자금융거래법시행령",
+      "title": "전자금융거래법 시행령",
+      "authority": "PRIMARY_LAW",
+      "publisher": "국가법령정보센터",
+      "published_on": null,
+      "revalidate_after": "2026-10-17T00:00:00+09:00",
+      "document_version": "CURRENT_AT_RETRIEVAL",
+      "claims": [],
+      "claim_snapshot_digest": null,
+      "official_verified": true,
+      "content_capture_complete": false,
+      "conflicts_with": []
+    },
+    {
+      "evidence_id": "REG-LAW-003",
+      "url": "https://www.law.go.kr/행정규칙/전자금융감독규정",
+      "title": "전자금융감독규정",
+      "authority": "PRIMARY_LAW",
+      "publisher": "국가법령정보센터",
+      "published_on": null,
+      "revalidate_after": "2026-10-17T00:00:00+09:00",
+      "document_version": "CURRENT_AT_RETRIEVAL",
+      "claims": [],
+      "claim_snapshot_digest": null,
+      "official_verified": true,
+      "content_capture_complete": false,
+      "conflicts_with": []
+    },
+    {
+      "evidence_id": "REG-FSC-2025-85855",
+      "url": "https://www.fsc.go.kr/no010101/85855",
+      "title": "PG업자의 정산자금 보호 및 관리·감독 장치 마련을 위한 전자금융거래법 개정법률안 공포",
+      "authority": "REGULATOR_ANNOUNCEMENT",
+      "publisher": "금융위원회",
+      "published_on": "2025-12-16",
+      "revalidate_after": "2026-10-17T00:00:00+09:00",
+      "document_version": "2025-12-16",
+      "claims": [
+        {
+          "requirement_key": "pg_settlement_funds_external_management",
+          "statement": "PG 정산자금 외부관리 의무는 2026년 12월 17일 시행 예정이며 세부 적용은 최신 하위법령과 공식 가이드라인 재검증이 필요하다.",
+          "lifecycle": "ENACTED_NOT_YET_EFFECTIVE",
+          "effective_on": "2026-12-17"
+        },
+        {
+          "requirement_key": "pg_capital_tier_change",
+          "statement": "PG 결제대행 규모에 따른 자본금 요건 변경이 공포되었으나 적용 전 최신 하위법령과 전문검토가 필요하다.",
+          "lifecycle": "ENACTED_NOT_YET_EFFECTIVE",
+          "effective_on": "2026-12-17"
+        }
+      ],
+      "claim_snapshot_digest": "5beaa28b7badab09b8570d4bf4ee1719da30870503e55e8dd6cb166ffd4497ce",
+      "official_verified": true,
+      "content_capture_complete": true,
+      "conflicts_with": []
+    },
+    {
+      "evidence_id": "REG-FSC-2024-82523",
+      "url": "https://www.fsc.go.kr/no010102/82523",
+      "title": "결제대금 정산에 관여하는 경우 전자지급결제대행업 등록 필요",
+      "authority": "REGULATOR_ANNOUNCEMENT",
+      "publisher": "금융위원회",
+      "published_on": "2024-06-24",
+      "revalidate_after": "2026-10-17T00:00:00+09:00",
+      "document_version": "2024-06-24",
+      "claims": [
+        {
+          "requirement_key": "pg_business_classification",
+          "statement": "결제대금 정산에 관여하는 사업구조는 전자지급결제대행업 등록 필요성을 전제로 최신 법령과 전문검토를 거쳐 분류해야 한다.",
+          "lifecycle": "CURRENT_GUIDANCE_REVALIDATION_REQUIRED",
+          "effective_on": null
+        }
+      ],
+      "claim_snapshot_digest": "e1462d532a4ea9758ce9d0ff353cb0aff10b7c2496ecd1d0a2c277ef8621e199",
+      "official_verified": true,
+      "content_capture_complete": true,
+      "conflicts_with": []
+    }
+  ]
+}
