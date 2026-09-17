@@ -1,0 +1,18 @@
+{
+  "schema": "nurion.pg.synthetic-implementation-review-policy.v1",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "required_input_state": "SYNTHETIC_IMPLEMENTATION_PROPOSAL_DRAFTED",
+  "reviewer_authority": "ETERNIAN_INDEPENDENT_REVIEW",
+  "allowed_decisions": ["PASS", "HOLD", "REJECT"],
+  "maximum_state": "READY_FOR_SYNTHETIC_PATCH_SHADOW",
+  "database_engine": "SQLite",
+  "actual_operator_decision_recording_allowed": false,
+  "code_change_allowed": false,
+  "automatic_application_allowed": false,
+  "safety_baseline_relaxation_allowed": false,
+  "payment_execution_allowed": false,
+  "money_movement_allowed": false,
+  "production_activation_allowed": false,
+  "real_credentials_allowed": false,
+  "real_personal_data_allowed": false
+}
