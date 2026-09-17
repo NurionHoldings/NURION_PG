@@ -316,6 +316,7 @@ def main() -> None:
         or report["actual_operator_decision_recording_method_present"] is not False
         or report["code_change_method_present"] is not False
         or report["application_method_present"] is not False
+        or report["safety_baseline_relaxation_method_present"] is not False
         or report["execution_method_present"] is not False
         or report["money_movement_executed"] is not False
         or report["production_activation_allowed"] is not False
@@ -333,4 +334,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

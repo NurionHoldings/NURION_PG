@@ -319,6 +319,7 @@ class SyntheticImplementationReviewDocketTests(unittest.TestCase):
             "actual_operator_decision_recording_method_present",
             "code_change_method_present",
             "application_method_present",
+            "safety_baseline_relaxation_method_present",
             "execution_method_present",
             "money_movement_executed",
             "production_activation_allowed",

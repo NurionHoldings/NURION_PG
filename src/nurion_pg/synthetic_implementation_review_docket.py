@@ -728,6 +728,7 @@ class SyntheticImplementationReviewDocket:
                 "actual_operator_decision_recording_method_present": False,
                 "code_change_method_present": False,
                 "application_method_present": False,
+                "safety_baseline_relaxation_method_present": False,
                 "execution_method_present": False,
                 "money_movement_executed": False,
                 "production_activation_allowed": False,

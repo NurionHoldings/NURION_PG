@@ -14,7 +14,8 @@
   "record_digests": [
     "f18f230f2789dbd2443016040fb2e592bd1e956c04f50cbeedda7559a93e6942"
   ],
-  "report_digest": "aeeda90554ad088bfb16ed019d6b609793203f0f2bffe8fd5e99190bfd1eb8a2",
+  "report_digest": "2cae5b147f97c48364aeda75b98ad2cf085ed99d88ba0f1e62a7442465de6fb5",
+  "safety_baseline_relaxation_method_present": false,
   "schema": "nurion.pg.synthetic-implementation-review-evidence.v1",
   "schema_digest": "3729cf63126b013353baf3e27cae71576251afe05dce93db9866a74b0dd9a607",
   "schema_version": 1,
