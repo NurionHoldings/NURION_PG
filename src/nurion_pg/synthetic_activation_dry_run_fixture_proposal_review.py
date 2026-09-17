@@ -5,7 +5,7 @@ from datetime import datetime
 from enum import StrEnum
 from threading import RLock
 from .arkaon.governance import GovernanceRejected,canonical_digest
-from .synthetic_activation_dry_run_fixture_proposals import FIXTURE_PROPOSAL_SCOPE,FIXTURE_PROPOSAL_STATE,SyntheticActivationDryRunFixtureProposal,SyntheticActivationDryRunFixtureProposalBook
+from .synthetic_activation_dry_run_fixture_proposals import FIXTURE_PROPOSAL_GATES,FIXTURE_PROPOSAL_SCOPE,FIXTURE_PROPOSAL_STATE,SyntheticActivationDryRunFixtureProposal,SyntheticActivationDryRunFixtureProposalBook,_proposal_id_values
 
 FIXTURE_REVIEW_MAXIMUM_STATE="READY_FOR_SYNTHETIC_ACTIVATION_DRY_RUN_FIXTURE_DRAFT"
 _RID="synthetic:activation-dry-run-fixture-proposal-review:"
@@ -96,6 +96,12 @@ class SyntheticActivationDryRunFixtureProposalReviewDocket:
                 pending=item.state is FixtureProposalReviewState.PENDING_ETERNIAN_REVIEW;fields=(item.review_id,item.reviewer_id,item.decision,item.findings_digest,item.reviewed_at,item.review_digest)
                 if (item.sequence!=n or item.previous_digest!=previous or item.submission_digest!=canonical_digest(item.submission_value())
                     or item.proposal.proposal_digest!=canonical_digest(item.proposal.digest_value())
+                    or item.proposal.proposal_id!=_proposal_id_values(item.proposal.source_design_id,item.proposal.source_design_digest,item.proposal.source_review_digest)
+                    or item.proposal.required_gates!=FIXTURE_PROPOSAL_GATES
+                    or item.proposal.state!=FIXTURE_PROPOSAL_STATE or item.proposal.scope!=FIXTURE_PROPOSAL_SCOPE
+                    or any((item.proposal.fixture_content_present,item.proposal.fixture_file_created,item.proposal.dry_run_executed,
+                            item.proposal.activation_recorded,item.proposal.rollback_executed,item.proposal.network_accessed,
+                            item.proposal.money_movement_executed,item.proposal.production_activation_allowed))
                     or (pending and any(v is not None for v in fields))
                     or (not pending and (any(v is None for v in fields) or not isinstance(item.decision,FixtureProposalReviewDecision)
                         or item.state is not _STATE[item.decision] or item.review_digest!=canonical_digest(item.review_value())))):return False

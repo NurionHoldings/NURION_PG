@@ -3,7 +3,7 @@ import unittest
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from hashlib import sha256
-from nurion_pg.arkaon.governance import GovernanceRejected
+from nurion_pg.arkaon.governance import GovernanceRejected,canonical_digest
 from nurion_pg.synthetic_activation_dry_run_fixture_proposal_review import FIXTURE_REVIEW_MAXIMUM_STATE,FixtureProposalReviewDecision,FixtureProposalReviewState,SyntheticActivationDryRunFixtureProposalReviewDocket
 from nurion_pg.synthetic_activation_dry_run_fixture_proposals import SyntheticActivationDryRunFixtureProposalBook
 from tests.test_patch_draft_limited_promotion_reconfirmation_intake import NOW
@@ -47,6 +47,10 @@ class FixtureProposalReviewTests(unittest.TestCase):
         object.__setattr__(item,"submission_digest","f"*64);self.assertFalse(d.verify_chain());close_sources(resources,sd,ledger)
         resources,sd,ledger,book,p=source();d=SyntheticActivationDryRunFixtureProposalReviewDocket();d.submit(book,p.proposal_id,submitted_at=NOW);item=passed(d,p)
         object.__setattr__(item,"findings_digest","f"*64);self.assertFalse(d.verify_chain());close_sources(resources,sd,ledger)
+    def test_rehashed_source_identity_tampering_breaks_chain(self):
+        resources,sd,ledger,book,p=source();d=SyntheticActivationDryRunFixtureProposalReviewDocket();d.submit(book,p.proposal_id,submitted_at=NOW)
+        object.__setattr__(p,"proposal_id","synthetic:activation-dry-run-fixture-proposal:"+"f"*32);object.__setattr__(p,"proposal_digest",canonical_digest(p.digest_value()))
+        self.assertFalse(d.verify_chain());close_sources(resources,sd,ledger)
     def test_evidence_caps_authority(self):
         resources,sd,ledger,book,p=source();d=SyntheticActivationDryRunFixtureProposalReviewDocket();d.submit(book,p.proposal_id,submitted_at=NOW);passed(d,p);e=d.evidence()
         self.assertEqual(e["maximum_state"],FIXTURE_REVIEW_MAXIMUM_STATE);self.assertTrue(e["review_chain_valid"])
