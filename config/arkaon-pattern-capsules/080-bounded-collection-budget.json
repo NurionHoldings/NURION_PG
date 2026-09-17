@@ -1,0 +1,21 @@
+{
+  "feature": 80,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.bounded-collection-budget",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "request_limit_required",
+    "byte_limit_required",
+    "rate_limit_required"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_80_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "365b0e2cba2b69b1a3d2973dbadc5156603d6a9e401a1a6981e427a37609efb7"
+}
