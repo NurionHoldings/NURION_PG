@@ -1,0 +1,7 @@
+{"schema":"nurion.pg.arkaon-release-evidence-manifest-draft-policy.v1","mode":"UNREGISTERED_SYNTHETIC_ONLY",
+ "foundry_repository":"NurionHoldings/ARKAON-Pattern-Foundry","foundry_commit":"24ae4a601ee449649e40804119fa37667f731076",
+ "foundry_pattern_id":"apf.public.release-manifest-binding","foundry_package_hash":"d417f4d7f0205ba1bf03a4f8d1ed2edf4dacbb4e67186a4754b42ac5af420a2e",
+ "foundry_pattern_status":"ETHERNIAN_REVIEW_REQUIRED","reuse_mode":"CLEAN_ROOM_ANALOG_DRAFT_ONLY",
+ "maximum_state":"SYNTHETIC_PG_RELEASE_EVIDENCE_MANIFEST_DRAFTED","external_signature_allowed":false,
+ "pattern_promotion_allowed":false,"release_signing_allowed":false,"deployment_allowed":false,"network_access_allowed":false,
+ "automatic_merge_allowed":false,"real_credentials_allowed":false}

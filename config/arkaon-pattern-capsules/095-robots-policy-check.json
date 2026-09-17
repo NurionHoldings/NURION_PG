@@ -1,0 +1,21 @@
+{
+  "feature": 95,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.robots-policy-check",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "policy_decision_required",
+    "pre_fetch_record_required",
+    "network_still_disabled"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_95_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "f6d3b531359d34b65ed1fcc4fe2b3defb96fdc434eccd4fe2ef1a7a3f67aba21"
+}
