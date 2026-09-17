@@ -1,0 +1,21 @@
+{
+  "feature": 312,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.principal-capability-separation",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "evidence_contract_required",
+    "evidence_tamper_rejected",
+    "evidence_operational_authority_absent"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_312_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "5b319534bf8a54759f41ecd76c5221e5cb5d072762a6bd908fdc72785113ae5f"
+}
