@@ -1,0 +1,21 @@
+{
+  "feature": 114,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.similarity-leakage-guard",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "authority_binding_required",
+    "authority_tamper_rejected",
+    "authority_non_operational"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_114_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "f972155c6b21e6c670d7174815a1e09687285c76f5ef545409164f7402248afa"
+}
