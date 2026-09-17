@@ -1,0 +1,25 @@
+{
+  "schema": "nurion.pg.synthetic-webhook-command-proposal-policy.v1",
+  "version": "0.1.0",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "event_command_mapping": {
+    "AUTHORIZATION_RESULT": "AUTHORIZE",
+    "CAPTURE_RESULT": "CAPTURE",
+    "CANCEL_RESULT": "CANCEL",
+    "REFUND_RESULT": "REFUND"
+  },
+  "proposable_outcome": "SUCCEEDED",
+  "failed_outcome_decision": "HUMAN_REVIEW",
+  "max_source_age_seconds": 600,
+  "accepted_durable_receipt_required": true,
+  "receipt_chain_required": true,
+  "payment_intent_version_match_required": true,
+  "payment_intent_state_match_required": true,
+  "policy_digest_binding_required": true,
+  "review_required": true,
+  "automatic_payment_application_allowed": false,
+  "execution_method_allowed": false,
+  "operator_approval_recorded_by_default": false,
+  "money_movement_allowed": false,
+  "production_activation_allowed": false
+}
