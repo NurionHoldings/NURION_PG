@@ -19,6 +19,14 @@ from .synthetic_fixture_materialization_dry_run_assertions import (
 AUDIT_LEDGER_STATE = "SYNTHETIC_FIXTURE_MATERIALIZATION_DRY_RUN_ASSERTION_AUDIT_RECORDED"
 
 
+def _valid_digest(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
 @dataclass(frozen=True)
 class SyntheticFixtureMaterializationDryRunAssertionAuditRecord:
     sequence: int
@@ -34,9 +42,12 @@ class SyntheticFixtureMaterializationDryRunAssertionAuditRecord:
     def __post_init__(self) -> None:
         if (
             self.sequence <= 0
+            or not _valid_digest(self.assertion_digest)
+            or not _valid_digest(self.audit_digest)
             or self.audited_at.tzinfo is None
             or self.recorded_at.tzinfo is None
             or self.recorded_at < self.audited_at
+            or not _valid_digest(self.previous_digest)
             or self.state != AUDIT_LEDGER_STATE
             or self.record_digest != canonical_digest(self.digest_value())
         ):
@@ -134,7 +145,12 @@ class SyntheticFixtureMaterializationDryRunAssertionAuditLedger:
                 if (
                     record.sequence != sequence
                     or record.previous_digest != previous
+                    or not _valid_digest(record.assertion_digest)
+                    or not _valid_digest(record.audit_digest)
+                    or record.audited_at.tzinfo is None
+                    or record.recorded_at.tzinfo is None
                     or record.recorded_at < record.audited_at
+                    or record.state != AUDIT_LEDGER_STATE
                     or record.record_digest != canonical_digest(record.digest_value())
                 ):
                     return False

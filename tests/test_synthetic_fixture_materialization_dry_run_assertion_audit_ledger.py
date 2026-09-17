@@ -56,7 +56,7 @@ class AssertionAuditLedgerTests(unittest.TestCase):
         resources, sd, source_ledger, book, item, audit = source()
         ledger = SyntheticFixtureMaterializationDryRunAssertionAuditLedger()
         record = ledger.record(book, item, audit, recorded_at=NOW)
-        object.__setattr__(record, "previous_digest", "f" * 64)
+        object.__setattr__(record, "state", "TAMPERED")
         self.assertFalse(ledger.verify_chain())
         with self.assertRaises(GovernanceRejected):
             ledger.record(book, item, audit, recorded_at=NOW)
