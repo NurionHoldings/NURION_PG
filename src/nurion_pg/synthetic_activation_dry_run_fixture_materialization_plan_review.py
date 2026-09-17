@@ -108,7 +108,8 @@ class SyntheticActivationDryRunFixtureMaterializationPlanReviewDocket:
                 if (i.sequence!=n or i.previous_digest!=previous or i.submission_digest!=canonical_digest(i.submission_value()) or not _valid_plan(i.plan)
                     or (pending and any(v is not None for v in fields)) or (not pending and (any(v is None for v in fields)
                     or not isinstance(i.decision,FixtureMaterializationPlanReviewDecision) or i.state is not _STATE[i.decision]
-                    or i.review_digest!=canonical_digest(i.review_value())))):return False
+                    or not i.review_id.startswith(_RID) or not i.reviewer_id.startswith(_REVIEWER) or not _valid(i.findings_digest)
+                    or i.reviewed_at.tzinfo is None or i.reviewed_at<i.submitted_at or i.review_digest!=canonical_digest(i.review_value())))):return False
                 previous=i.submission_digest
             return len(self._records)==len(self._by_plan) and all(self._by_plan.get(i.plan.plan_id) is i for i in self._records)
     def evidence(self)->dict[str,object]:
