@@ -1,0 +1,21 @@
+{
+  "feature": 258,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.repository-contract-parity",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "privacy_contract_required",
+    "privacy_tamper_rejected",
+    "privacy_operational_authority_absent"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_258_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "7c31d622df73664861762a45e586cf05e6a4fc7fc7fe998d2ecbea1f666663d4"
+}
