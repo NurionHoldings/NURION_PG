@@ -101,7 +101,8 @@ class PaymentEngine:
 
     @property
     def events(self) -> tuple[PaymentEvent, ...]:
-        return tuple(self._events)
+        with self._lock:
+            return tuple(self._events)
 
     @_synchronized
     def get(self, intent_id: str) -> PaymentIntent:
@@ -370,6 +371,67 @@ class PaymentEngine:
             "production_activation_allowed": False,
         }
         return {**value, "report_digest": canonical_digest(value)}
+
+    @_synchronized
+    def reconciliation_snapshot(self) -> dict[str, object]:
+        """Return a read-only, synthetic snapshot for cross-component checks."""
+        intents = [
+            {
+                "intent_id": item.intent_id,
+                "merchant_ref": item.merchant_ref,
+                "amount_minor": item.amount_minor,
+                "currency": item.currency,
+                "policy_digest": item.policy_digest,
+                "state": item.state.value,
+                "version": item.version,
+                "captured_minor": item.captured_minor,
+                "refunded_minor": item.refunded_minor,
+                "synthetic_only": item.synthetic_only,
+                "external_execution_allowed": item.external_execution_allowed,
+            }
+            for item in sorted(self._intents.values(), key=lambda value: value.intent_id)
+        ]
+        events = [
+            {
+                "sequence": event.sequence,
+                "intent_id": event.intent_id,
+                "version": event.version,
+                "event_type": event.event_type.value,
+                "resulting_state": event.resulting_state.value,
+                "amount_minor": event.amount_minor,
+                "event_digest": event.event_digest,
+            }
+            for event in self._events
+        ]
+        journals = [
+            {
+                "journal_id": journal.journal_id,
+                "evidence_digest": journal.evidence_digest,
+                "journal_digest": journal.digest,
+                "entries": [
+                    {
+                        "account_ref": entry.account_ref,
+                        "side": entry.side.value,
+                        "amount_minor": entry.amount_minor,
+                        "currency": entry.currency,
+                    }
+                    for entry in journal.entries
+                ],
+                "synthetic_only": journal.synthetic_only,
+                "execution_allowed": journal.execution_allowed,
+            }
+            for journal in self.ledger.journals
+        ]
+        value = {
+            "schema": "nurion.pg.synthetic-payment-reconciliation-snapshot.v1",
+            "intents": intents,
+            "events": events,
+            "journals": journals,
+            "event_chains_valid": self.verify_event_chains(),
+            "synthetic_only": True,
+            "read_only": True,
+        }
+        return {**value, "snapshot_digest": canonical_digest(value)}
 
     def _emit(
         self,

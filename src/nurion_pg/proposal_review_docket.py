@@ -606,3 +606,33 @@ class SyntheticProposalReviewDocket:
                 "production_activation_allowed": False,
             }
             return {**value, "report_digest": canonical_digest(value)}
+
+    def reconciliation_snapshot(self) -> dict[str, object]:
+        """Return proposal bindings and states for read-only reconciliation."""
+        with self._lock:
+            rows = self._connection.execute(
+                """
+                SELECT proposal_id, source_event_id, proposal_digest,
+                       source_assessment_digest, state
+                FROM synthetic_proposal_dockets ORDER BY proposal_id
+                """
+            ).fetchall()
+            records = [
+                {
+                    "proposal_id": row["proposal_id"],
+                    "source_event_id": row["source_event_id"],
+                    "proposal_digest": row["proposal_digest"],
+                    "source_assessment_digest": row["source_assessment_digest"],
+                    "state": row["state"],
+                }
+                for row in rows
+            ]
+            value = {
+                "schema": "nurion.pg.synthetic-proposal-docket-reconciliation-snapshot.v1",
+                "records": records,
+                "audit_chain_valid": self.verify_audit_chain(),
+                "record_bindings_valid": self.verify_record_bindings(),
+                "synthetic_only": True,
+                "read_only": True,
+            }
+            return {**value, "snapshot_digest": canonical_digest(value)}

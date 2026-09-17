@@ -646,3 +646,42 @@ class SyntheticSQLiteWebhookInbox:
                 "production_activation_allowed": False,
             }
             return {**value, "report_digest": canonical_digest(value)}
+
+    def reconciliation_snapshot(self) -> dict[str, object]:
+        """Return integrity-bound event identities without exposing payloads."""
+        with self._lock:
+            rows = self._connection.execute(
+                """
+                SELECT event_id, aggregate_id, envelope_digest, decision
+                FROM synthetic_webhook_events ORDER BY event_id
+                """
+            ).fetchall()
+            accepted_bindings_valid = True
+            events: list[dict[str, object]] = []
+            for row in rows:
+                receipt_digest = None
+                if row["decision"] == WebhookDecision.ACCEPTED.value:
+                    try:
+                        receipt_digest = self.accepted_event(
+                            row["event_id"]
+                        ).acceptance_receipt_digest
+                    except GovernanceRejected:
+                        accepted_bindings_valid = False
+                events.append(
+                    {
+                        "event_id": row["event_id"],
+                        "aggregate_id": row["aggregate_id"],
+                        "envelope_digest": row["envelope_digest"],
+                        "decision": row["decision"],
+                        "acceptance_receipt_digest": receipt_digest,
+                    }
+                )
+            value = {
+                "schema": "nurion.pg.synthetic-webhook-reconciliation-snapshot.v1",
+                "events": events,
+                "receipt_chain_valid": self.verify_receipt_chain(),
+                "accepted_bindings_valid": accepted_bindings_valid,
+                "synthetic_only": True,
+                "read_only": True,
+            }
+            return {**value, "snapshot_digest": canonical_digest(value)}
