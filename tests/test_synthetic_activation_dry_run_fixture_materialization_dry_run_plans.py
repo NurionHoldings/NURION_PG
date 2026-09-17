@@ -62,6 +62,13 @@ class MaterializationDryRunPlanTests(unittest.TestCase):
         with self.assertRaises(GovernanceRejected):SyntheticActivationDryRunFixtureMaterializationDryRunPlanBook().plan_from_review(
             docket,review.specification.specification_id,planned_at=NOW)
         close_sources(resources,sd,ledger)
+    def test_fully_rehashed_nested_submission_tampering_is_rejected(self):
+        resources,sd,ledger,docket,review=reviewed_specification_source();object.__setattr__(review,"submitted_at",NOW-timedelta(seconds=1))
+        object.__setattr__(review,"submission_digest",canonical_digest(review.submission_value()))
+        object.__setattr__(review,"review_digest",canonical_digest(review.review_value()))
+        with self.assertRaises(GovernanceRejected):SyntheticActivationDryRunFixtureMaterializationDryRunPlanBook().plan_from_review(
+            docket,review.specification.specification_id,planned_at=NOW)
+        close_sources(resources,sd,ledger)
     def test_source_change_discards_plan(self):
         resources,sd,ledger,docket,review=reviewed_specification_source();book=SyntheticActivationDryRunFixtureMaterializationDryRunPlanBook();original=docket.evidence;calls=0
         def changing():

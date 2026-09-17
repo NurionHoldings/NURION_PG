@@ -13,6 +13,8 @@ _PREFIX="synthetic:activation-dry-run-fixture-materialization-dry-run-plan:"
 def _valid(v:object)->bool:return isinstance(v,str) and len(v)==64 and all(c in "0123456789abcdef" for c in v)
 def _valid_source(r:SyntheticActivationDryRunFixtureMaterializationSpecificationReviewRecord)->bool:
     return (isinstance(r,SyntheticActivationDryRunFixtureMaterializationSpecificationReviewRecord)
+        and r.sequence>0 and r.submitted_at.tzinfo is not None and r.submitted_at>=r.specification.specified_at
+        and _valid(r.previous_digest) and r.submission_digest==canonical_digest(r.submission_value())
         and r.state is FixtureMaterializationSpecificationReviewState.READY_FOR_SYNTHETIC_ACTIVATION_DRY_RUN_FIXTURE_MATERIALIZATION_DRY_RUN_PLAN
         and r.decision is FixtureMaterializationSpecificationReviewDecision.PASS and r._valid_final() and _valid_specification(r.specification))
 def _id_values(specification_id:str,specification_digest:str,review_digest:str)->str:
