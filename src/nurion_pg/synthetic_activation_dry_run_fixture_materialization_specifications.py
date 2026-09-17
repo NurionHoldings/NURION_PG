@@ -14,7 +14,11 @@ def _valid(v:object)->bool:return isinstance(v,str) and len(v)==64 and all(c in 
 def _valid_source(r:SyntheticActivationDryRunFixtureMaterializationPlanReviewRecord)->bool:
     return (isinstance(r,SyntheticActivationDryRunFixtureMaterializationPlanReviewRecord)
         and r.state is FixtureMaterializationPlanReviewState.READY_FOR_SYNTHETIC_ACTIVATION_DRY_RUN_FIXTURE_MATERIALIZATION_SPECIFICATION
-        and r.decision is FixtureMaterializationPlanReviewDecision.PASS and r.review_digest==canonical_digest(r.review_value()) and _valid_plan(r.plan))
+        and r.decision is FixtureMaterializationPlanReviewDecision.PASS
+        and isinstance(r.review_id,str) and r.review_id.startswith("synthetic:activation-dry-run-fixture-materialization-plan-review:")
+        and isinstance(r.reviewer_id,str) and r.reviewer_id.startswith("synthetic:eternian-reviewer:activation-dry-run-fixture-materialization-plan:")
+        and _valid(r.findings_digest) and r.reviewed_at is not None and r.reviewed_at.tzinfo is not None and r.reviewed_at>=r.submitted_at
+        and r.review_digest==canonical_digest(r.review_value()) and _valid_plan(r.plan))
 def _id_values(plan_id:str,plan_digest:str,review_digest:str)->str:
     return _PREFIX+canonical_digest({"plan_id":plan_id,"plan_digest":plan_digest,"review_digest":review_digest,"scope":FIXTURE_MATERIALIZATION_SPECIFICATION_SCOPE})[:32]
 def _descriptor(blueprint:str,artifact:str,schema:str,synthetic_input:str,expected:str,rollback:str)->str:

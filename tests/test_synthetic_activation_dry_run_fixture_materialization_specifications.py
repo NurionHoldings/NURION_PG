@@ -59,6 +59,11 @@ class FixtureMaterializationSpecificationTests(unittest.TestCase):
         resources,sd,ledger,docket,review=reviewed_plan_source();object.__setattr__(review,"findings_digest","f"*64)
         with self.assertRaises(GovernanceRejected):SyntheticActivationDryRunFixtureMaterializationSpecificationBook().specify_from_review(docket,review.plan.plan_id,specified_at=NOW)
         close_sources(resources,sd,ledger)
+    def test_fully_rehashed_nested_review_metadata_tampering_is_rejected(self):
+        resources,sd,ledger,docket,review=reviewed_plan_source();object.__setattr__(review,"reviewed_at",NOW-timedelta(seconds=1))
+        object.__setattr__(review,"review_digest",canonical_digest(review.review_value()))
+        with self.assertRaises(GovernanceRejected):SyntheticActivationDryRunFixtureMaterializationSpecificationBook().specify_from_review(docket,review.plan.plan_id,specified_at=NOW)
+        close_sources(resources,sd,ledger)
     def test_source_change_discards_specification(self):
         resources,sd,ledger,docket,review=reviewed_plan_source();book=SyntheticActivationDryRunFixtureMaterializationSpecificationBook();original=docket.evidence;calls=0
         def changing():
