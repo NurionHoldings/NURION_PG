@@ -1,0 +1,39 @@
+{
+  "activation_method_present": false,
+  "activation_recording_method_present": false,
+  "actual_operator_decision_recording_method_present": false,
+  "audit_chain_valid": true,
+  "audit_head_digest": "fd0a76c4e1438c50ba2328e30f7c036ef60b9948b6a27d42bba88f57b6e82d4f",
+  "automatic_deploy_method_present": false,
+  "automatic_merge_method_present": false,
+  "credentials_used": false,
+  "database_engine": "SQLite",
+  "decision_counts": {
+    "AUTHORIZE_SYNTHETIC_LIMITED_PROMOTION_ACTIVATION": 1,
+    "HOLD": 0,
+    "REJECT": 0
+  },
+  "execution_method_present": false,
+  "external_blocker_close_method_present": false,
+  "filesystem_write_method_present": false,
+  "maximum_state": "SYNTHETIC_PATCH_DRAFT_LIMITED_PROMOTION_ACTIVATION_RECEIPT_RECORDED",
+  "metadata_valid": true,
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "money_movement_executed": false,
+  "network_access_method_present": false,
+  "packet_state_change_method_present": false,
+  "personal_data_used": false,
+  "production_activation_allowed": false,
+  "receipt_digests": [
+    "887b9c705488675e507ad9704074bf320d8b4035dc2cfed6baf037559cdffa1a"
+  ],
+  "record_bindings_valid": true,
+  "report_digest": "f6b513382a35ffde65fffc23e1c309486d95c612ac5d2996deff3dc631f7afac",
+  "rollback_execution_method_present": false,
+  "safety_baseline_relaxation_method_present": false,
+  "schema": "nurion.pg.synthetic-limited-promotion-activation-receipt-ledger-evidence.v1",
+  "schema_digest": "5b22f953c2cce2e5499d343337f456fee13e1b862dad5c09e2621deffa162096",
+  "schema_version": 1,
+  "source_code_change_method_present": false,
+  "synthetic_evidence_only": true
+}
