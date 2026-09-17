@@ -100,8 +100,9 @@ def evidence(
 ) -> dict[str, object]:
     if not isinstance(
         checkpoint, SyntheticFixtureMaterializationDryRunAssertionAuditCheckpoint
-    ) or checkpoint.checkpoint_digest != canonical_digest(checkpoint.digest_value()):
+    ):
         raise GovernanceRejected("intact assertion audit ledger checkpoint required")
+    checkpoint.__post_init__()
     values = {
         "schema": "nurion.pg.synthetic-fixture-materialization-dry-run-assertion-audit-checkpoint-evidence.v1",
         "mode": "UNREGISTERED_SYNTHETIC_ONLY",

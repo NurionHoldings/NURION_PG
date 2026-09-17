@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 from datetime import timedelta
 
-from nurion_pg.arkaon.governance import GovernanceRejected
+from nurion_pg.arkaon.governance import GovernanceRejected, canonical_digest
 from nurion_pg.synthetic_fixture_materialization_dry_run_assertion_audit import audit_assertion
 from nurion_pg.synthetic_fixture_materialization_dry_run_assertion_audit_checkpoint import (
     AUDIT_CHECKPOINT_STATE,
@@ -65,7 +65,10 @@ class AssertionAuditCheckpointTests(unittest.TestCase):
         close_sources(resources, sd, source_ledger)
         resources, sd, source_ledger, ledger = source()
         checkpoint = checkpoint_audit_ledger(ledger, checkpointed_at=NOW)
-        object.__setattr__(checkpoint, "record_count", 2)
+        object.__setattr__(checkpoint, "state", "TAMPERED")
+        object.__setattr__(
+            checkpoint, "checkpoint_digest", canonical_digest(checkpoint.digest_value())
+        )
         with self.assertRaises(GovernanceRejected):
             evidence(checkpoint)
         close_sources(resources, sd, source_ledger)
