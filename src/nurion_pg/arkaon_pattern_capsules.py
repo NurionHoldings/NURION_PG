@@ -19,7 +19,7 @@ def validate_capsule(value: object) -> dict[str, object]:
     pattern_id = value.get("pattern_id")
     controls = value.get("controls")
     if (
-        not isinstance(feature, int) or not 68 <= feature <= 100
+        not isinstance(feature, int) or not 68 <= feature <= 200
         or not isinstance(pattern_id, str) or not pattern_id.startswith("apf.public.")
         or value.get("mode") != "UNREGISTERED_SYNTHETIC_ONLY"
         or value.get("foundry_commit") != FOUNDRY_COMMIT
@@ -41,8 +41,9 @@ def load_capsules(root: Path) -> tuple[dict[str, object], ...]:
         raise GovernanceRejected("capsule directory required")
     capsules = tuple(validate_capsule(json.loads(path.read_text())) for path in sorted(root.glob("*.json")))
     features = tuple(item["feature"] for item in capsules)
-    if not capsules or len(features) != len(set(features)) or features != tuple(sorted(features)):
-        raise GovernanceRejected("unique ordered capsule features required")
+    if (not capsules or len(features) != len(set(features))
+        or features != tuple(range(68, max(features) + 1))):
+        raise GovernanceRejected("unique continuous capsule features required")
     return capsules
 
 def portfolio_evidence(root: Path) -> dict[str, object]:
