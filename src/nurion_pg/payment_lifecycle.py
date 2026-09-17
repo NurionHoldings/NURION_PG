@@ -9,6 +9,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from datetime import datetime
 from enum import StrEnum
+from functools import wraps
+from threading import RLock
+from typing import Any
 
 from .arkaon.governance import GovernanceRejected, canonical_digest
 from .synthetic_finance import EntrySide, Journal, LedgerEntry, SyntheticLedger
@@ -29,6 +32,15 @@ class PaymentEventType(StrEnum):
     CAPTURED = "CAPTURED"
     REFUNDED = "REFUNDED"
     CANCELLED = "CANCELLED"
+
+
+def _synchronized(method):
+    @wraps(method)
+    def wrapped(self, *args, **kwargs):
+        with self._lock:
+            return method(self, *args, **kwargs)
+
+    return wrapped
 
 
 @dataclass
@@ -85,11 +97,13 @@ class PaymentEngine:
     _intents: dict[str, PaymentIntent] = field(default_factory=dict)
     _events: list[PaymentEvent] = field(default_factory=list)
     _idempotency: dict[str, tuple[str, PaymentEvent]] = field(default_factory=dict)
+    _lock: Any = field(default_factory=RLock, repr=False)
 
     @property
     def events(self) -> tuple[PaymentEvent, ...]:
         return tuple(self._events)
 
+    @_synchronized
     def get(self, intent_id: str) -> PaymentIntent:
         return replace(self._get_mutable(intent_id))
 
@@ -99,6 +113,7 @@ class PaymentEngine:
         except KeyError as exc:
             raise GovernanceRejected("unknown synthetic Payment Intent") from exc
 
+    @_synchronized
     def create(
         self,
         *,
@@ -132,6 +147,7 @@ class PaymentEngine:
         self._intents[intent_id] = intent
         return self._emit(intent, PaymentEventType.CREATED, amount_minor, idempotency_key, payload, now)
 
+    @_synchronized
     def authorize(
         self,
         intent_id: str,
@@ -159,6 +175,7 @@ class PaymentEngine:
             intent, PaymentEventType.AUTHORIZED, intent.amount_minor, idempotency_key, payload, now
         )
 
+    @_synchronized
     def capture(
         self,
         intent_id: str,
@@ -209,6 +226,7 @@ class PaymentEngine:
             intent, PaymentEventType.CAPTURED, intent.amount_minor, idempotency_key, payload, now
         )
 
+    @_synchronized
     def cancel(
         self,
         intent_id: str,
@@ -234,6 +252,7 @@ class PaymentEngine:
         intent.version += 1
         return self._emit(intent, PaymentEventType.CANCELLED, 0, idempotency_key, payload, now)
 
+    @_synchronized
     def refund(
         self,
         intent_id: str,
@@ -293,6 +312,7 @@ class PaymentEngine:
             intent, PaymentEventType.REFUNDED, amount_minor, idempotency_key, payload, now
         )
 
+    @_synchronized
     def verify_event_chains(self) -> bool:
         previous_by_intent: dict[str, str] = {}
         version_by_intent: dict[str, int] = {}
@@ -324,6 +344,7 @@ class PaymentEngine:
             version_by_intent[event.intent_id] = event.version
         return True
 
+    @_synchronized
     def evidence(self) -> dict[str, object]:
         intents = [
             {

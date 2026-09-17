@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from hashlib import sha256
@@ -123,6 +124,29 @@ class PaymentLifecycleTests(unittest.TestCase):
                 "synthetic:intent:1", expected_version=1,
                 idempotency_key="synthetic:capture:early", now=NOW,
             )
+
+    def test_concurrent_authorizations_allow_exactly_one_version_winner(self):
+        engine = PaymentEngine()
+        create(engine)
+
+        def authorize(number: int) -> str:
+            try:
+                engine.authorize(
+                    "synthetic:intent:1",
+                    expected_version=1,
+                    idempotency_key=f"synthetic:authorize:race:{number}",
+                    now=NOW,
+                )
+                return "accepted"
+            except GovernanceRejected:
+                return "rejected"
+
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            results = list(executor.map(authorize, range(8)))
+        self.assertEqual(results.count("accepted"), 1)
+        self.assertEqual(results.count("rejected"), 7)
+        self.assertEqual(engine.get("synthetic:intent:1").version, 2)
+        self.assertTrue(engine.verify_event_chains())
 
     def test_capture_posts_one_balanced_synthetic_journal(self):
         engine = PaymentEngine()
