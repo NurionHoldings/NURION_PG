@@ -123,6 +123,27 @@ class RemediationDocketRecord:
             raise GovernanceRejected("valid non-executable remediation docket record required")
 
 
+@dataclass(frozen=True)
+class ReadyRemediationProposalSource:
+    proposal_id: str
+    source_case_id: str
+    proposal_digest: str
+    review_digest: str
+    proposal_json: str
+    reviewed_at: datetime
+
+    def __post_init__(self) -> None:
+        if (
+            not self.proposal_id.startswith("synthetic:remediation-proposal:")
+            or not self.source_case_id.startswith("synthetic:reconciliation-case:")
+            or not _valid_digest(self.proposal_digest)
+            or not _valid_digest(self.review_digest)
+            or not self.proposal_json
+            or self.reviewed_at.tzinfo is None
+        ):
+            raise GovernanceRejected("complete ready remediation proposal source required")
+
+
 def _valid_digest(value: object) -> bool:
     return (
         isinstance(value, str)
@@ -575,6 +596,35 @@ class SyntheticRemediationReviewDocket:
     def get(self, proposal_id: str) -> RemediationDocketRecord:
         with self._lock:
             return self._get_record(proposal_id)
+
+    def ready_source(self, proposal_id: str) -> ReadyRemediationProposalSource:
+        """Return an integrity-bound passed proposal without changing docket state."""
+        with self._lock:
+            if not self.verify_audit_chain() or not self.verify_record_bindings():
+                raise GovernanceRejected("remediation docket evidence is invalid")
+            row = self._connection.execute(
+                "SELECT * FROM synthetic_remediation_dockets WHERE proposal_id = ?",
+                (proposal_id,),
+            ).fetchone()
+            if row is None:
+                raise GovernanceRejected("unknown remediation proposal docket")
+            self._record_from_row(row)
+            if row["state"] != RemediationDocketState.READY_FOR_SYNTHETIC_SHADOW.value:
+                raise GovernanceRejected("remediation proposal is not ready for synthetic shadow")
+            review = self._connection.execute(
+                "SELECT * FROM synthetic_remediation_reviews WHERE proposal_id = ?",
+                (proposal_id,),
+            ).fetchone()
+            if review is None or review["decision"] != RemediationReviewDecision.PASS.value:
+                raise GovernanceRejected("passing remediation review source required")
+            return ReadyRemediationProposalSource(
+                row["proposal_id"],
+                row["source_case_id"],
+                row["proposal_digest"],
+                review["review_digest"],
+                row["proposal_json"],
+                datetime.fromisoformat(review["reviewed_at"]),
+            )
 
     def verify_audit_chain(self) -> bool:
         with self._lock:
