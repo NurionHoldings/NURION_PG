@@ -154,6 +154,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_fixture_materialization_dry_run_expectation_review_evidence.py
       - name: Verify unevaluated fixture materialization dry-run assertion
         run: PYTHONPATH=src python scripts/run_synthetic_fixture_materialization_dry_run_assertion_evidence.py
+      - name: Verify read-only fixture materialization dry-run assertion audit
+        run: PYTHONPATH=src python scripts/run_synthetic_fixture_materialization_dry_run_assertion_audit_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -284,5 +286,7 @@ jobs:
             build/synthetic-fixture-materialization-dry-run-expectation-review-evidence.json.sha256
             build/synthetic-fixture-materialization-dry-run-assertion-evidence.json
             build/synthetic-fixture-materialization-dry-run-assertion-evidence.json.sha256
+            build/synthetic-fixture-materialization-dry-run-assertion-audit-evidence.json
+            build/synthetic-fixture-materialization-dry-run-assertion-audit-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
