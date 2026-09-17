@@ -1,0 +1,7 @@
+{"schema":"nurion.pg.arkaon-role-separated-release-benchmark-policy.v1","mode":"UNREGISTERED_SYNTHETIC_ONLY",
+ "foundry_commit":"24ae4a601ee449649e40804119fa37667f731076","foundry_pattern_id":"apf.public.role-separated-benchmark",
+ "foundry_package_hash":"4bd1359b51ea2a958833ad52e91ab49b20b9f8777c6bb3d3f653504ac2f1eca7",
+ "foundry_pattern_status":"ETHERNIAN_REVIEW_REQUIRED","required_roles":["PRODUCER","ATTACKER","JUDGE","APPROVER"],
+ "distinct_actors_required":true,"critical_failure_veto_required":true,"attack_findings_visibility_required":true,
+ "maximum_state":"SYNTHETIC_PG_ROLE_SEPARATED_RELEASE_BENCHMARK_RECORDED","release_approval_allowed":false,
+ "deployment_allowed":false,"network_access_allowed":false,"automatic_merge_allowed":false,"real_credentials_allowed":false}
