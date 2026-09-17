@@ -1,0 +1,35 @@
+{
+  "application_method_present": false,
+  "assessment_digests": [
+    "8617db45ab6211813d613b09ee98a559ca20625adefd911b732ce128fa8d03bd"
+  ],
+  "audit_chain_valid": true,
+  "audit_digests": [
+    "d94bdfae1d2e8787f34d04a3fa9465d7f4efd19434a46123f9b1ddcc1d1d601e",
+    "31d5f8e30616ce27b0e9cc9a6b22b05ca4f1b0591bb38267ef3289940f9d45bf"
+  ],
+  "automatic_review_allowed": false,
+  "credentials_used": false,
+  "diff_content_present": false,
+  "execution_method_present": false,
+  "filesystem_written": false,
+  "maximum_state": "READY_FOR_PATCH_DRAFT_OPERATOR_DECISION",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "money_movement_executed": false,
+  "network_access_method_present": false,
+  "operator_decision_method_present": false,
+  "operator_decision_recorded": false,
+  "patch_content_present": false,
+  "personal_data_used": false,
+  "production_activation_allowed": false,
+  "record_bindings_valid": true,
+  "record_count": 1,
+  "report_digest": "cc9372f3a0aa6883e02b5d7b5901f90dc55c6c7ad419263ba306b8c59307d7a7",
+  "review_authority": "ETERNIAN_INDEPENDENT_REVIEW",
+  "review_digests": [
+    "36aaa53d5d5bc627b78c27722302035eb238d4560f7cc481d808977179576a94"
+  ],
+  "safety_baseline_relaxation_method_present": false,
+  "schema": "nurion.pg.synthetic-patch-draft-shadow-review-evidence.v1",
+  "source_code_changed": false
+}
