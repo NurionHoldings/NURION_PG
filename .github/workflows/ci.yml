@@ -96,6 +96,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_limited_promotion_plan_evidence.py
       - name: Verify durable synthetic patch draft limited promotion review
         run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_limited_promotion_review_evidence.py
+      - name: Verify synthetic patch draft limited promotion shadow
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_limited_promotion_shadow_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -168,5 +170,7 @@ jobs:
             build/synthetic-patch-draft-limited-promotion-plan-evidence.json.sha256
             build/synthetic-patch-draft-limited-promotion-review-evidence.json
             build/synthetic-patch-draft-limited-promotion-review-evidence.json.sha256
+            build/synthetic-patch-draft-limited-promotion-shadow-evidence.json
+            build/synthetic-patch-draft-limited-promotion-shadow-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
