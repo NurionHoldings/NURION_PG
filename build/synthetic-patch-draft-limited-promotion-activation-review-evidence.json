@@ -1,0 +1,49 @@
+{
+  "activation_method_present": false,
+  "audit_chain_valid": true,
+  "audit_digests": [
+    "3c36577d355d14bf299d4846fc37919990c37f6be4f8d4cef0a206235c29e9a3",
+    "d8b7b2d115c6addfde810481eba88333f9c95e247bebcdbe599d3056943515fe"
+  ],
+  "automatic_deploy_method_present": false,
+  "automatic_merge_method_present": false,
+  "automatic_review_allowed": false,
+  "candidate_content_present": false,
+  "credentials_used": false,
+  "database_engine": "SQLite",
+  "diff_content_present": false,
+  "execution_method_present": false,
+  "external_blocker_close_method_present": false,
+  "filesystem_written": false,
+  "manifest_digests": [
+    "47735a7d2cd494f2ead0e19f42ed26a068f34fc3b27e0a8ac5622578adc439a9"
+  ],
+  "maximum_state": "READY_FOR_SYNTHETIC_LIMITED_PROMOTION_OPERATOR_DECISION",
+  "metadata_valid": true,
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "money_movement_executed": false,
+  "network_access_method_present": false,
+  "operator_decision_recording_method_present": false,
+  "patch_content_present": false,
+  "personal_data_used": false,
+  "production_activation_allowed": false,
+  "record_bindings_valid": true,
+  "record_count": 1,
+  "report_digest": "dedaf3cd1034af5925e1a552ea894a36748f6167b13b032063825adcefb346cb",
+  "review_authority": "ETERNIAN_FINAL_REVIEW",
+  "review_digests": [
+    "04d2b459d8b7fbf7e33488f1549d3ac30a37e3441e61c079cd6e42a2cdb38810"
+  ],
+  "rollback_execution_method_present": false,
+  "safety_baseline_relaxation_method_present": false,
+  "schema": "nurion.pg.synthetic-limited-promotion-activation-final-review-evidence.v1",
+  "schema_digest": "f985c7410fbb67c095989814d392aba88b3d2d132270fb2f616e4dbbc471bdc4",
+  "schema_version": 1,
+  "source_code_changed": false,
+  "state_counts": {
+    "HELD": 0,
+    "PENDING_ETERNIAN_FINAL_REVIEW": 0,
+    "READY_FOR_SYNTHETIC_LIMITED_PROMOTION_OPERATOR_DECISION": 1,
+    "REJECTED": 0
+  }
+}

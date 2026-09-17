@@ -1,0 +1,20 @@
+{
+  "schema": "nurion.pg.synthetic-patch-shadow-review-docket-policy.v1",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "required_shadow_decision": "PROPOSED_FOR_ETERNIAN_REVIEW",
+  "review_authority": "ETERNIAN_INDEPENDENT_REVIEW",
+  "maximum_state": "READY_FOR_OPERATOR_DECISION",
+  "synthetic_sqlite_only": true,
+  "automatic_review_allowed": false,
+  "operator_decision_recording_allowed": false,
+  "patch_content_allowed": false,
+  "code_change_allowed": false,
+  "automatic_application_allowed": false,
+  "safety_baseline_relaxation_allowed": false,
+  "payment_execution_allowed": false,
+  "money_movement_allowed": false,
+  "production_activation_allowed": false,
+  "network_access_allowed": false,
+  "real_credentials_allowed": false,
+  "real_personal_data_allowed": false
+}
