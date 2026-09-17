@@ -7,7 +7,7 @@ NOW=datetime(2026,9,17,tzinfo=UTC);h=lambda x:sha256(x).hexdigest()
 def case():return DisputeCase("synthetic:case:1","synthetic:intent:1","synthetic:merchant:1","FRAUD",5000,"KRW",NOW+timedelta(days=7),h(b"p"),h(b"s"))
 class Tests(unittest.TestCase):
  def test_open_verify_freeze(self):
-  b=SyntheticDisputeBook();b.open(case(),available_minor=6000,snapshot_valid=True,now=NOW,idempotency_key="synthetic:open");b.verify("synthetic:case:1",expected_version=1,idempotency_key="synthetic:verify");c=b.freeze("synthetic:case:1",(h(b"a"),h(b"b")),expected_version=2,idempotency_key="synthetic:freeze");self.assertEqual(c.state,DisputeState.EVIDENCE_FROZEN);self.assertFalse(b.evidence()["external_submission_allowed"])
+  b=SyntheticDisputeBook();b.open(case(),available_minor=6000,snapshot_valid=True,now=NOW,idempotency_key="synthetic:open");b.verify("synthetic:case:1",expected_version=1,idempotency_key="synthetic:verify");c=b.freeze("synthetic:case:1",tuple(sorted((h(b"a"),h(b"b")))),expected_version=2,idempotency_key="synthetic:freeze");self.assertEqual(c.state,DisputeState.EVIDENCE_FROZEN);self.assertFalse(b.evidence()["external_submission_allowed"])
  def test_ineligible_and_expired_rejected(self):
   for amount,valid,now in ((1,True,NOW),(6000,False,NOW),(6000,True,NOW+timedelta(days=8))):
    with self.assertRaises(GovernanceRejected):SyntheticDisputeBook().open(case(),available_minor=amount,snapshot_valid=valid,now=now,idempotency_key="synthetic:x")
