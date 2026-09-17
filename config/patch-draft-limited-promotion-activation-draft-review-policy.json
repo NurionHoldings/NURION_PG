@@ -1,0 +1,21 @@
+{
+  "schema": "nurion.pg.patch-draft-limited-promotion-activation-draft-review-policy.v1",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "required_input_state": "SYNTHETIC_LIMITED_PROMOTION_ACTIVATION_DRAFTED",
+  "allowed_review_decisions": ["PASS", "HOLD", "REJECT"],
+  "pass_state": "READY_FOR_SYNTHETIC_ACTIVATION_DRY_RUN_DESIGN",
+  "maximum_state": "READY_FOR_SYNTHETIC_ACTIVATION_DRY_RUN_DESIGN",
+  "independent_eternian_review_required": true,
+  "actual_operator_decision_recording_allowed": false,
+  "activation_recording_allowed": false,
+  "activation_allowed": false,
+  "rollback_execution_allowed": false,
+  "payment_execution_allowed": false,
+  "money_movement_allowed": false,
+  "automatic_merge_allowed": false,
+  "automatic_deploy_allowed": false,
+  "production_activation_allowed": false,
+  "network_access_allowed": false,
+  "real_credentials_allowed": false,
+  "real_personal_data_allowed": false
+}
