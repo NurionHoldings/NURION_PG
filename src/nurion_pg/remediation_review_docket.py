@@ -245,6 +245,13 @@ class SyntheticRemediationReviewDocket:
                             != assessment.assessment_digest
                         ):
                             raise GovernanceRejected("remediation docket identity collision")
+                        if (
+                            not self.verify_audit_chain()
+                            or not self.verify_record_bindings()
+                        ):
+                            raise GovernanceRejected(
+                                "existing remediation docket evidence is invalid"
+                            )
                         return self._record_from_row(existing)
                     self._connection.execute(
                         """
@@ -378,6 +385,13 @@ class SyntheticRemediationReviewDocket:
                     ).fetchone()
                     if docket is None:
                         raise GovernanceRejected("unknown remediation proposal docket")
+                    if (
+                        not self.verify_audit_chain()
+                        or not self.verify_record_bindings()
+                    ):
+                        raise GovernanceRejected(
+                            "remediation docket evidence is invalid before review"
+                        )
                     if reviewed_at < datetime.fromisoformat(docket["submitted_at"]):
                         raise GovernanceRejected("remediation review cannot predate submission")
                     if docket["state"] != RemediationDocketState.PENDING_ETERNIAN_REVIEW.value:

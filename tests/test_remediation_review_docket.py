@@ -310,6 +310,29 @@ class RemediationReviewDocketTests(unittest.TestCase):
         docket.close()
         source.close()
 
+    def test_tampered_pending_evidence_is_blocked_before_review(self):
+        source, case_id, book, _ = proposal_book()
+        docket = SyntheticRemediationReviewDocket(":memory:")
+        record = docket.submit_from_book(book, case_id, submitted_at=NOW)
+        docket._connection.execute(
+            "UPDATE synthetic_remediation_docket_audit SET actor_id = 'synthetic:tampered'"
+        )
+        with self.assertRaises(GovernanceRejected):
+            docket.record_eternian_review(
+                record.proposal_id,
+                review_id="synthetic:remediation-review:blocked-tamper",
+                reviewer_id="synthetic:eternian-reviewer:independent",
+                decision=RemediationReviewDecision.PASS,
+                findings_digest=FINDINGS_DIGEST,
+                reviewed_at=NOW,
+            )
+        count = docket._connection.execute(
+            "SELECT COUNT(*) FROM synthetic_remediation_reviews"
+        ).fetchone()[0]
+        self.assertEqual(count, 0)
+        docket.close()
+        source.close()
+
 
 if __name__ == "__main__":
     unittest.main()
