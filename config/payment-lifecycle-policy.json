@@ -1,0 +1,26 @@
+{
+  "schema": "nurion.pg.synthetic-payment-lifecycle-policy.v1",
+  "version": "0.1.0",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "states": [
+    "CREATED",
+    "SYNTHETIC_AUTHORIZED",
+    "SYNTHETIC_CAPTURED",
+    "PARTIALLY_REFUNDED",
+    "REFUNDED",
+    "CANCELLED"
+  ],
+  "commands": ["create", "authorize", "capture", "cancel", "refund"],
+  "partial_capture_allowed": false,
+  "partial_refund_allowed": true,
+  "optimistic_version_required": true,
+  "idempotency_required": true,
+  "balanced_ledger_required": true,
+  "synthetic_identifier_prefix": "synthetic:",
+  "provider_adapter_allowed": false,
+  "credential_access_allowed": false,
+  "real_payment_data_allowed": false,
+  "money_movement_allowed": false,
+  "production_activation_allowed": false
+}
+
