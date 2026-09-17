@@ -1,0 +1,21 @@
+{
+  "feature": 84,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.idempotent-command-receipt",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "idempotency_key_required",
+    "payload_fingerprint_required",
+    "duplicate_effect_rejected"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_84_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "2aa1f1d777c032ba96460e5189a19773f0be417342caf06dd9d9f2db0da05de7"
+}
