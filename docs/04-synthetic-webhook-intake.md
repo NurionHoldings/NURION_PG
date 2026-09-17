@@ -13,7 +13,7 @@
 - `BLOCKED`: 위변조, key 오류, nonce 재사용, event ID 충돌, 만료, PII 또는 스키마 위반.
 
 순서역전 이벤트는 앞선 sequence가 정상 접수된 뒤 내부 재검증을 거쳐서만 격리 해제된다.
-격리 중 key가 철회되거나 만료되면 해제하지 않는다.
+격리 중 key가 철회·만료되거나 event 허용시간이 지나면 해제하지 않는다.
 
 ## 보호 장치
 
@@ -23,6 +23,7 @@
 - event ID·nonce·aggregate sequence 재전송 통제
 - 카드·계좌·주민번호·이름·이메일·전화·주소·좌표·token·secret 필드 차단
 - 허용 event type별 정확한 payload field 집합
+- canonical JSON 강제 및 실제 UTF-8 byte 크기 제한
 - append-only SHA-256 수신 영수증 사슬
 
 ## 비범위
@@ -30,4 +31,3 @@
 네트워크 Listener, 실제 Provider Scheme, 운영 인증서·secret, Payment Intent 자동 변경,
 실결제·환불·송금·정산은 포함하지 않는다. 실제 Provider 계약과 Sandbox 공식문서가
 확보되기 전까지 Endpoint·header·parameter를 추측해 추가하지 않는다.
-

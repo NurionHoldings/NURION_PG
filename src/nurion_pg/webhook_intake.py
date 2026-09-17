@@ -102,7 +102,17 @@ class WebhookEnvelope:
     def __post_init__(self) -> None:
         if not isinstance(self.payload, Mapping):
             raise GovernanceRejected("mapping webhook payload required")
-        object.__setattr__(self, "payload", MappingProxyType(dict(self.payload)))
+        payload = dict(self.payload)
+        try:
+            json.dumps(
+                payload,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+        except (TypeError, ValueError) as exc:
+            raise GovernanceRejected("canonical JSON webhook payload required") from exc
+        object.__setattr__(self, "payload", MappingProxyType(payload))
         if (
             not self.provider_id.endswith(".invalid")
             or not self.key_id.startswith("synthetic:")
@@ -247,6 +257,14 @@ class SyntheticWebhookIntake:
             if stored is None or stored.decision is not WebhookDecision.QUARANTINED:
                 raise GovernanceRejected("quarantined event required")
             envelope = stored.envelope
+            if now.tzinfo is None:
+                raise GovernanceRejected("timezone-aware retry time required")
+            age = now - envelope.occurred_at
+            if age > self.max_age or age < -self.future_skew:
+                stored.decision = WebhookDecision.BLOCKED
+                return self._receipt(
+                    envelope, WebhookDecision.BLOCKED, "expired_or_future_event"
+                )
             try:
                 key = self.key_registry.resolve(envelope.provider_id, envelope.key_id, at=now)
                 self._verify_signature(envelope, key)

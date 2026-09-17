@@ -149,6 +149,16 @@ class WebhookIntakeTests(unittest.TestCase):
         replay = envelope(event_id="synthetic:event:old", nonce="synthetic:nonce:old", sequence=1)
         self.assertEqual(intake.ingest(replay, received_at=NOW).decision, WebhookDecision.BLOCKED)
 
+    def test_quarantined_event_expires_and_naive_retry_time_is_rejected(self):
+        intake = SyntheticWebhookIntake(registry())
+        second = envelope(event_id="synthetic:event:2", nonce="synthetic:nonce:2", sequence=2)
+        intake.ingest(second, received_at=NOW)
+        with self.assertRaises(GovernanceRejected):
+            intake.retry_quarantined(second.event_id, now=datetime(2026, 9, 17))
+        receipt = intake.retry_quarantined(second.event_id, now=NOW + timedelta(minutes=11))
+        self.assertEqual(receipt.decision, WebhookDecision.BLOCKED)
+        self.assertEqual(receipt.reason, "expired_or_future_event")
+
     def test_expired_future_and_naive_receipt_times_are_rejected(self):
         intake = SyntheticWebhookIntake(registry())
         old = envelope(occurred_at=NOW - timedelta(hours=1))
@@ -196,6 +206,12 @@ class WebhookIntakeTests(unittest.TestCase):
             .reason,
             "payload_too_large",
         )
+        with self.assertRaises(GovernanceRejected):
+            envelope(payload={
+                "intent_id": "synthetic:intent:1",
+                "expected_version": 1,
+                "outcome": object(),
+            })
 
     def test_concurrent_exact_replays_have_one_acceptance(self):
         intake = SyntheticWebhookIntake(registry())
