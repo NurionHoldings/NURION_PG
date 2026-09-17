@@ -222,6 +222,13 @@ class ActivationIntentIntakeTests(unittest.TestCase):
             intake.assess(
                 packet_book,
                 manifest.manifest_id,
+                activation_envelope(packet, issued_at=NOW - timedelta(seconds=1)),
+                received_at=NOW,
+            )
+        with self.assertRaises(GovernanceRejected):
+            intake.assess(
+                packet_book,
+                manifest.manifest_id,
                 activation_envelope(packet, packet_digest="0" * 64),
                 received_at=NOW,
             )

@@ -279,7 +279,9 @@ class SyntheticPatchDraftLimitedPromotionActivationIntake:
         before = packet_book.evidence()["report_digest"]
         packet = packet_book.current_packet(manifest_id, now=received_at)
         if (
-            envelope.packet_id != packet.packet_id
+            envelope.issued_at < packet.generated_at
+            or received_at < packet.generated_at
+            or envelope.packet_id != packet.packet_id
             or envelope.packet_digest != packet.packet_digest
             or envelope.requested_scope != packet.requested_scope
             or envelope.decision.value not in packet.allowed_decisions
