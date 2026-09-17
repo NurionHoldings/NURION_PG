@@ -42,7 +42,8 @@ def _valid_draft(d:SyntheticActivationDryRunFixtureDraft)->bool:
     return (isinstance(d,SyntheticActivationDryRunFixtureDraft) and d.state==FIXTURE_DRAFT_STATE and d.scope==FIXTURE_DRAFT_SCOPE
         and d.required_gates==FIXTURE_DRAFT_GATES and d.draft_id==_id_values(d.source_proposal_id,d.source_proposal_digest,d.source_review_digest)
         and d.blueprint_digest==_blueprint(d.fixture_schema_digest,d.synthetic_input_digest,d.expected_result_digest,d.rollback_expectation_digest)
-        and d.draft_digest==canonical_digest(d.digest_value()) and not any((d.fixture_content_present,d.fixture_serialized,d.fixture_file_created,d.dry_run_executed,
+        and d.draft_digest==canonical_digest(d.digest_value()) and d.synthetic_only and d.separate_review_required
+        and not any((d.fixture_content_present,d.fixture_serialized,d.fixture_file_created,d.dry_run_executed,
             d.activation_recorded,d.rollback_executed,d.network_accessed,d.money_movement_executed,d.production_activation_allowed)))
 
 class SyntheticActivationDryRunFixtureDraftReviewDocket:

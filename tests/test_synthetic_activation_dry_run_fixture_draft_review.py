@@ -53,7 +53,7 @@ class FixtureDraftReviewTests(unittest.TestCase):
         resources,sd,ledger,book,draft=draft_source();docket=SyntheticActivationDryRunFixtureDraftReviewDocket();docket.submit(book,draft.draft_id,submitted_at=NOW);item=review(docket,draft)
         object.__setattr__(item,"findings_digest","f"*64);self.assertFalse(docket.verify_chain());close_sources(resources,sd,ledger)
     def test_rehashed_source_identity_blueprint_and_forbidden_tampering_detected(self):
-        for field,value in (("draft_id","synthetic:activation-dry-run-fixture-draft:"+"f"*32),("blueprint_digest","f"*64),("fixture_content_present",True)):
+        for field,value in (("draft_id","synthetic:activation-dry-run-fixture-draft:"+"f"*32),("blueprint_digest","f"*64),("synthetic_only",False),("separate_review_required",False),("fixture_content_present",True)):
             resources,sd,ledger,book,draft=draft_source();object.__setattr__(draft,field,value);object.__setattr__(draft,"draft_digest",canonical_digest(draft.digest_value()))
             docket=SyntheticActivationDryRunFixtureDraftReviewDocket()
             with self.assertRaises(GovernanceRejected):docket.submit(book,draft.draft_id,submitted_at=NOW)
