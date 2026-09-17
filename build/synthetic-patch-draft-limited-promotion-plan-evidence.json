@@ -1,0 +1,30 @@
+{
+  "application_method_present": false,
+  "candidate_content_present": false,
+  "credentials_used": false,
+  "diff_content_present": false,
+  "eternian_review_required": true,
+  "execution_method_present": false,
+  "filesystem_written": false,
+  "maximum_observation_window_seconds": 3600,
+  "maximum_state": "SYNTHETIC_PATCH_DRAFT_LIMITED_PROMOTION_PLAN_DRAFTED",
+  "maximum_synthetic_sample_size": 100,
+  "money_movement_executed": false,
+  "network_access_method_present": false,
+  "operator_reconfirmation_required": true,
+  "patch_content_present": false,
+  "personal_data_used": false,
+  "plan_chain_valid": true,
+  "plan_count": 1,
+  "plan_digests": [
+    "c12a38e478ea0f2fc314a17f4528e278105379bb5e10f7b017a092d69831fad2"
+  ],
+  "production_activation_allowed": false,
+  "promotion_scope": "SYNTHETIC_FIXTURE_COHORT_ONLY",
+  "report_digest": "7b332b535ceb3233cea6013a4990ddff27527cf6d605bccd2a2164b530184530",
+  "rollback_required": true,
+  "safety_baseline_relaxation_allowed": false,
+  "schema": "nurion.pg.synthetic-patch-draft-limited-promotion-plan-evidence.v1",
+  "source_code_changed": false,
+  "synthetic_only": true
+}
