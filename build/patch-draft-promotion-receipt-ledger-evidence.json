@@ -1,0 +1,35 @@
+{
+  "actual_operator_decision_recording_method_present": false,
+  "application_method_present": false,
+  "audit_chain_valid": true,
+  "audit_head_digest": "805898ed3c4d4f762ac640fc2f514ec85389b1240c1c9c317f8ac59d124ad60f",
+  "credentials_used": false,
+  "database_engine": "SQLite",
+  "decision_counts": {
+    "AUTHORIZE_SYNTHETIC_PATCH_DRAFT_LIMITED_PROMOTION": 1,
+    "HOLD": 0,
+    "REJECT": 0
+  },
+  "diff_content_present": false,
+  "execution_method_present": false,
+  "filesystem_write_method_present": false,
+  "maximum_state": "SYNTHETIC_PATCH_DRAFT_PROMOTION_DECISION_RECEIPT_RECORDED",
+  "metadata_valid": true,
+  "money_movement_executed": false,
+  "network_access_method_present": false,
+  "packet_state_change_method_present": false,
+  "patch_content_present": false,
+  "personal_data_used": false,
+  "production_activation_allowed": false,
+  "receipt_digests": [
+    "a1a387f4e3969a76b63a050f89deb517db0930764a6ade6ab0ea62c25dbcadc0"
+  ],
+  "record_bindings_valid": true,
+  "report_digest": "0a14f314503ed8089e14271c5e62c9e613bbfee7cd25622986de32b7f2dc45d7",
+  "safety_baseline_relaxation_method_present": false,
+  "schema": "nurion.pg.synthetic-patch-draft-promotion-receipt-ledger-evidence.v1",
+  "schema_digest": "b1a65f16847d42b107ea99a40dc14e67ddebad612cc86754e368a4d3999c8cd0",
+  "schema_version": 1,
+  "source_code_change_method_present": false,
+  "synthetic_evidence_only": true
+}
