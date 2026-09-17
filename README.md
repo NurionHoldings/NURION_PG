@@ -76,6 +76,7 @@
 - 관찰값 없는 expectation을 독립심사해 assertion 준비까지만 허용하는 검토대장
 - 통과한 expectation 심사에서 평가·결과 없이 assertion digest만 고정하는 초안
 - 미평가 assertion 체인과 비실행 경계를 읽기 전용으로 검증하는 독립 경계감사
+- assertion 감사 결과를 원본과 재대조해 append-only로 고정하는 비권한 증거대장
 
 자세한 내용은 [ARKAON 통제형 부트스트랩](docs/01-arkaon-governed-bootstrap.md)을 참고합니다.
 
