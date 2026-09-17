@@ -1,0 +1,31 @@
+{
+  "activation_method_present": false,
+  "activation_recording_method_present": false,
+  "activation_scope": "SYNTHETIC_FIXTURE_ACTIVATION_DRY_RUN_ONLY",
+  "actual_operator_decision_recorded": false,
+  "automatic_deploy_method_present": false,
+  "automatic_merge_method_present": false,
+  "candidate_content_present": false,
+  "credentials_used": false,
+  "diff_content_present": false,
+  "draft_chain_valid": true,
+  "draft_count": 1,
+  "draft_digests": [
+    "591351e5f5b1e09df43c78030910882565d61f4db00578cf95a16bf35dcb396f"
+  ],
+  "eternian_review_required": true,
+  "execution_method_present": false,
+  "external_blocker_close_method_present": false,
+  "filesystem_write_method_present": false,
+  "maximum_state": "SYNTHETIC_LIMITED_PROMOTION_ACTIVATION_DRAFTED",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "money_movement_executed": false,
+  "network_access_method_present": false,
+  "patch_content_present": false,
+  "personal_data_used": false,
+  "production_activation_allowed": false,
+  "report_digest": "cd36ce9c144e1cadb210268f4a97ce0819c84d435cf855b5984f47263035b6d8",
+  "rollback_execution_method_present": false,
+  "schema": "nurion.pg.synthetic-limited-promotion-activation-draft-evidence.v1",
+  "source_code_change_method_present": false
+}
