@@ -105,8 +105,8 @@ class SyntheticActivationDraftReviewRecord:
         return {
             "sequence": self.sequence, "draft_id": self.draft.draft_id,
             "draft_digest": self.draft.draft_digest, "submitted_at": self.submitted_at.isoformat(),
-            "state": self.state.value, "previous_digest": self.previous_digest,
-            "review_digest": self.review_digest,
+            "submission_state": ActivationDraftReviewState.PENDING_ETERNIAN_REVIEW.value,
+            "previous_digest": self.previous_digest,
         }
 
 
@@ -142,9 +142,8 @@ class SyntheticActivationDraftReviewDocket:
             values = {
                 "sequence": len(self._records) + 1, "draft_id": draft.draft_id,
                 "draft_digest": draft.draft_digest, "submitted_at": submitted_at.isoformat(),
-                "state": ActivationDraftReviewState.PENDING_ETERNIAN_REVIEW.value,
+                "submission_state": ActivationDraftReviewState.PENDING_ETERNIAN_REVIEW.value,
                 "previous_digest": self._records[-1].record_digest if self._records else "0" * 64,
-                "review_digest": None,
             }
             record = SyntheticActivationDraftReviewRecord(
                 values["sequence"], draft, submitted_at,
@@ -180,15 +179,9 @@ class SyntheticActivationDraftReviewDocket:
                 if current.review_digest == review_digest:
                     return current
                 raise GovernanceRejected("activation draft review is immutable")
-            values = {
-                "sequence": current.sequence, "draft_id": current.draft.draft_id,
-                "draft_digest": current.draft.draft_digest, "submitted_at": current.submitted_at.isoformat(),
-                "state": _STATE_BY_DECISION[decision].value, "previous_digest": current.previous_digest,
-                "review_digest": review_digest,
-            }
             updated = SyntheticActivationDraftReviewRecord(
                 current.sequence, current.draft, current.submitted_at, _STATE_BY_DECISION[decision],
-                current.previous_digest, canonical_digest(values), review_id, reviewer_id, decision,
+                current.previous_digest, current.record_digest, review_id, reviewer_id, decision,
                 findings_digest, reviewed_at, review_digest,
             )
             self._records[current.sequence - 1] = updated; self._by_draft[draft_id] = updated
@@ -216,6 +209,7 @@ class SyntheticActivationDraftReviewDocket:
                 "schema": "nurion.pg.synthetic-activation-draft-review-evidence.v1",
                 "mode": "UNREGISTERED_SYNTHETIC_ONLY", "record_count": len(self._records),
                 "record_digests": [r.record_digest for r in self._records], "review_chain_valid": self.verify_chain(),
+                "review_digests": [r.review_digest for r in self._records if r.review_digest],
                 "maximum_state": ACTIVATION_DRAFT_REVIEW_MAXIMUM_STATE,
                 "actual_operator_decision_recorded": False, "activation_recorded": False,
                 "activation_method_present": False, "rollback_execution_method_present": False,
