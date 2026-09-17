@@ -1,0 +1,15 @@
+{
+  "schema": "nurion.pg.synthetic-reconciliation-case-docket-policy.v1",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "source_report_schema": "nurion.pg.synthetic-reconciliation-report.v1",
+  "accepted_source_statuses": ["HUMAN_REVIEW", "BLOCKED"],
+  "maximum_state": "READY_FOR_REMEDIATION_PROPOSAL",
+  "eternian_review_required": true,
+  "remediation_proposal_generation_allowed": false,
+  "automatic_repair_allowed": false,
+  "operator_decision_allowed": false,
+  "payment_execution_allowed": false,
+  "production_activation_allowed": false,
+  "real_credentials_allowed": false,
+  "real_personal_data_allowed": false
+}
