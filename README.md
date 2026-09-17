@@ -69,6 +69,7 @@
 - 통과한 물질화 계획 심사에서 내용·bytes·경로 없이 specification digest만 고정하는 비실행 초안
 - 비실행 물질화 specification을 독립심사해 별도 Dry-run 계획 준비까지만 허용하는 검토대장
 - 통과한 specification 심사에서 실행 없이 materialization Dry-run contract digest만 고정하는 계획
+- 비실행 materialization Dry-run 계획을 독립심사해 내용 없는 scenario 준비까지만 허용하는 검토대장
 
 자세한 내용은 [ARKAON 통제형 부트스트랩](docs/01-arkaon-governed-bootstrap.md)을 참고합니다.
 
