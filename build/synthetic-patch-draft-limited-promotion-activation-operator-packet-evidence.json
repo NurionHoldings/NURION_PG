@@ -1,0 +1,32 @@
+{
+  "activation_method_present": false,
+  "application_method_present": false,
+  "automatic_deploy_method_present": false,
+  "automatic_merge_method_present": false,
+  "candidate_content_present": false,
+  "credentials_used": false,
+  "diff_content_present": false,
+  "execution_method_present": false,
+  "external_blocker_close_method_present": false,
+  "filesystem_write_method_present": false,
+  "maximum_state": "AWAITING_SYNTHETIC_LIMITED_PROMOTION_ACTIVATION_OPERATOR_DECISION",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "money_movement_executed": false,
+  "network_access_method_present": false,
+  "operator_decision_method_present": false,
+  "operator_decision_recorded": false,
+  "packet_chain_valid": true,
+  "packet_count": 1,
+  "packet_digests": [
+    "f996e3444ea4d167a6e033b997187617c74c3a600488e3b57971c58dda175504"
+  ],
+  "patch_content_present": false,
+  "personal_data_used": false,
+  "production_activation_allowed": false,
+  "report_digest": "001d5a526dfd43dccbbff677e651b67e8f6621bd55460011a910f507207052df",
+  "requested_scope": "SYNTHETIC_PATCH_DRAFT_LIMITED_PROMOTION_ACTIVATION_ONLY",
+  "rollback_execution_method_present": false,
+  "safety_baseline_relaxation_method_present": false,
+  "schema": "nurion.pg.synthetic-limited-promotion-activation-operator-packet-evidence.v1",
+  "source_code_change_method_present": false
+}
