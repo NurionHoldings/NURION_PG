@@ -66,6 +66,7 @@
 - 비물질화 fixture 초안을 독립심사해 물질화 계획 준비까지만 허용하는 검토대장
 - 통과한 fixture 초안 심사에서 내용·bytes·파일 없이 물질화 대상 digest만 고정하는 비실행 계획
 - 비실행 fixture 물질화 계획을 독립심사해 specification 준비까지만 허용하는 검토대장
+- 통과한 물질화 계획 심사에서 내용·bytes·경로 없이 specification digest만 고정하는 비실행 초안
 
 자세한 내용은 [ARKAON 통제형 부트스트랩](docs/01-arkaon-governed-bootstrap.md)을 참고합니다.
 
