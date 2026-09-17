@@ -1,0 +1,21 @@
+{
+  "feature": 182,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.nonce-replay-defense",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "handoff_binding_required",
+    "handoff_tamper_rejected",
+    "handoff_non_operational"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_182_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "5d7034ab9ef107b5386d87af681b013b23341eefb9581caa9e8b7a3e89f7c8ba"
+}
