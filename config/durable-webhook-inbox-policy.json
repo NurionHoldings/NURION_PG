@@ -1,0 +1,23 @@
+{
+  "schema": "nurion.pg.synthetic-durable-webhook-inbox-policy.v1",
+  "version": "0.1.0",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "database_engine": "SQLite",
+  "schema_version": 1,
+  "transaction_begin_mode": "IMMEDIATE",
+  "unique_constraints": [
+    "event_id",
+    "provider_id+nonce",
+    "aggregate_id+aggregate_sequence",
+    "receipt_digest"
+  ],
+  "restart_replay_control_required": true,
+  "receipt_hash_chain_required": true,
+  "synthetic_database_name_prefix": "synthetic-",
+  "server_database_allowed": false,
+  "real_provider_allowed": false,
+  "real_personal_data_allowed": false,
+  "automatic_payment_application_allowed": false,
+  "money_movement_allowed": false,
+  "production_activation_allowed": false
+}
