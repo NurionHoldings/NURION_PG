@@ -38,6 +38,7 @@
 - 합성 패치 결정 봉투의 서명·만료·nonce만 검증하고 실제 결정을 기록하지 않는 수신계층
 - 검증된 합성 패치 결정 의사를 실제 승인과 분리해 보관하는 위변조 탐지 영속 수신대장
 - 합성 패치 수신증에서 코드·diff 없이 범위와 대상 다이제스트만 만드는 ARKAON 초안 Manifest
+- 합성 패치 Manifest 원문과 에테르니언 심사를 고정해 Patch Draft Shadow 준비까지만 허용하는 영속 대장
 
 자세한 내용은 [ARKAON 통제형 부트스트랩](docs/01-arkaon-governed-bootstrap.md)을 참고합니다.
 

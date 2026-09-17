@@ -11,6 +11,7 @@ from nurion_pg.patch_operator_decision_receipt_ledger import (
 from nurion_pg.synthetic_patch_draft_manifests import (
     PATCH_DRAFT_MANIFEST_STATE,
     REQUIRED_PATCH_DRAFT_CHECKS,
+    SyntheticPatchDraftManifest,
     SyntheticPatchDraftManifestBook,
 )
 from run_operator_decision_intake_evidence import NOW, ROOT, read_json
@@ -30,7 +31,10 @@ TARGET_DIGESTS = tuple(
 )
 
 
-def main() -> None:
+def main() -> tuple[
+    SyntheticPatchDraftManifestBook,
+    SyntheticPatchDraftManifest,
+]:
     policy = read_json("config/synthetic-patch-draft-manifest-policy.json")
     forbidden = (
         "patch_content_allowed",
@@ -113,6 +117,7 @@ def main() -> None:
     digest = sha256(payload.encode("utf-8")).hexdigest()
     output.with_suffix(".json.sha256").write_text(digest + "\n", encoding="ascii")
     print(f"synthetic patch draft manifest: PASS {digest}")
+    return book, manifest
 
 
 if __name__ == "__main__":
