@@ -1,0 +1,42 @@
+{
+  "schema": "nurion.pg.patch-draft-promotion-operator-packet-policy.v1",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "required_source_state": "READY_FOR_PATCH_DRAFT_OPERATOR_DECISION",
+  "maximum_state": "AWAITING_PATCH_DRAFT_PROMOTION_OPERATOR_DECISION",
+  "validity_days": 7,
+  "requested_scope": "SYNTHETIC_PATCH_DRAFT_LIMITED_PROMOTION_ONLY",
+  "allowed_decisions": [
+    "AUTHORIZE_SYNTHETIC_PATCH_DRAFT_LIMITED_PROMOTION",
+    "HOLD",
+    "REJECT"
+  ],
+  "required_acknowledgements": [
+    "SYNTHETIC_ONLY",
+    "METADATA_ONLY_PACKET",
+    "NO_PATCH_OR_DIFF_CONTENT",
+    "NO_SOURCE_OR_FILESYSTEM_CHANGE",
+    "NO_AUTOMATIC_APPLICATION",
+    "NO_SAFETY_BASELINE_RELAXATION",
+    "NO_PAYMENT_EXECUTION_OR_MONEY_MOVEMENT",
+    "NO_REAL_DATA_OR_CREDENTIALS",
+    "NO_MAIN_MERGE_OR_DEPLOYMENT",
+    "EXPLICIT_OPERATOR_DECISION_REQUIRED",
+    "NO_PRODUCTION_PROMOTION"
+  ],
+  "operator_decision_recording_allowed": false,
+  "patch_content_allowed": false,
+  "diff_content_allowed": false,
+  "source_code_change_allowed": false,
+  "filesystem_write_allowed": false,
+  "automatic_application_allowed": false,
+  "safety_baseline_relaxation_allowed": false,
+  "external_blocker_auto_close_allowed": false,
+  "payment_execution_allowed": false,
+  "money_movement_allowed": false,
+  "automatic_merge_allowed": false,
+  "automatic_deploy_allowed": false,
+  "production_activation_allowed": false,
+  "network_access_allowed": false,
+  "real_credentials_allowed": false,
+  "real_personal_data_allowed": false
+}
