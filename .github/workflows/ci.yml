@@ -108,6 +108,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_patch_draft_limited_promotion_reconfirmation_receipt_ledger_evidence.py
       - name: Verify metadata-only limited promotion activation manifest
         run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_limited_promotion_activation_manifest_evidence.py
+      - name: Verify durable limited promotion activation final review
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_draft_limited_promotion_activation_review_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -192,5 +194,7 @@ jobs:
             build/patch-draft-limited-promotion-reconfirmation-receipt-ledger-evidence.json.sha256
             build/synthetic-patch-draft-limited-promotion-activation-manifest-evidence.json
             build/synthetic-patch-draft-limited-promotion-activation-manifest-evidence.json.sha256
+            build/synthetic-patch-draft-limited-promotion-activation-review-evidence.json
+            build/synthetic-patch-draft-limited-promotion-activation-review-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
