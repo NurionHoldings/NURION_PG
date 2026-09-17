@@ -7,6 +7,10 @@ import tempfile
 from hashlib import sha256
 from pathlib import Path
 
+from nurion_pg.synthetic_patch_draft_manifests import (
+    SyntheticPatchDraftManifest,
+    SyntheticPatchDraftManifestBook,
+)
 from nurion_pg.synthetic_patch_draft_review_docket import (
     MAXIMUM_PATCH_DRAFT_REVIEW_STATE,
     PatchDraftReviewDecision,
@@ -19,7 +23,10 @@ from run_synthetic_patch_draft_manifest_evidence import (
 )
 
 
-def main() -> None:
+def main() -> tuple[
+    SyntheticPatchDraftManifestBook,
+    SyntheticPatchDraftManifest,
+]:
     policy = read_json("config/synthetic-patch-draft-review-policy.json")
     forbidden = (
         "patch_content_allowed",
@@ -108,6 +115,7 @@ def main() -> None:
     digest = sha256(payload.encode("utf-8")).hexdigest()
     output.with_suffix(".json.sha256").write_text(digest + "\n", encoding="ascii")
     print(f"synthetic patch draft review docket: PASS {digest}")
+    return book, manifest
 
 
 if __name__ == "__main__":
