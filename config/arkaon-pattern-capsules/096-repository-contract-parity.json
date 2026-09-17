@@ -1,0 +1,21 @@
+{
+  "feature": 96,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.repository-contract-parity",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "memory_contract_required",
+    "sqlite_memory_contract_required",
+    "payload_conflict_rejected"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_96_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "839852b42ed0932d8155f3cbf4f1ea96d3f2af7f11487a4bded47940193c2865"
+}

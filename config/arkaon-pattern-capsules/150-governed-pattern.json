@@ -1,0 +1,21 @@
+{
+  "feature": 150,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.deterministic-test-vector",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "resilience_binding_required",
+    "resilience_tamper_rejected",
+    "resilience_non_operational"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_150_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "b1be6639ef026cc22039a0d4fde593c8d8914a9db90e95da07a444ded1c5e0f4"
+}
