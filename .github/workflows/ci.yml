@@ -68,6 +68,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_implementation_proposal_evidence.py
       - name: Verify durable synthetic implementation proposal review docket
         run: PYTHONPATH=src python scripts/run_synthetic_implementation_review_evidence.py
+      - name: Verify metadata-only synthetic patch shadow evaluation
+        run: PYTHONPATH=src python scripts/run_synthetic_patch_shadow_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -112,5 +114,7 @@ jobs:
             build/synthetic-implementation-proposal-evidence.json.sha256
             build/synthetic-implementation-review-evidence.json
             build/synthetic-implementation-review-evidence.json.sha256
+            build/synthetic-patch-shadow-evidence.json
+            build/synthetic-patch-shadow-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
