@@ -1,0 +1,15 @@
+{
+  "schema": "nurion.pg.external-blockers.v1",
+  "release_status": "BLOCKED",
+  "blockers": [
+    {"id": "EXT-PG-01", "name": "사업모델 법적 분류 및 등록 필요성 전문검토", "status": "PENDING"},
+    {"id": "EXT-PG-02", "name": "전자금융업 등록요건과 최신 공식자료 검증", "status": "PENDING"},
+    {"id": "EXT-PG-03", "name": "카드사·은행·등록 PG 계약 및 Sandbox", "status": "PENDING"},
+    {"id": "EXT-PG-04", "name": "정산대금 외부관리·회계·세무 설계 검토", "status": "PENDING"},
+    {"id": "EXT-PG-05", "name": "보안·개인정보·금융보안 독립검토", "status": "PENDING"},
+    {"id": "EXT-PG-06", "name": "비운영 인프라·Vault·키관리·재해복구 증거", "status": "PENDING"},
+    {"id": "EXT-PG-07", "name": "제한 실증 및 최종 운영자 승인", "status": "PENDING"}
+  ],
+  "automatic_close_allowed": false
+}
+
