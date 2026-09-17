@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from hashlib import sha256
 
-from nurion_pg.arkaon.governance import GovernanceRejected
+from nurion_pg.arkaon.governance import GovernanceRejected, canonical_digest
 from nurion_pg.synthetic_activation_dry_run_designs import (
     DRY_RUN_DESIGN_SCOPE, DRY_RUN_DESIGN_STATE, DRY_RUN_REQUIRED_GATES,
     SyntheticActivationDryRunDesignBook,
@@ -70,6 +70,14 @@ class SyntheticActivationDryRunDesignTests(unittest.TestCase):
         resources, source_docket, ledger, docket, review = reviewed_source(); book = SyntheticActivationDryRunDesignBook()
         design = book.design_from_review(docket, review.draft.draft_id, designed_at=NOW)
         object.__setattr__(design, "scope", "PRODUCTION")
+        self.assertFalse(book.verify_design_chain())
+        close_sources(resources, source_docket, ledger)
+
+    def test_rehashed_forbidden_flag_tampering_is_detected(self):
+        resources, source_docket, ledger, docket, review = reviewed_source(); book = SyntheticActivationDryRunDesignBook()
+        design = book.design_from_review(docket, review.draft.draft_id, designed_at=NOW)
+        object.__setattr__(design, "dry_run_executed", True)
+        object.__setattr__(design, "design_digest", canonical_digest(design.digest_value()))
         self.assertFalse(book.verify_design_chain())
         close_sources(resources, source_docket, ledger)
 

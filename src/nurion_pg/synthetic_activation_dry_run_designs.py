@@ -35,10 +35,14 @@ def _valid_digest(value: object) -> bool:
 
 
 def _design_id(review: SyntheticActivationDraftReviewRecord) -> str:
+    return _design_id_values(review.draft.draft_id, review.draft.draft_digest, review.review_digest)
+
+
+def _design_id_values(draft_id: str, draft_digest: str, review_digest: str) -> str:
     identity = canonical_digest({
-        "draft_id": review.draft.draft_id,
-        "draft_digest": review.draft.draft_digest,
-        "review_digest": review.review_digest,
+        "draft_id": draft_id,
+        "draft_digest": draft_digest,
+        "review_digest": review_digest,
         "scope": DRY_RUN_DESIGN_SCOPE,
     })
     return "synthetic:limited-promotion-activation-dry-run-design:" + identity[:32]
@@ -185,8 +189,18 @@ class SyntheticActivationDryRunDesignBook:
             previous = "0" * 64
             for sequence, item in enumerate(self._designs, 1):
                 if (item.sequence != sequence or item.previous_digest != previous
+                    or item.design_id != _design_id_values(item.source_draft_id, item.source_draft_digest, item.source_review_digest)
                     or item.design_digest != canonical_digest(item.digest_value())
-                    or item.state != DRY_RUN_DESIGN_STATE or item.scope != DRY_RUN_DESIGN_SCOPE):
+                    or item.state != DRY_RUN_DESIGN_STATE or item.scope != DRY_RUN_DESIGN_SCOPE
+                    or item.required_gates != DRY_RUN_REQUIRED_GATES
+                    or not all(_valid_digest(v) for v in (item.source_draft_digest, item.source_review_digest,
+                        item.manifest_digest, item.candidate_digest, item.cohort_digest))
+                    or item.synthetic_sample_size <= 0 or item.observation_window_seconds <= 0
+                    or not item.observation_result_digests or not item.rollback_triggers
+                    or not item.synthetic_only or not item.separate_review_required
+                    or any((item.dry_run_executed, item.activation_recorded, item.rollback_executed,
+                            item.filesystem_written, item.network_accessed, item.money_movement_executed,
+                            item.production_activation_allowed))):
                     return False
                 previous = item.design_digest
             return len(self._designs) == len(self._by_review) and all(self._by_review.get(i.source_review_digest) is i for i in self._designs)
