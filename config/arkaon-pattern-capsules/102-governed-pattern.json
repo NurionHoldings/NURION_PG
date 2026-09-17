@@ -1,0 +1,21 @@
+{
+  "feature": 102,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.intent-dna-lock",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "admission_binding_required",
+    "admission_tamper_rejected",
+    "admission_non_operational"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_102_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "d29617a9309d87c7bf32d6095be22bdc398abeb7141c51a981026a05c8a9850a"
+}
