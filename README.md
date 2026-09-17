@@ -14,6 +14,8 @@
 - append-only SHA-256 증거 사슬
 - 합성 데이터 전용 벤치마크와 GitHub CI
 - 규제·금융기관·보안·정산 외부 차단조건의 실패 폐쇄
+- 공식 규제근거 Registry와 상충·만료·미완전 근거 차단
+- 균형·멱등·불변성을 강제하는 합성 원장 및 정산 계산
 
 자세한 내용은 [ARKAON 통제형 부트스트랩](docs/01-arkaon-governed-bootstrap.md)을 참고합니다.
 
@@ -27,3 +29,4 @@ PYTHONPATH=src python scripts/run_bootstrap_evidence.py
 
 CI 성공은 등록, 계약, 운영승인, 병합 또는 배포 승인을 의미하지 않습니다.
 
+규제 Registry에 기록된 내용은 설계 초안의 근거일 뿐 법률자문이나 운영승인이 아닙니다.

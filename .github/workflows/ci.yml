@@ -32,6 +32,10 @@ jobs:
         run: PYTHONPATH=src python scripts/validate_governance.py
       - name: Generate deterministic bootstrap evidence
         run: PYTHONPATH=src python scripts/run_bootstrap_evidence.py
+      - name: Validate official regulatory evidence registry
+        run: PYTHONPATH=src python scripts/run_regulatory_evidence.py
+      - name: Verify synthetic ledger invariants
+        run: PYTHONPATH=src python scripts/run_synthetic_ledger_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -40,5 +44,9 @@ jobs:
           path: |
             build/arkaon-bootstrap-evidence.json
             build/arkaon-bootstrap-evidence.json.sha256
+            build/regulatory-evidence-report.json
+            build/regulatory-evidence-report.json.sha256
+            build/synthetic-ledger-evidence.json
+            build/synthetic-ledger-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14

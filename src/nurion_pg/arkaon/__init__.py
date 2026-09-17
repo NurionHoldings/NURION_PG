@@ -11,6 +11,12 @@ from .governance import (
     GovernanceRejected,
     PromotionStage,
 )
+from .regulatory_evidence import (
+    EvidenceDisposition,
+    RegulatoryEvidence,
+    RegulatoryRegistry,
+    SourceAuthority,
+)
 
 __all__ = [
     "Action",
@@ -22,5 +28,9 @@ __all__ = [
     "EvidenceSource",
     "GovernanceRejected",
     "PromotionStage",
+    "EvidenceDisposition",
+    "RegulatoryEvidence",
+    "RegulatoryRegistry",
+    "SourceAuthority",
 ]
 
