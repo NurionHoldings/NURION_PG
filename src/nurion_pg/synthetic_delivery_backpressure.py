@@ -61,7 +61,7 @@ class SyntheticDeliveryQueue:
    if status=="EXPIRED" and now<old.expires_at:raise GovernanceRejected("not expired")
    if status=="READY":
     receipt=self._resume_receipts.get(packet_id)
-    if old.status!="HELD" or old.warning is not None or now>=old.expires_at or receipt is None or receipt.resulting_version!=old.version or not self._receipt_valid(receipt):raise GovernanceRejected("resume verification failed")
+    if old.status!="HELD" or old.warning is not None or now>=old.expires_at or receipt is None or receipt.packet_id!=packet_id or receipt.resulting_version!=old.version or not self._receipt_valid(receipt):raise GovernanceRejected("resume verification failed")
    if old.status in TERMINAL:raise GovernanceRejected("terminal packet")
    item=replace(old,version=old.version+1,status=status,previous_digest=old.digest,digest="")
    item=replace(item,digest=canonical_digest({"packet_id":item.packet_id,"intent_digest":item.intent_digest,"version":item.version,"status":item.status,"warning":item.warning,"created_at":item.created_at.isoformat(),"expires_at":item.expires_at.isoformat(),"previous_digest":item.previous_digest}));self._rows[packet_id]=item;self._record(status,item);return item
@@ -100,11 +100,11 @@ class SyntheticDeliveryQueue:
  def get(self,packet_id):
   with self._lock:return self._rows.get(packet_id)
  def _event_chain_valid(self):
-  previous=None;history_digests={item.digest for item in self._history}
+  previous=None;history_by_digest={item.digest:item for item in self._history};receipt_by_digest={receipt.record_digest:receipt for receipt in self._resume_receipts.values() if self._receipt_valid(receipt)}
   for sequence,event in enumerate(self._events,1):
    payload={"action":event["action"],"packet_digest":event["packet_digest"],"receipt_record_digest":event["receipt_record_digest"],"previous_digest":previous,"sequence":sequence}
-   receipt_digests={receipt.record_digest for receipt in self._resume_receipts.values() if self._receipt_valid(receipt)}
-   if (event["action"]=="RESUME_VERIFIED" and event["receipt_record_digest"] not in receipt_digests) or (event["action"]!="RESUME_VERIFIED" and event["receipt_record_digest"] is not None) or event["packet_digest"] not in history_digests or event["previous_digest"]!=previous or event["digest"]!=canonical_digest(payload):return False
+   history_item=history_by_digest.get(event["packet_digest"]);receipt=receipt_by_digest.get(event["receipt_record_digest"])
+   if (event["action"]=="RESUME_VERIFIED" and (receipt is None or history_item is None or receipt.packet_id!=history_item.packet_id)) or (event["action"]!="RESUME_VERIFIED" and event["receipt_record_digest"] is not None) or history_item is None or event["previous_digest"]!=previous or event["digest"]!=canonical_digest(payload):return False
    previous=event["digest"]
   return True
  def _history_chain_valid(self):
@@ -120,6 +120,6 @@ class SyntheticDeliveryQueue:
  def evidence(self):
   with self._lock:
    counts={state:sum(x.status==state for x in self._rows.values()) for state in sorted(ACTIVE|TERMINAL)}
-   packet_count=len(self._rows);event_count=len(self._events);history_count=len(self._history);resume_receipt_count=len(self._resume_receipts);receipt_integrity_valid=all(self._receipt_valid(x) for x in self._resume_receipts.values());event_chain_valid=self._event_chain_valid();history_chain_valid=self._history_chain_valid()
+   packet_count=len(self._rows);event_count=len(self._events);history_count=len(self._history);resume_receipt_count=len(self._resume_receipts);receipt_integrity_valid=all(key==receipt.packet_id and self._receipt_valid(receipt) for key,receipt in self._resume_receipts.items());event_chain_valid=self._event_chain_valid();history_chain_valid=self._history_chain_valid()
   out={"schema":"nurion.pg.synthetic-delivery-backpressure.v1","features":list(range(701,901)),"workstreams":[{"name":n,"start":s,"end":e} for s,e,n in WORKSTREAMS],"packet_count":packet_count,"status_counts":counts,"event_count":event_count,"history_count":history_count,"resume_receipt_count":resume_receipt_count,"receipt_integrity_valid":receipt_integrity_valid,"event_chain_valid":event_chain_valid,"history_chain_valid":history_chain_valid,"maximum_state":"SYNTHETIC_DELIVERY_BACKPRESSURE_VERIFIED","synthetic_only":True,"in_memory_only":True,"automatic_approval_allowed":False,"external_delivery_used":False,"external_io_used":False,"production_credentials_accessed":False,"money_movement_allowed":False,"merge_allowed":False,"deployment_allowed":False}
   return {**out,"report_digest":canonical_digest(out)}
