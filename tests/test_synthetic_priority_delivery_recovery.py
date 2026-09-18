@@ -150,8 +150,6 @@ class SyntheticPriorityDeliveryRecoveryTests(unittest.TestCase):
                 "synthetic:relay:1",
             )
 
-
-
     def test_relay_failure_after_verification_blocks_recovery(self):
         service = SyntheticPriorityDeliveryRecovery()
         item = service.enqueue(
