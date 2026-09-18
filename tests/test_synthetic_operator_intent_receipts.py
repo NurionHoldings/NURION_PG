@@ -14,8 +14,8 @@ class Tests(unittest.TestCase):
  def test_sequence_and_idempotency(self):
   r=OperatorIntentReceipts(h(b"x"),h(b"p"))
   with self.assertRaises(GovernanceRejected):r.bind_scope("NURION_PG",(381,425),"READ_ONLY_CONSIDERATION","synthetic:key:x",0)
-  a=r.admit("SYNTHETIC_SHADOW_READINESS_REVIEW_COMPLETED","HOLD",("BLOCK",),"synthetic:operator:1","synthetic:key:a");self.assertIs(a,r.admit("SYNTHETIC_SHADOW_READINESS_REVIEW_COMPLETED","HOLD",("BLOCK",),"synthetic:operator:1","synthetic:key:a"))
-  with self.assertRaises(GovernanceRejected):r.admit("BAD","HOLD",("BLOCK",),"synthetic:operator:1","synthetic:key:a")
+  a=r.admit("SYNTHETIC_SHADOW_READINESS_REVIEW_COMPLETED","HOLD",("CRITERIA_FAILED",),"synthetic:operator:1","synthetic:key:a");self.assertIs(a,r.admit("SYNTHETIC_SHADOW_READINESS_REVIEW_COMPLETED","HOLD",("CRITERIA_FAILED",),"synthetic:operator:1","synthetic:key:a"))
+  with self.assertRaises(GovernanceRejected):r.admit("BAD","HOLD",("CRITERIA_FAILED",),"synthetic:operator:1","synthetic:key:a")
  def test_approval_like_intents_rejected(self):
   r=complete();r.stages=r.stages[:4]
   for code in ("APPROVE","ACTIVATE","PROMOTE","CONSIDER_NEXT_SYNTHETIC_STAGE"):
