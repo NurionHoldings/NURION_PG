@@ -51,6 +51,13 @@ class Tests(unittest.TestCase):
   receipt=q._resume_receipts[a.packet_id];q._resume_receipts[a.packet_id]=replace(receipt,verifier="tampered")
   self.assertFalse(q.evidence()["receipt_integrity_valid"])
   with self.assertRaises(GovernanceRejected):q.transition(a.packet_id,a.version,"READY",NOW)
+ def test_cross_packet_receipt_substitution_is_rejected(self):
+  q=SyntheticDeliveryQueue();packets=[]
+  for n in (1,2):
+   a=q.enqueue(f"synthetic:packet:swap:{n}",h(f"swap:{n}".encode()),NOW,NOW+timedelta(hours=1));a=q.warn(a.packet_id,a.version,"STALE_PACKET",NOW);a=q.hold(a.packet_id,a.version,NOW);a=q.clear_warning(a.packet_id,a.version,NOW);a=q.verify_resume(a.packet_id,a.version,f"synthetic:verifier:{n}",h(f"receipt:{n}".encode()),NOW);packets.append(a)
+  one,two=packets;q._resume_receipts[one.packet_id],q._resume_receipts[two.packet_id]=q._resume_receipts[two.packet_id],q._resume_receipts[one.packet_id]
+  e=q.evidence();self.assertFalse(e["receipt_integrity_valid"]);self.assertFalse(e["event_chain_valid"])
+  with self.assertRaises(GovernanceRejected):q.transition(one.packet_id,one.version,"READY",NOW)
  def test_evidence_chains_and_invalid_digest(self):
   q=SyntheticDeliveryQueue();a=q.enqueue("synthetic:packet:1",h(b"x"),NOW,NOW+timedelta(hours=1));a=q.warn(a.packet_id,a.version,"STALE_PACKET",NOW);a=q.hold(a.packet_id,a.version,NOW);a=q.clear_warning(a.packet_id,a.version,NOW);a=q.verify_resume(a.packet_id,a.version,"synthetic:verifier:1",h(b"receipt"),NOW);q.transition(a.packet_id,a.version,"READY",NOW)
   e=q.evidence();self.assertEqual(e["event_count"],6);self.assertEqual(e["history_count"],6);self.assertTrue(e["event_chain_valid"]);self.assertTrue(e["history_chain_valid"]);self.assertTrue(e["receipt_integrity_valid"]);self.assertEqual(e["resume_receipt_count"],1)
