@@ -81,6 +81,7 @@
 - Pattern Foundry Release Manifest Binding을 비배포 clean-room manifest 초안으로 적용
 - 생산자·공격자·판정자·승인자를 분리하고 critical failure를 veto하는 합성 benchmark
 - benchmark 영수증의 memory·in-memory SQLite 계약 동등성을 검증하는 합성 parity harness
+- 운영자 의향 수신증의 비권한·무부작용·무자격증명 경계를 독립 검증하고 append-only 체크포인트로 봉인하는 읽기 전용 감사
 
 자세한 내용은 [ARKAON 통제형 부트스트랩](docs/01-arkaon-governed-bootstrap.md)을 참고합니다.
 
