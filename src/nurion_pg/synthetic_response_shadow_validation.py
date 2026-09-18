@@ -42,11 +42,14 @@ class ResponseShadowValidation:
   return self._add(399,"SHADOW_OUTCOME_PROJECTED",{"option":option_code,"metrics":tuple(sorted(metrics.items())),"executed":False},key,version)
  def deltas(self,values,key,version):
   allowed={"COVERAGE_BP","DEADLINE_BP","FAIRNESS_GAP_BP","IMPACT_MINOR"}
-  if set(values)!=allowed or any(type(v) is not int for v in values.values()):raise GovernanceRejected("complete integer deltas required")
+  baseline=dict(self.stages[2].payload["metrics"]) if len(self.stages)>3 else {};projection=dict(self.stages[3].payload["metrics"]) if len(self.stages)>3 else {}
+  if set(values)!=allowed or any(type(v) is not int for v in values.values()) or any(values[n]!=projection[n]-baseline[n] for n in allowed):raise GovernanceRejected("baseline-bound projection deltas required")
   return self._add(400,"METRIC_DELTAS_EVALUATED",{"deltas":tuple(sorted(values.items()))},key,version)
  def criteria(self,results,key,version):
   allowed={"COVERAGE_BP","DEADLINE_BP","FAIRNESS_GAP_BP","IMPACT_MINOR"}
-  if set(results)!=allowed or any(type(v) is not bool for v in results.values()):raise GovernanceRejected("complete boolean criteria comparison required")
+  projection=dict(self.stages[3].payload["metrics"]) if len(self.stages)>4 else {};criteria=self.stages[0].payload["criteria"] if self.stages else ()
+  expected={n:(projection[n]<=v if op=="LTE" else projection[n]>=v) for n,op,v in criteria}
+  if set(results)!=allowed or any(type(v) is not bool for v in results.values()) or results!=expected:raise GovernanceRejected("projection-bound fixed criteria comparison required")
   return self._add(401,"SUCCESS_CRITERIA_COMPARED",{"results":tuple(sorted(results.items())),"all_passed":all(results.values()),"auto_promote":False},key,version)
  def fairness_drift(self,segment_bp,key,version):
   items=tuple(sorted(segment_bp))
@@ -57,7 +60,8 @@ class ResponseShadowValidation:
   return self._add(403,"FINANCIAL_GUARD_CHECKED",{"projected_minor":projected_minor,"ceiling_minor":ceiling_minor,"applied":False},key,version)
  def rollback_check(self,triggers,observed,key,version):
   allowed={"METRIC_REGRESSION","FAIRNESS_BREACH","CEILING_BREACH","DATA_DRIFT"}
-  if tuple(sorted(triggers))!=triggers or not triggers or len(triggers)!=len(set(triggers)) or not set(triggers)<=allowed or not set(observed)<=set(triggers):raise GovernanceRejected("bound rollback trigger observation required")
+  planned=self.stages[0].payload["rollback_triggers"] if self.stages else ()
+  if triggers!=planned or tuple(sorted(triggers))!=triggers or not triggers or len(triggers)!=len(set(triggers)) or not set(triggers)<=allowed or not set(observed)<=set(triggers):raise GovernanceRejected("plan-bound rollback trigger observation required")
   return self._add(404,"ROLLBACK_TRIGGERS_EVALUATED",{"triggers":triggers,"observed":tuple(sorted(observed)),"rollback_executed":False},key,version)
  def false_positive(self,numerator,denominator,key,version):
   if any(type(x) is not int for x in (numerator,denominator)) or denominator<=0 or not 0<=numerator<=denominator:raise GovernanceRejected("valid false-positive fraction required")
