@@ -1,5 +1,8 @@
 # NURION PG
 
+Synthetic canary readiness docket controls #1501-#1700 are documented in
+[`docs/12-synthetic-canary-readiness-docket-1501-1700.md`](docs/12-synthetic-canary-readiness-docket-1501-1700.md).
+
 누리온PG의 결제·정산 기반과 ARKAON 통제형 개발 체계를 위한 저장소입니다.
 
 현재 단계는 `UNREGISTERED_SYNTHETIC_ONLY`입니다. 실제 결제, 승인, 취소, 환불,
