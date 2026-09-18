@@ -22,15 +22,20 @@ class ShadowReadinessReview:
    return item
   if v!=len(self.stages) or f!=411+len(self.stages):raise GovernanceRejected("ordered current version required")
   prev=self.stages[-1].digest if self.stages else self.validation_digest;item=ReviewStage(f,state,payload,prev,canonical_digest({"feature":f,"state":state,"payload":payload,"previous_digest":prev}),key);self.stages.append(item);self._keys[key]=(fp,item);return item
- def admit(self,state,recommendation,criteria_passed,rollback_observed,key,v=0):
-  if state!="SYNTHETIC_RESPONSE_SHADOW_VALIDATION_COMPLETED" or recommendation not in {"HOLD","REVISE","ELIGIBLE_DRAFT"} or type(criteria_passed) is not bool or type(rollback_observed) is not bool or recommendation=="ELIGIBLE_DRAFT" and (not criteria_passed or rollback_observed):raise GovernanceRejected("consistent completed shadow validation required")
-  return self._add(411,"SHADOW_VALIDATION_ADMITTED",{"recommendation":recommendation,"criteria_passed":criteria_passed,"rollback_observed":rollback_observed},key,v)
+ def admit(self,state,recommendation,criteria_passed,rollback_observed,planned_triggers,key,v=0):
+  allowed={"METRIC_REGRESSION","FAIRNESS_BREACH","CEILING_BREACH","DATA_DRIFT"}
+  if state!="SYNTHETIC_RESPONSE_SHADOW_VALIDATION_COMPLETED" or recommendation not in {"HOLD","REVISE","ELIGIBLE_DRAFT"} or type(criteria_passed) is not bool or type(rollback_observed) is not bool or recommendation=="ELIGIBLE_DRAFT" and (not criteria_passed or rollback_observed) or tuple(sorted(planned_triggers))!=planned_triggers or not planned_triggers or len(planned_triggers)!=len(set(planned_triggers)) or not set(planned_triggers)<=allowed:raise GovernanceRejected("consistent completed shadow validation required")
+  return self._add(411,"SHADOW_VALIDATION_ADMITTED",{"recommendation":recommendation,"criteria_passed":criteria_passed,"rollback_observed":rollback_observed,"planned_triggers":planned_triggers},key,v)
  def blockers(self,codes,key,v):
   allowed={"CRITERIA_FAILED","ROLLBACK_TRIGGERED","FAIRNESS_CONCERN","CAPACITY_CONCERN","NONE"}
   if tuple(sorted(codes))!=codes or not codes or len(codes)!=len(set(codes)) or not set(codes)<=allowed or ("NONE" in codes and len(codes)!=1):raise GovernanceRejected("unique coherent blocker codes required")
   if not self.stages:raise GovernanceRejected("admission required")
   rec=self.stages[0].payload["recommendation"]
-  if rec=="ELIGIBLE_DRAFT" and codes!=("NONE",):raise GovernanceRejected("eligible draft cannot carry blockers")
+  admission=self.stages[0].payload
+  required=set()
+  if not admission["criteria_passed"]:required.add("CRITERIA_FAILED")
+  if admission["rollback_observed"]:required.add("ROLLBACK_TRIGGERED")
+  if rec=="ELIGIBLE_DRAFT" and codes!=("NONE",) or rec!="ELIGIBLE_DRAFT" and "NONE" in codes or not required<=set(codes) or admission["criteria_passed"] and "CRITERIA_FAILED" in codes or not admission["rollback_observed"] and "ROLLBACK_TRIGGERED" in codes:raise GovernanceRejected("blockers must match admitted outcome")
   return self._add(412,"BLOCKER_DOCKET_FIXED",{"codes":codes},key,v)
  def evidence_matrix(self,checks,key,v):
   required=("CRITERIA","FAIRNESS","FINANCIAL","ROLLBACK","SENSITIVITY")
@@ -47,7 +52,8 @@ class ShadowReadinessReview:
   if any(type(x) is not int for x in (impact_minor,ceiling_minor)) or min(impact_minor,ceiling_minor)<0 or impact_minor>ceiling_minor:raise GovernanceRejected("bounded financial readiness required")
   return self._add(416,"FINANCIAL_READINESS_CHECKED",{"impact_minor":impact_minor,"ceiling_minor":ceiling_minor,"posted":False},key,v)
  def rollback(self,triggers,rehearsed,key,v):
-  if tuple(sorted(triggers))!=triggers or not triggers or len(triggers)!=len(set(triggers)) or set(rehearsed)!=set(triggers):raise GovernanceRejected("all unique rollback triggers must be rehearsed")
+  planned=self.stages[0].payload["planned_triggers"] if self.stages else ()
+  if triggers!=planned or tuple(sorted(triggers))!=triggers or not triggers or len(triggers)!=len(set(triggers)) or set(rehearsed)!=set(triggers):raise GovernanceRejected("all planned rollback triggers must be rehearsed")
   return self._add(417,"ROLLBACK_READINESS_VERIFIED",{"triggers":triggers,"rehearsed":tuple(sorted(rehearsed)),"execution_enabled":False},key,v)
  def capacity(self,arrival,service,backlog_ceiling,key,v):
   if any(type(x) is not int for x in (arrival,service,backlog_ceiling)) or min(arrival,service,backlog_ceiling)<0 or arrival>service+backlog_ceiling:raise GovernanceRejected("bounded synthetic capacity required")
@@ -65,7 +71,7 @@ class ShadowReadinessReview:
  def packet(self,operator,selected,key,v):
   assigned=self.stages[9].payload["operator"] if len(self.stages)>9 else None
   if operator!=assigned or selected not in self.stages[10].payload["codes"]:raise GovernanceRejected("assigned operator and allowlisted selection required")
-  if selected=="SUBMIT_FOR_OPERATOR_REVIEW" and self.stages[1].payload["codes"]!=("NONE",):raise GovernanceRejected("blockers prevent review submission")
+  if selected=="SUBMIT_FOR_OPERATOR_REVIEW" and (self.stages[0].payload["recommendation"]!="ELIGIBLE_DRAFT" or self.stages[1].payload["codes"]!=("NONE",)):raise GovernanceRejected("only eligible blocker-free review may be submitted")
   return self._add(422,"OPERATOR_READINESS_PACKET_DRAFTED",{"operator":operator,"selected":selected,"authorization_token":None},key,v)
  def verify(self,verifier,checks,key,v):
   assigned={self.stages[9].payload[x] for x in ("author","reviewer","operator")}
