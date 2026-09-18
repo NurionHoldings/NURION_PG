@@ -26,7 +26,7 @@ class OperatorIntentReceipts:
   if state!="SYNTHETIC_SHADOW_READINESS_REVIEW_COMPLETED" or packet_selection not in {"HOLD","REQUEST_REVISION","SUBMIT_FOR_OPERATOR_REVIEW"} or tuple(sorted(blockers))!=blockers or packet_selection=="SUBMIT_FOR_OPERATOR_REVIEW" and blockers!=("NONE",):raise GovernanceRejected("consistent readiness packet required")
   return self._add(426,"READINESS_PACKET_ADMITTED",{"selection":packet_selection,"blockers":blockers},key,v)
  def bind_scope(self,project,features,purpose,key,v):
-  if project!="NURION_PG" or features!=(381,440) or purpose!="READ_ONLY_CONSIDERATION":raise GovernanceRejected("fixed project scope required")
+  if project!="NURION_PG" or features!=(381,425) or purpose!="READ_ONLY_CONSIDERATION":raise GovernanceRejected("fixed project scope required")
   return self._add(427,"INTENT_SCOPE_BOUND",{"project":project,"features":features,"purpose":purpose},key,v)
  def validity(self,issued,expires,now,key,v):
   if any(x.tzinfo is None for x in (issued,expires,now)) or not issued<=now<expires:raise GovernanceRejected("currently valid aware window required")
@@ -35,9 +35,9 @@ class OperatorIntentReceipts:
   if not _s(operator,"synthetic:operator:") or operator!=packet_operator:raise GovernanceRejected("packet-bound synthetic operator required")
   return self._add(429,"OPERATOR_IDENTITY_BOUND",{"operator":operator},key,v)
  def intent(self,code,key,v):
-  allowed={"ACKNOWLEDGE","REQUEST_REVISION","DECLINE_CONSIDERATION","CONSIDER_NEXT_SYNTHETIC_STAGE"}
+  allowed={"ACKNOWLEDGE_ONLY","REQUEST_REVISION","DEFER_CONSIDERATION","CLOSE_CONSIDERATION"}
   selection=self.stages[0].payload["selection"]
-  if code not in allowed or code=="CONSIDER_NEXT_SYNTHETIC_STAGE" and selection!="SUBMIT_FOR_OPERATOR_REVIEW":raise GovernanceRejected("selection-bound intent code required")
+  if code not in allowed:raise GovernanceRejected("selection-bound intent code required")
   return self._add(430,"OPERATOR_INTENT_RECORDED",{"code":code,"authorization":False},key,v)
  def prerequisites(self,checks,key,v):
   required=("DIGESTS","NON_AUTHORITY","SAFETY","SCOPE")
