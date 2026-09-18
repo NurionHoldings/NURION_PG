@@ -150,6 +150,36 @@ class SyntheticPriorityDeliveryRecoveryTests(unittest.TestCase):
                 "synthetic:relay:1",
             )
 
+
+
+    def test_relay_failure_after_verification_blocks_recovery(self):
+        service = SyntheticPriorityDeliveryRecovery()
+        item = service.enqueue(
+            "synthetic:packet:relay-race",
+            digest("intent:relay-race"),
+            "HIGH",
+            NOW,
+        )
+        service.reserve_batch("synthetic:batch:relay-race", 1)
+        reserved = service.get(item.packet_id)
+        archived = service.archive_recoverable(
+            item.packet_id,
+            reserved.version,
+            "RELAY_UNSTABLE",
+        )
+        relay = self.stabilize(service)
+        verified = service.verify_recovery(
+            item.packet_id,
+            archived.version,
+            "synthetic:verifier:relay-race",
+            "b" * 64,
+            relay,
+        )
+        service.observe_relay(relay, False, "synthetic:key:post-verification-failure")
+
+        with self.assertRaises(GovernanceRejected):
+            service.recover(item.packet_id, verified.version)
+
     def test_verified_recovery_returns_packet_to_queue(self):
         service = SyntheticPriorityDeliveryRecovery()
         packet = self.packet(service, "recover")
