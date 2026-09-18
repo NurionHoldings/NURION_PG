@@ -87,6 +87,7 @@
 - 외부 I/O 없이 append-only 체인·멱등·동시성·변조탐지를 구현한 memory 및 in-memory SQLite 합성 저장소 어댑터
 - #501~#700을 계약·스키마·마이그레이션·저장소 의미·동시성·무결성·DB 패리티·CI 감사의 8개 PostgreSQL readiness workstream으로 고정
 - #701~#900을 backpressure·중복판단·패킷갱신·단일경고·종료상태 정리·검증후 재개의 합성 delivery control로 구현
+- #901~#1100을 우선순위 스케줄링·최대 30개 배치·완료중복 보관·복구가능 보관·relay 안정화·최대 50개 gap·독립복구검증·감사증거의 합성·메모리 전용 control로 구현
 
 자세한 내용은 [ARKAON 통제형 부트스트랩](docs/01-arkaon-governed-bootstrap.md)을 참고합니다.
 
