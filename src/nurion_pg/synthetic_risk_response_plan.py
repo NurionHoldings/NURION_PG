@@ -44,7 +44,7 @@ class RiskResponsePlan:
   gap=max(basis_points.values())-min(basis_points.values())
   return self._add(385,"FAIRNESS_CONSTRAINTS_CHECKED",{"segments":segments,"maximum_gap_bp":gap,"protected_data_used":False},key,version)
  def priority(self,ranked_codes,key,version):
-  if tuple(sorted(ranked_codes,key=lambda x:x[0]))!=ranked_codes or len({r for r,_ in ranked_codes})!=len(ranked_codes) or len({c for _,c in ranked_codes})!=len(ranked_codes) or any(type(r) is not int or r<1 for r,_ in ranked_codes):raise GovernanceRejected("unique deterministic priority ranks required")
+  candidate_codes=set(self.stages[2].payload["codes"]) if len(self.stages)>2 else set()\n  if tuple(sorted(ranked_codes,key=lambda x:x[0]))!=ranked_codes or tuple(r for r,_ in ranked_codes)!=tuple(range(1,len(ranked_codes)+1)) or len({c for _,c in ranked_codes})!=len(ranked_codes) or not {code for _,code in ranked_codes}<=candidate_codes:raise GovernanceRejected("continuous candidate-bound priority ranks required")
   return self._add(386,"INTERVENTION_PRIORITY_DRAFTED",{"ranked_codes":ranked_codes,"automatic_action":False},key,version)
  def cooling(self,start,end,key,version):
   if any(x.tzinfo is None for x in (start,end)) or end<=start:raise GovernanceRejected("aware positive cooling period required")
@@ -66,11 +66,11 @@ class RiskResponsePlan:
   return self._add(391,"SHADOW_SCHEDULE_DRAFTED",{"start":start.isoformat(),"end":end.isoformat(),"sample_bp":sample_bp,"traffic_routed":False},key,version)
  def success_criteria(self,criteria,key,version):
   allowed={"DEADLINE_BP","COVERAGE_BP","FAIRNESS_GAP_BP","IMPACT_MINOR"}
-  if tuple(sorted(criteria))!=criteria or not criteria or len({n for n,_,_ in criteria})!=len(criteria) or any(n not in allowed or op not in {"LTE","GTE"} or type(v) is not int or v<0 for n,op,v in criteria):raise GovernanceRejected("unique bounded success criteria required")
+  if tuple(sorted(criteria))!=criteria or not criteria or len({n for n,_,_ in criteria})!=len(criteria) or any(n not in allowed or op not in {"LTE","GTE"} or type(v) is not int or v<0 or (n.endswith("_BP") and v>10000) for n,op,v in criteria):raise GovernanceRejected("unique bounded success criteria required")
   return self._add(392,"SUCCESS_CRITERIA_FIXED",{"criteria":criteria,"auto_promote":False},key,version)
  def operator_packet(self,operator_ref,checks,key,version):
   required=("EVIDENCE","FAIRNESS","ROLLBACK","SAFETY")
-  if not _s(operator_ref,"synthetic:operator:") or checks!=required:raise GovernanceRejected("complete non-authorizing operator packet required")
+  assigned=self.stages[8].payload["actors"][2] if len(self.stages)>8 else None\n  if not _s(operator_ref,"synthetic:operator:") or operator_ref!=assigned or checks!=required:raise GovernanceRejected("assigned operator complete non-authorizing packet required")
   return self._add(393,"OPERATOR_PACKET_DRAFTED",{"operator_ref":operator_ref,"checks":checks,"authorization_token":None},key,version)
  def seal(self,previous_snapshot,key,version):
   if previous_snapshot is not None and not _d(previous_snapshot):raise GovernanceRejected("valid previous snapshot required")
