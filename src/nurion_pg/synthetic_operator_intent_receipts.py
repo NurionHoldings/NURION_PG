@@ -22,9 +22,10 @@ class OperatorIntentReceipts:
    return item
   if v!=len(self.stages) or f!=426+len(self.stages):raise GovernanceRejected("ordered current version required")
   prev=self.stages[-1].digest if self.stages else self.packet_digest;item=IntentStage(f,state,payload,prev,canonical_digest({"feature":f,"state":state,"payload":payload,"previous_digest":prev}),key);self.stages.append(item);self._keys[key]=(fp,item);return item
- def admit(self,state,packet_selection,blockers,key,v=0):
-  if state!="SYNTHETIC_SHADOW_READINESS_REVIEW_COMPLETED" or packet_selection not in {"HOLD","REQUEST_REVISION","SUBMIT_FOR_OPERATOR_REVIEW"} or tuple(sorted(blockers))!=blockers or packet_selection=="SUBMIT_FOR_OPERATOR_REVIEW" and blockers!=("NONE",):raise GovernanceRejected("consistent readiness packet required")
-  return self._add(426,"READINESS_PACKET_ADMITTED",{"selection":packet_selection,"blockers":blockers},key,v)
+ def admit(self,state,packet_selection,blockers,assigned_operator,key,v=0):
+  allowed_blockers={"CRITERIA_FAILED","ROLLBACK_TRIGGERED","FAIRNESS_CONCERN","CAPACITY_CONCERN","NONE"}
+  if state!="SYNTHETIC_SHADOW_READINESS_REVIEW_COMPLETED" or packet_selection not in {"HOLD","REQUEST_REVISION","SUBMIT_FOR_OPERATOR_REVIEW"} or tuple(sorted(blockers))!=blockers or not blockers or len(blockers)!=len(set(blockers)) or not set(blockers)<=allowed_blockers or ("NONE" in blockers and len(blockers)!=1) or packet_selection=="SUBMIT_FOR_OPERATOR_REVIEW" and blockers!=("NONE",) or packet_selection!="SUBMIT_FOR_OPERATOR_REVIEW" and blockers==("NONE",) or not _s(assigned_operator,"synthetic:operator:"):raise GovernanceRejected("consistent readiness packet required")
+  return self._add(426,"READINESS_PACKET_ADMITTED",{"selection":packet_selection,"blockers":blockers,"assigned_operator":assigned_operator},key,v)
  def bind_scope(self,project,features,purpose,key,v):
   if project!="NURION_PG" or features!=(381,425) or purpose!="READ_ONLY_CONSIDERATION":raise GovernanceRejected("fixed project scope required")
   return self._add(427,"INTENT_SCOPE_BOUND",{"project":project,"features":features,"purpose":purpose},key,v)
@@ -32,7 +33,8 @@ class OperatorIntentReceipts:
   if any(x.tzinfo is None for x in (issued,expires,now)) or not issued<=now<expires:raise GovernanceRejected("currently valid aware window required")
   return self._add(428,"INTENT_VALIDITY_CHECKED",{"issued":issued.isoformat(),"expires":expires.isoformat(),"as_of":now.isoformat()},key,v)
  def actor(self,operator,packet_operator,key,v):
-  if not _s(operator,"synthetic:operator:") or operator!=packet_operator:raise GovernanceRejected("packet-bound synthetic operator required")
+  assigned=self.stages[0].payload["assigned_operator"] if self.stages else None
+  if not _s(operator,"synthetic:operator:") or operator!=packet_operator or operator!=assigned:raise GovernanceRejected("packet-bound synthetic operator required")
   return self._add(429,"OPERATOR_IDENTITY_BOUND",{"operator":operator},key,v)
  def intent(self,code,key,v):
   allowed={"ACKNOWLEDGE_ONLY","REQUEST_REVISION","DEFER_CONSIDERATION","CLOSE_CONSIDERATION"}
@@ -60,7 +62,7 @@ class OperatorIntentReceipts:
   if not _s(receipt_id,"synthetic:receipt:"):raise GovernanceRejected("synthetic receipt required")
   return self._add(436,"INTENT_RECEIPT_ISSUED",{"receipt_id":receipt_id,"intent_digest":self.stages[4].digest,"authority_conferred":False},key,v)
  def ledger(self,sequence,previous_receipt_digest,key,v):
-  if type(sequence) is not int or sequence<1 or previous_receipt_digest is not None and not _d(previous_receipt_digest):raise GovernanceRejected("valid append-only receipt position required")
+  if sequence!=1 or previous_receipt_digest is not None:raise GovernanceRejected("initial receipt must start append-only ledger")
   return self._add(437,"INTENT_RECEIPT_APPENDED",{"sequence":sequence,"previous_receipt_digest":previous_receipt_digest,"receipt_digest":self.stages[10].digest},key,v)
  def supersession(self,supersedes,reason,key,v):
   if supersedes is not None and not _d(supersedes) or reason not in {"INITIAL","CORRECTION","OPERATOR_WITHDRAWAL"} or supersedes is None and reason!="INITIAL" or supersedes is not None and reason=="INITIAL":raise GovernanceRejected("coherent supersession metadata required")
