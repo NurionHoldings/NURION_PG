@@ -94,13 +94,13 @@ class SyntheticDeliveryQueue:
  def _history_chain_valid(self):
   tips={}
   for item in self._history:
-   expected_previous=tips.get(item.packet_id)
+   previous_item=tips.get(item.packet_id);expected_previous=None if previous_item is None else previous_item.digest
    if item.previous_digest!=expected_previous:return False
    try:rebuilt=self._make(item.packet_id,item.intent_digest,item.version,item.status,item.warning,item.created_at,item.expires_at,item.previous_digest)
    except GovernanceRejected:return False
    if rebuilt!=item:return False
-   tips[item.packet_id]=item.digest
-  return all(packet_id in tips and item.digest==tips[packet_id] for packet_id,item in self._rows.items())
+   tips[item.packet_id]=item
+  return all(packet_id in tips and item==tips[packet_id] for packet_id,item in self._rows.items())
  def evidence(self):
   with self._lock:
    counts={state:sum(x.status==state for x in self._rows.values()) for state in sorted(ACTIVE|TERMINAL)}
