@@ -186,6 +186,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_operator_intent_receipts_evidence.py
       - name: Verify synthetic operator intent audit checkpoint
         run: PYTHONPATH=src python scripts/run_synthetic_operator_intent_audit_evidence.py
+      - name: Verify synthetic operator audit registry parity
+        run: PYTHONPATH=src python scripts/run_synthetic_operator_audit_registry_parity_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -342,5 +344,7 @@ jobs:
             build/synthetic-operator-intent-receipts-evidence.json.sha256
             build/synthetic-operator-intent-audit-evidence.json
             build/synthetic-operator-intent-audit-evidence.json.sha256
+            build/synthetic-operator-audit-registry-parity-evidence.json
+            build/synthetic-operator-audit-registry-parity-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
