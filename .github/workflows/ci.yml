@@ -199,6 +199,8 @@ jobs:
 
       - name: Verify synthetic priority delivery recovery #901-#1100
         run: PYTHONPATH=src python scripts/run_synthetic_priority_delivery_recovery_evidence.py
+      - name: Verify synthetic recovery quarantine #1101-#1300
+        run: PYTHONPATH=src python scripts/run_synthetic_recovery_quarantine_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -367,5 +369,7 @@ jobs:
             build/synthetic-delivery-backpressure-evidence.json.sha256
             build/synthetic-priority-delivery-recovery-evidence.json
             build/synthetic-priority-delivery-recovery-evidence.json.sha256
+            build/synthetic-recovery-quarantine-evidence.json
+            build/synthetic-recovery-quarantine-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
