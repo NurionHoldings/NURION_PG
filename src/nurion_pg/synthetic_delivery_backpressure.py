@@ -71,6 +71,13 @@ class SyntheticDeliveryQueue:
    if now.tzinfo is None or now>=old.expires_at or old.status!="HELD" or old.warning is None:raise GovernanceRejected("current held warning required")
    item=replace(old,version=old.version+1,warning=None,previous_digest=old.digest,digest="")
    item=replace(item,digest=canonical_digest({"packet_id":item.packet_id,"intent_digest":item.intent_digest,"version":item.version,"status":item.status,"warning":item.warning,"created_at":item.created_at.isoformat(),"expires_at":item.expires_at.isoformat(),"previous_digest":item.previous_digest}));self._rows[packet_id]=item;self._record("WARNING_CLEARED",item);return item
+ def verify_resume(self,packet_id,expected_version,verifier,receipt_digest,now):
+  with self._lock:
+   old=self._require(packet_id,expected_version)
+   if now.tzinfo is None or now>=old.expires_at or old.status!="HELD" or old.warning is not None or not isinstance(verifier,str) or not verifier.startswith("synthetic:verifier:") or not _hex_digest(receipt_digest):raise GovernanceRejected("valid independent resume receipt required")
+   item=replace(old,version=old.version+1,previous_digest=old.digest,digest="")
+   item=replace(item,digest=canonical_digest({"packet_id":item.packet_id,"intent_digest":item.intent_digest,"version":item.version,"status":item.status,"warning":item.warning,"created_at":item.created_at.isoformat(),"expires_at":item.expires_at.isoformat(),"previous_digest":item.previous_digest}))
+   self._rows[packet_id]=item;self._resume_receipts[packet_id]=(item.version,verifier,receipt_digest);self._record("RESUME_VERIFIED",item);return item
  def _require(self,packet_id,version):
   item=self._rows.get(packet_id)
   if item is None or item.version!=version:raise GovernanceRejected("current packet version required")
@@ -93,6 +100,6 @@ class SyntheticDeliveryQueue:
  def evidence(self):
   with self._lock:
    counts={state:sum(x.status==state for x in self._rows.values()) for state in sorted(ACTIVE|TERMINAL)}
-   event_count=len(self._events);history_count=len(self._history);event_chain_valid=self._event_chain_valid();history_chain_valid=self._history_chain_valid()
-  out={"schema":"nurion.pg.synthetic-delivery-backpressure.v1","features":list(range(701,901)),"workstreams":[{"name":n,"start":s,"end":e} for s,e,n in WORKSTREAMS],"packet_count":len(self._rows),"status_counts":counts,"event_count":event_count,"history_count":history_count,"event_chain_valid":event_chain_valid,"history_chain_valid":history_chain_valid,"maximum_state":"SYNTHETIC_DELIVERY_BACKPRESSURE_VERIFIED","synthetic_only":True,"in_memory_only":True,"automatic_approval_allowed":False,"external_delivery_used":False,"external_io_used":False,"production_credentials_accessed":False,"money_movement_allowed":False,"merge_allowed":False,"deployment_allowed":False}
+   packet_count=len(self._rows);event_count=len(self._events);history_count=len(self._history);event_chain_valid=self._event_chain_valid();history_chain_valid=self._history_chain_valid()
+  out={"schema":"nurion.pg.synthetic-delivery-backpressure.v1","features":list(range(701,901)),"workstreams":[{"name":n,"start":s,"end":e} for s,e,n in WORKSTREAMS],"packet_count":packet_count,"status_counts":counts,"event_count":event_count,"history_count":history_count,"event_chain_valid":event_chain_valid,"history_chain_valid":history_chain_valid,"maximum_state":"SYNTHETIC_DELIVERY_BACKPRESSURE_VERIFIED","synthetic_only":True,"in_memory_only":True,"automatic_approval_allowed":False,"external_delivery_used":False,"external_io_used":False,"production_credentials_accessed":False,"money_movement_allowed":False,"merge_allowed":False,"deployment_allowed":False}
   return {**out,"report_digest":canonical_digest(out)}
