@@ -25,9 +25,10 @@ class ResponseShadowValidation:
   if version!=len(self.stages) or feature!=396+len(self.stages):raise GovernanceRejected("ordered current version required")
   prev=self.stages[-1].digest if self.stages else self.plan_digest
   item=ShadowStage(feature,state,payload,prev,canonical_digest({"feature":feature,"state":state,"payload":payload,"previous_digest":prev}),key);self.stages.append(item);self._keys[key]=(fp,item);return item
- def admit(self,state,forbidden,key,version=0):
-  if state!="SYNTHETIC_RISK_RESPONSE_PLAN_COMPLETED" or forbidden:raise GovernanceRejected("safe completed plan required")
-  return self._add(396,"SHADOW_PLAN_ADMITTED",{"plan_digest":self.plan_digest},key,version)
+ def admit(self,state,forbidden,criteria,rollback_triggers,key,version=0):
+  allowed_metrics={"COVERAGE_BP","DEADLINE_BP","FAIRNESS_GAP_BP","IMPACT_MINOR"};allowed_triggers={"METRIC_REGRESSION","FAIRNESS_BREACH","CEILING_BREACH","DATA_DRIFT"}
+  if state!="SYNTHETIC_RISK_RESPONSE_PLAN_COMPLETED" or forbidden or {n for n,_,_ in criteria}!=allowed_metrics or len(criteria)!=4 or any(op not in {"LTE","GTE"} or type(v) is not int or v<0 or (n.endswith("_BP") and v>10000) for n,op,v in criteria) or tuple(sorted(rollback_triggers))!=rollback_triggers or not rollback_triggers or len(rollback_triggers)!=len(set(rollback_triggers)) or not set(rollback_triggers)<=allowed_triggers:raise GovernanceRejected("safe completed plan with fixed criteria and rollback triggers required")
+  return self._add(396,"SHADOW_PLAN_ADMITTED",{"plan_digest":self.plan_digest,"criteria":criteria,"rollback_triggers":rollback_triggers},key,version)
  def fixture_cohort(self,cases,currency,key,version):
   items=tuple(sorted(cases))
   if not items or len(items)!=len(set(items)) or any(not _s(x,"synthetic:case:") for x in items) or len(currency)!=3:raise GovernanceRejected("unique synthetic single-currency cohort required")
