@@ -172,6 +172,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_dispute_evidence.py
       - name: Verify synthetic dispute review draft
         run: PYTHONPATH=src python scripts/run_synthetic_dispute_review_evidence.py
+      - name: Verify synthetic dispute portfolio
+        run: PYTHONPATH=src python scripts/run_synthetic_dispute_portfolio_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -314,5 +316,7 @@ jobs:
             build/arkaon-role-separated-release-benchmark-evidence.json.sha256
             build/arkaon-benchmark-receipt-repository-parity-evidence.json
             build/arkaon-benchmark-receipt-repository-parity-evidence.json.sha256
+            build/synthetic-dispute-portfolio-evidence.json
+            build/synthetic-dispute-portfolio-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
