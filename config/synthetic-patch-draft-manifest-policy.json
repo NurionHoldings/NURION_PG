@@ -1,0 +1,32 @@
+{
+  "schema": "nurion.pg.synthetic-patch-draft-manifest-policy.v1",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "required_input_state": "SYNTHETIC_PATCH_DECISION_RECEIPT_RECORDED",
+  "required_decision": "AUTHORIZE_SYNTHETIC_PATCH_DRAFT",
+  "maximum_state": "SYNTHETIC_PATCH_DRAFT_MANIFESTED",
+  "metadata_only": true,
+  "eternian_review_required": true,
+  "required_checks": [
+    "PRESERVE_FAIL_CLOSED_BASELINE",
+    "REPRODUCE_SOURCE_SHA256_EVIDENCE",
+    "DECLARE_OPAQUE_TARGET_DIGESTS_ONLY",
+    "NO_PATCH_CONTENT_OR_DIFF",
+    "RUN_SYNTHETIC_REGRESSION",
+    "RUN_CONCURRENCY_AND_FAILURE_TESTS_WHEN_APPLICABLE",
+    "ETERNIAN_REVIEW_REQUIRED_BEFORE_PATCH_SHADOW",
+    "SEPARATE_PATCH_SHADOW_REQUIRED",
+    "OPERATOR_APPROVAL_REQUIRED_BEFORE_LIMITED_PROMOTION"
+  ],
+  "patch_content_allowed": false,
+  "diff_content_allowed": false,
+  "source_code_change_allowed": false,
+  "filesystem_write_allowed": false,
+  "automatic_application_allowed": false,
+  "safety_baseline_relaxation_allowed": false,
+  "payment_execution_allowed": false,
+  "money_movement_allowed": false,
+  "production_activation_allowed": false,
+  "network_access_allowed": false,
+  "real_credentials_allowed": false,
+  "real_personal_data_allowed": false
+}
