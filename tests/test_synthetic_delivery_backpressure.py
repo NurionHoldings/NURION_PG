@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
 from datetime import UTC,datetime,timedelta
 from hashlib import sha256
 import unittest
@@ -48,5 +49,7 @@ class Tests(unittest.TestCase):
   q=SyntheticDeliveryQueue();a=q.enqueue("synthetic:packet:1",h(b"x"),NOW,NOW+timedelta(hours=1));a=q.warn(a.packet_id,a.version,"STALE_PACKET",NOW);a=q.hold(a.packet_id,a.version,NOW);a=q.clear_warning(a.packet_id,a.version,NOW);a=q.verify_resume(a.packet_id,a.version,"synthetic:verifier:1",h(b"receipt"),NOW);q.transition(a.packet_id,a.version,"READY",NOW)
   e=q.evidence();self.assertEqual(e["event_count"],6);self.assertEqual(e["history_count"],6);self.assertTrue(e["event_chain_valid"]);self.assertTrue(e["history_chain_valid"])
   q._events[0]["action"]="tampered";self.assertFalse(q.evidence()["event_chain_valid"])
+  q2=SyntheticDeliveryQueue();x=q2.enqueue("synthetic:packet:history",h(b"history"),NOW,NOW+timedelta(hours=1));q2._history[0]=replace(x,warning="tampered");self.assertFalse(q2.evidence()["history_chain_valid"])
+  q3=SyntheticDeliveryQueue();x=q3.enqueue("synthetic:packet:tip",h(b"tip"),NOW,NOW+timedelta(hours=1));q3._rows[x.packet_id]=replace(x,warning="tampered");self.assertFalse(q3.evidence()["history_chain_valid"])
   with self.assertRaises(GovernanceRejected):SyntheticDeliveryQueue().enqueue("synthetic:packet:bad","z"*64,NOW,NOW+timedelta(hours=1))
 if __name__=="__main__":unittest.main()
