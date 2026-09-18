@@ -1,0 +1,29 @@
+{
+  "schema": "nurion.pg.synthetic-webhook-intake-policy.v1",
+  "version": "0.1.0",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "provider_suffix": ".invalid",
+  "signature_algorithm": "HMAC-SHA256",
+  "max_age_seconds": 600,
+  "future_skew_seconds": 60,
+  "max_payload_bytes": 8192,
+  "allowed_event_types": [
+    "AUTHORIZATION_RESULT",
+    "CAPTURE_RESULT",
+    "CANCEL_RESULT",
+    "REFUND_RESULT"
+  ],
+  "replay_controls": {
+    "event_id_unique": true,
+    "nonce_unique_per_provider": true,
+    "aggregate_sequence_required": true,
+    "sequence_gap_decision": "QUARANTINED"
+  },
+  "real_provider_allowed": false,
+  "real_personal_data_allowed": false,
+  "operational_secret_allowed": false,
+  "automatic_payment_application_allowed": false,
+  "network_listener_allowed": false,
+  "production_activation_allowed": false
+}
+
