@@ -34,3 +34,7 @@ class Tests(unittest.TestCase):
   base={"currency":"KRW","state":"CLOSURE_RECONCILED","reason":"OTHER","received_at":"x","exposure_minor":0}
   a={**base,"case_id":"synthetic:case:a","merchant_ref":"synthetic:merchant:a","lineage_digest":h(b"a")};b={**base,"case_id":"synthetic:case:b","merchant_ref":"synthetic:merchant:b","lineage_digest":h(b"b")}
   x=DisputeObservatory(h(b"m"),h(b"p")).projection((a,b),"synthetic:key:k").digest;y=DisputeObservatory(h(b"m"),h(b"p")).projection((b,a),"synthetic:key:k").digest;self.assertEqual(x,y)
+ def test_duplicate_concentration_keys_fail_closed(self):
+  o=DisputeObservatory(h(b"m"),h(b"p"))
+  with self.assertRaises(GovernanceRejected):o.reason_concentration((("SERVICE",5000),("SERVICE",5000)),"synthetic:key:r",0)
+  with self.assertRaises(GovernanceRejected):o.merchant_concentration((("synthetic:merchant:1","KRW",500),("synthetic:merchant:1","KRW",500)),"synthetic:key:m",0)
