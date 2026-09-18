@@ -180,6 +180,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_risk_response_plan_evidence.py
       - name: Verify synthetic response shadow validation
         run: PYTHONPATH=src python scripts/run_synthetic_response_shadow_validation_evidence.py
+      - name: Verify synthetic shadow readiness review
+        run: PYTHONPATH=src python scripts/run_synthetic_shadow_readiness_review_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -330,5 +332,7 @@ jobs:
             build/synthetic-risk-response-plan-evidence.json.sha256
             build/synthetic-response-shadow-validation-evidence.json
             build/synthetic-response-shadow-validation-evidence.json.sha256
+            build/synthetic-shadow-readiness-review-evidence.json
+            build/synthetic-shadow-readiness-review-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
