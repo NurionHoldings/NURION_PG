@@ -28,6 +28,7 @@ class ShadowReadinessReview:
  def blockers(self,codes,key,v):
   allowed={"CRITERIA_FAILED","ROLLBACK_TRIGGERED","FAIRNESS_CONCERN","CAPACITY_CONCERN","NONE"}
   if tuple(sorted(codes))!=codes or not codes or len(codes)!=len(set(codes)) or not set(codes)<=allowed or ("NONE" in codes and len(codes)!=1):raise GovernanceRejected("unique coherent blocker codes required")
+  if not self.stages:raise GovernanceRejected("admission required")
   rec=self.stages[0].payload["recommendation"]
   if rec=="ELIGIBLE_DRAFT" and codes!=("NONE",):raise GovernanceRejected("eligible draft cannot carry blockers")
   return self._add(412,"BLOCKER_DOCKET_FIXED",{"codes":codes},key,v)
