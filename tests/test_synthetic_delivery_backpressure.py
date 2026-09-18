@@ -45,9 +45,15 @@ class Tests(unittest.TestCase):
   for action in ("warn","hold","refresh"):
    with self.assertRaises(GovernanceRejected):
     {"warn":lambda:q.warn(a.packet_id,a.version,"STALE_PACKET",NOW+timedelta(hours=2)),"hold":lambda:q.hold(a.packet_id,a.version,NOW+timedelta(hours=2)),"refresh":lambda:q.refresh(a.packet_id,a.version,NOW+timedelta(hours=3),NOW+timedelta(hours=2))}[action]()
+ def test_resume_receipt_idempotency_conflict_and_tamper(self):
+  q=SyntheticDeliveryQueue();a=q.enqueue("synthetic:packet:r",h(b"r"),NOW,NOW+timedelta(hours=1));a=q.warn(a.packet_id,a.version,"STALE_PACKET",NOW);a=q.hold(a.packet_id,a.version,NOW);a=q.clear_warning(a.packet_id,a.version,NOW);source=a.version;a=q.verify_resume(a.packet_id,source,"synthetic:verifier:1",h(b"receipt"),NOW);self.assertIs(a,q.verify_resume(a.packet_id,source,"synthetic:verifier:1",h(b"receipt"),NOW))
+  with self.assertRaises(GovernanceRejected):q.verify_resume(a.packet_id,source,"synthetic:verifier:1",h(b"other"),NOW)
+  receipt=q._resume_receipts[a.packet_id];q._resume_receipts[a.packet_id]=replace(receipt,verifier="tampered")
+  self.assertFalse(q.evidence()["receipt_integrity_valid"])
+  with self.assertRaises(GovernanceRejected):q.transition(a.packet_id,a.version,"READY",NOW)
  def test_evidence_chains_and_invalid_digest(self):
   q=SyntheticDeliveryQueue();a=q.enqueue("synthetic:packet:1",h(b"x"),NOW,NOW+timedelta(hours=1));a=q.warn(a.packet_id,a.version,"STALE_PACKET",NOW);a=q.hold(a.packet_id,a.version,NOW);a=q.clear_warning(a.packet_id,a.version,NOW);a=q.verify_resume(a.packet_id,a.version,"synthetic:verifier:1",h(b"receipt"),NOW);q.transition(a.packet_id,a.version,"READY",NOW)
-  e=q.evidence();self.assertEqual(e["event_count"],6);self.assertEqual(e["history_count"],6);self.assertTrue(e["event_chain_valid"]);self.assertTrue(e["history_chain_valid"])
+  e=q.evidence();self.assertEqual(e["event_count"],6);self.assertEqual(e["history_count"],6);self.assertTrue(e["event_chain_valid"]);self.assertTrue(e["history_chain_valid"]);self.assertTrue(e["receipt_integrity_valid"]);self.assertEqual(e["resume_receipt_count"],1)
   q._events[0]["action"]="tampered";self.assertFalse(q.evidence()["event_chain_valid"])
   q2=SyntheticDeliveryQueue();x=q2.enqueue("synthetic:packet:history",h(b"history"),NOW,NOW+timedelta(hours=1));q2._history[0]=replace(x,warning="tampered");self.assertFalse(q2.evidence()["history_chain_valid"])
   q3=SyntheticDeliveryQueue();x=q3.enqueue("synthetic:packet:tip",h(b"tip"),NOW,NOW+timedelta(hours=1));q3._rows[x.packet_id]=replace(x,warning="tampered");self.assertFalse(q3.evidence()["history_chain_valid"])
