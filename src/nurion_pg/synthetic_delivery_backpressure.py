@@ -85,18 +85,22 @@ class SyntheticDeliveryQueue:
  def get(self,packet_id):
   with self._lock:return self._rows.get(packet_id)
  def _event_chain_valid(self):
-  previous=None
+  previous=None;history_digests={item.digest for item in self._history}
   for sequence,event in enumerate(self._events,1):
    payload={"action":event["action"],"packet_digest":event["packet_digest"],"previous_digest":previous,"sequence":sequence}
-   if event["previous_digest"]!=previous or event["digest"]!=canonical_digest(payload):return False
+   if event["packet_digest"] not in history_digests or event["previous_digest"]!=previous or event["digest"]!=canonical_digest(payload):return False
    previous=event["digest"]
   return True
  def _history_chain_valid(self):
-  seen=set()
+  tips={}
   for item in self._history:
-   if item.previous_digest is not None and item.previous_digest not in seen:return False
-   seen.add(item.digest)
-  return True
+   expected_previous=tips.get(item.packet_id)
+   if item.previous_digest!=expected_previous:return False
+   try:rebuilt=self._make(item.packet_id,item.intent_digest,item.version,item.status,item.warning,item.created_at,item.expires_at,item.previous_digest)
+   except GovernanceRejected:return False
+   if rebuilt!=item:return False
+   tips[item.packet_id]=item.digest
+  return all(packet_id in tips and item.digest==tips[packet_id] for packet_id,item in self._rows.items())
  def evidence(self):
   with self._lock:
    counts={state:sum(x.status==state for x in self._rows.values()) for state in sorted(ACTIVE|TERMINAL)}
