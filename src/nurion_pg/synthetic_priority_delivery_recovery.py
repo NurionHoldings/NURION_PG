@@ -440,8 +440,11 @@ class SyntheticPriorityDeliveryRecovery:
                 or receipt.resulting_version != old.version
                 or receipt.packet_id != packet_id
                 or not self._receipt_valid(receipt)
+                or not self._relay.get(receipt.relay_id, (0, 0, False))[2]
             ):
-                raise GovernanceRejected("verified recovery receipt required")
+                raise GovernanceRejected(
+                    "verified recovery receipt and currently stable relay required"
+                )
             if old.intent_digest in self._fulfilled_intents:
                 raise GovernanceRejected("fulfilled intent cannot recover")
             active = self._intent_active.get(old.intent_digest)
