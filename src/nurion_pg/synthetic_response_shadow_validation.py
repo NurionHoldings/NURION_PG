@@ -64,7 +64,7 @@ class ResponseShadowValidation:
   return self._add(405,"FALSE_POSITIVE_REVIEWED",{"numerator":numerator,"denominator":denominator,"rate_bp":numerator*10000//denominator},key,version)
  def sensitivity(self,scenarios,key,version):
   items=tuple(sorted(scenarios))
-  if not items or len({n for n,_ in items})!=len(items) or any(n not in {"LOW","BASE","HIGH"} or type(v) is not int for n,v in items):raise GovernanceRejected("unique allowlisted sensitivity scenarios required")
+  if {n for n,_ in items}!={"LOW","BASE","HIGH"} or len(items)!=3 or any(type(v) is not int for _,v in items):raise GovernanceRejected("unique allowlisted sensitivity scenarios required")
   return self._add(406,"SENSITIVITY_ANALYSIS_COMPLETED",{"scenarios":items,"randomness_used":False},key,version)
  def attest(self,planner,reviewer,checks,key,version):
   if not _s(planner,"synthetic:actor:") or not _s(reviewer,"synthetic:actor:") or planner==reviewer or checks!=("CRITERIA","FAIRNESS","FINANCIAL","ROLLBACK"):raise GovernanceRejected("independent complete attestation required")
