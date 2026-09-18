@@ -17,7 +17,7 @@ class DeliveryPacket:
 class SyntheticDeliveryQueue:
  def __init__(self,capacity=100):
   if capacity<1:raise GovernanceRejected("positive capacity required")
-  self.capacity=capacity;self._rows={};self._intent={};self._lock=RLock();self._events=[];self._history=[]
+  self.capacity=capacity;self._rows={};self._intent={};self._lock=RLock();self._events=[];self._history=[];self._resume_receipts={}
  def _make(self,packet_id,intent_digest,version,status,warning,created_at,expires_at,previous):
   if not packet_id.startswith("synthetic:packet:") or not _hex_digest(intent_digest) or created_at.tzinfo is None or expires_at.tzinfo is None or expires_at<=created_at:raise GovernanceRejected("valid synthetic packet required")
   payload={"packet_id":packet_id,"intent_digest":intent_digest,"version":version,"status":status,"warning":warning,"created_at":created_at.isoformat(),"expires_at":expires_at.isoformat(),"previous_digest":previous}
@@ -42,11 +42,11 @@ class SyntheticDeliveryQueue:
    old=self._require(packet_id,expected_version)
    if old.status not in ACTIVE or now.tzinfo is None or now>=old.expires_at or expires_at<=now:raise GovernanceRejected("refresh blocked")
    item=self._make(old.packet_id,old.intent_digest,old.version+1,old.status,old.warning,old.created_at,expires_at,old.digest);self._rows[packet_id]=item;self._record("REFRESHED",item);return item
- def warn(self,packet_id,expected_version,code):
+ def warn(self,packet_id,expected_version,code,now):
   allowed={"CAPACITY_PRESSURE","DUPLICATE_REVIEW","STALE_PACKET"}
   with self._lock:
    old=self._require(packet_id,expected_version)
-   if old.status not in ACTIVE or code not in allowed or old.warning is not None:raise GovernanceRejected("single active warning required")
+   if now.tzinfo is None or now>=old.expires_at or old.status not in ACTIVE or code not in allowed or old.warning is not None:raise GovernanceRejected("single current active warning required")
    item=replace(old,version=old.version+1,warning=code,previous_digest=old.digest,digest="")
    item=replace(item,digest=canonical_digest({"packet_id":item.packet_id,"intent_digest":item.intent_digest,"version":item.version,"status":item.status,"warning":item.warning,"created_at":item.created_at.isoformat(),"expires_at":item.expires_at.isoformat(),"previous_digest":item.previous_digest}));self._rows[packet_id]=item;self._record("WARNED",item);return item
  def transition(self,packet_id,expected_version,status,now):
@@ -55,20 +55,20 @@ class SyntheticDeliveryQueue:
    old=self._require(packet_id,expected_version)
    if now.tzinfo is None:raise GovernanceRejected("aware time required")
    if status=="EXPIRED" and now<old.expires_at:raise GovernanceRejected("not expired")
-   if status=="READY" and (old.status!="HELD" or old.warning is not None or now>=old.expires_at):raise GovernanceRejected("resume verification failed")
+   if status=="READY" and (old.status!="HELD" or old.warning is not None or now>=old.expires_at or self._resume_receipts.get(packet_id,(None,None,None))[0]!=old.version):raise GovernanceRejected("resume verification failed")
    if old.status in TERMINAL:raise GovernanceRejected("terminal packet")
    item=replace(old,version=old.version+1,status=status,previous_digest=old.digest,digest="")
    item=replace(item,digest=canonical_digest({"packet_id":item.packet_id,"intent_digest":item.intent_digest,"version":item.version,"status":item.status,"warning":item.warning,"created_at":item.created_at.isoformat(),"expires_at":item.expires_at.isoformat(),"previous_digest":item.previous_digest}));self._rows[packet_id]=item;self._record(status,item);return item
- def hold(self,packet_id,expected_version):
+ def hold(self,packet_id,expected_version,now):
   with self._lock:
    old=self._require(packet_id,expected_version)
-   if old.status!="PENDING":raise GovernanceRejected("pending packet required")
+   if now.tzinfo is None or now>=old.expires_at or old.status!="PENDING":raise GovernanceRejected("current pending packet required")
    item=replace(old,version=old.version+1,status="HELD",previous_digest=old.digest,digest="")
    item=replace(item,digest=canonical_digest({"packet_id":item.packet_id,"intent_digest":item.intent_digest,"version":item.version,"status":item.status,"warning":item.warning,"created_at":item.created_at.isoformat(),"expires_at":item.expires_at.isoformat(),"previous_digest":item.previous_digest}));self._rows[packet_id]=item;self._record("HELD",item);return item
- def clear_warning(self,packet_id,expected_version):
+ def clear_warning(self,packet_id,expected_version,now):
   with self._lock:
    old=self._require(packet_id,expected_version)
-   if old.status!="HELD" or old.warning is None:raise GovernanceRejected("held warning required")
+   if now.tzinfo is None or now>=old.expires_at or old.status!="HELD" or old.warning is None:raise GovernanceRejected("current held warning required")
    item=replace(old,version=old.version+1,warning=None,previous_digest=old.digest,digest="")
    item=replace(item,digest=canonical_digest({"packet_id":item.packet_id,"intent_digest":item.intent_digest,"version":item.version,"status":item.status,"warning":item.warning,"created_at":item.created_at.isoformat(),"expires_at":item.expires_at.isoformat(),"previous_digest":item.previous_digest}));self._rows[packet_id]=item;self._record("WARNING_CLEARED",item);return item
  def _require(self,packet_id,version):
