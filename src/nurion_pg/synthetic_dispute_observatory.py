@@ -52,11 +52,11 @@ class DisputeObservatory:
   return self._step(370,"DEADLINE_RISK_SCORED",{"horizon_hours":horizon_hours,"score":score,"automatic_action":False},key,expected_version)
  def reason_concentration(self,basis_points,key,expected_version):
   items=tuple(sorted(basis_points))
-  if not items or any(r not in {"FRAUD","SERVICE","PROCESSING","OTHER"} or type(v) is not int or v<0 for r,v in items) or sum(v for _,v in items)!=10000:raise GovernanceRejected("reason basis points must total 10000")
+  if not items or any(r not in {"FRAUD","SERVICE","PROCESSING","OTHER"} or type(v) is not int or v<0 for r,v in items) or len({r for r,_ in items})!=len(items) or sum(v for _,v in items)!=10000:raise GovernanceRejected("reason basis points must total 10000")
   return self._step(371,"REASON_CONCENTRATION_ASSESSED",{"basis_points":items},key,expected_version)
  def merchant_concentration(self,rows,key,expected_version):
   items=tuple(sorted(rows))
-  if not items or any(not _synthetic(m,"synthetic:merchant:") or len(c)!=3 or type(v) is not int or v<0 for m,c,v in items):raise GovernanceRejected("synthetic merchant concentration required")
+  if not items or any(not _synthetic(m,"synthetic:merchant:") or len(c)!=3 or type(v) is not int or v<0 for m,c,v in items) or len({(m,c) for m,c,_ in items})!=len(items):raise GovernanceRejected("synthetic merchant concentration required")
   return self._step(372,"MERCHANT_CONCENTRATION_ASSESSED",{"rows":items,"cross_currency_total":None},key,expected_version)
  def duplicate_clusters(self,edges,key,expected_version):
   items=tuple(sorted(tuple(sorted(e)) for e in edges))
