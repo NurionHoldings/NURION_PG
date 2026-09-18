@@ -1,0 +1,10 @@
+from datetime import UTC,datetime
+from hashlib import sha256
+import json
+from pathlib import Path
+from nurion_pg.synthetic_response_shadow_validation import ResponseShadowValidation
+ROOT=Path(__file__).resolve().parents[1];h=lambda x:sha256(x).hexdigest()
+def main():
+ n=datetime(2026,9,18,tzinfo=UTC);s=ResponseShadowValidation(h(b"plan"),h(b"policy"));s.admit("SYNTHETIC_RISK_RESPONSE_PLAN_COMPLETED",(),"synthetic:key:396");s.fixture_cohort(("synthetic:case:1","synthetic:case:2"),"KRW","synthetic:key:397",1);s.baseline({"COVERAGE_BP":8000,"DEADLINE_BP":600,"FAIRNESS_GAP_BP":200,"IMPACT_MINOR":1000},n,"synthetic:key:398",2);s.project("QUEUE_REVIEW",{"COVERAGE_BP":9000,"DEADLINE_BP":400,"FAIRNESS_GAP_BP":150,"IMPACT_MINOR":900},"synthetic:key:399",3);s.deltas({"COVERAGE_BP":1000,"DEADLINE_BP":-200,"FAIRNESS_GAP_BP":-50,"IMPACT_MINOR":-100},"synthetic:key:400",4);s.criteria({"COVERAGE_BP":True,"DEADLINE_BP":True,"FAIRNESS_GAP_BP":True,"IMPACT_MINOR":True},"synthetic:key:401",5);s.fairness_drift((("synthetic:segment:a",4900),("synthetic:segment:b",5100)),"synthetic:key:402",6);s.financial_guard(900,1000,"synthetic:key:403",7);s.rollback_check(("CEILING_BREACH","FAIRNESS_BREACH"),(),"synthetic:key:404",8);s.false_positive(1,20,"synthetic:key:405",9);s.sensitivity((("BASE",100),("HIGH",200),("LOW",50)),"synthetic:key:406",10);s.attest("synthetic:actor:planner","synthetic:actor:reviewer",("CRITERIA","FAIRNESS","FINANCIAL","ROLLBACK"),"synthetic:key:407",11);s.recommendation("ELIGIBLE_DRAFT","synthetic:key:408",12);s.seal(None,"synthetic:key:409",13);s.complete(("NO_EXECUTION","NO_PROMOTION","READ_ONLY","SYNTHETIC_ONLY"),"synthetic:key:410",14)
+ r=s.evidence();o=ROOT/"build/synthetic-response-shadow-validation-evidence.json";o.parent.mkdir(exist_ok=True);x=json.dumps(r,sort_keys=True,indent=2)+"\n";o.write_text(x);d=sha256(x.encode()).hexdigest();o.with_suffix(".json.sha256").write_text(d+"\n");print("synthetic response shadow validation: PASS",d)
+if __name__=="__main__":main()
