@@ -100,7 +100,7 @@ class SyntheticDeliveryQueue:
  def get(self,packet_id):
   with self._lock:return self._rows.get(packet_id)
  def _event_chain_valid(self):
-  previous=None;history_by_digest={item.digest:item for item in self._history};receipt_by_digest={receipt.record_digest:receipt for receipt in self._resume_receipts.values() if self._receipt_valid(receipt)}
+  previous=None;history_by_digest={item.digest:item for item in self._history};receipt_by_digest={receipt.record_digest:receipt for key,receipt in self._resume_receipts.items() if key==receipt.packet_id and self._receipt_valid(receipt)}
   for sequence,event in enumerate(self._events,1):
    payload={"action":event["action"],"packet_digest":event["packet_digest"],"receipt_record_digest":event["receipt_record_digest"],"previous_digest":previous,"sequence":sequence}
    history_item=history_by_digest.get(event["packet_digest"]);receipt=receipt_by_digest.get(event["receipt_record_digest"])
