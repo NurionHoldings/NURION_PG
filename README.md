@@ -84,6 +84,7 @@
 - 운영자 의향 수신증의 비권한·무부작용·무자격증명 경계를 독립 검증하고 append-only 체크포인트로 봉인하는 읽기 전용 감사
 - 운영자 의향 감사 체크포인트의 memory·in-memory SQLite 계약 동등성과 변조·재전송·동시성 통제를 검증하는 합성 registry parity
 - PostgreSQL 권위 저장소 구현 전 요구사항·충돌·아키텍처·스키마·마이그레이션·패리티·수용기준을 고정하는 Planning Lock
+- 외부 I/O 없이 append-only 체인·멱등·동시성·변조탐지를 구현한 memory 및 in-memory SQLite 합성 저장소 어댑터
 
 자세한 내용은 [ARKAON 통제형 부트스트랩](docs/01-arkaon-governed-bootstrap.md)을 참고합니다.
 
