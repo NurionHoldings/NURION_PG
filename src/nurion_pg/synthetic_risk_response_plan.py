@@ -44,7 +44,8 @@ class RiskResponsePlan:
   gap=max(basis_points.values())-min(basis_points.values())
   return self._add(385,"FAIRNESS_CONSTRAINTS_CHECKED",{"segments":segments,"maximum_gap_bp":gap,"protected_data_used":False},key,version)
  def priority(self,ranked_codes,key,version):
-  candidate_codes=set(self.stages[2].payload["codes"]) if len(self.stages)>2 else set()\n  if tuple(sorted(ranked_codes,key=lambda x:x[0]))!=ranked_codes or tuple(r for r,_ in ranked_codes)!=tuple(range(1,len(ranked_codes)+1)) or len({c for _,c in ranked_codes})!=len(ranked_codes) or not {code for _,code in ranked_codes}<=candidate_codes:raise GovernanceRejected("continuous candidate-bound priority ranks required")
+  candidate_codes=set(self.stages[2].payload["codes"]) if len(self.stages)>2 else set()
+  if tuple(sorted(ranked_codes,key=lambda x:x[0]))!=ranked_codes or tuple(r for r,_ in ranked_codes)!=tuple(range(1,len(ranked_codes)+1)) or len({c for _,c in ranked_codes})!=len(ranked_codes) or not {code for _,code in ranked_codes}<=candidate_codes:raise GovernanceRejected("continuous candidate-bound priority ranks required")
   return self._add(386,"INTERVENTION_PRIORITY_DRAFTED",{"ranked_codes":ranked_codes,"automatic_action":False},key,version)
  def cooling(self,start,end,key,version):
   if any(x.tzinfo is None for x in (start,end)) or end<=start:raise GovernanceRejected("aware positive cooling period required")
@@ -55,7 +56,7 @@ class RiskResponsePlan:
   return self._add(388,"EXCEPTION_DOCKET_DRAFTED",{"codes":codes,"free_text_absent":True},key,version)
  def roles(self,author,reviewer,operator,key,version):
   actors=(author,reviewer,operator)
-  if len(set(actors))!=3 or any(not _s(x,"synthetic:actor:") for x in actors):raise GovernanceRejected("three independent synthetic actors required")
+  if len(set(actors))!=3 or not _s(author,"synthetic:actor:") or not _s(reviewer,"synthetic:actor:") or not _s(operator,"synthetic:operator:"):raise GovernanceRejected("independent synthetic author reviewer operator required")
   return self._add(389,"ROLE_SEPARATION_VERIFIED",{"actors":actors,"approval_granted":False},key,version)
  def rollback(self,triggers,key,version):
   allowed={"METRIC_REGRESSION","FAIRNESS_BREACH","CEILING_BREACH","DATA_DRIFT"}
@@ -70,7 +71,8 @@ class RiskResponsePlan:
   return self._add(392,"SUCCESS_CRITERIA_FIXED",{"criteria":criteria,"auto_promote":False},key,version)
  def operator_packet(self,operator_ref,checks,key,version):
   required=("EVIDENCE","FAIRNESS","ROLLBACK","SAFETY")
-  assigned=self.stages[8].payload["actors"][2] if len(self.stages)>8 else None\n  if not _s(operator_ref,"synthetic:operator:") or operator_ref!=assigned or checks!=required:raise GovernanceRejected("assigned operator complete non-authorizing packet required")
+  assigned=self.stages[8].payload["actors"][2] if len(self.stages)>8 else None
+  if not _s(operator_ref,"synthetic:operator:") or operator_ref!=assigned or checks!=required:raise GovernanceRejected("assigned operator complete non-authorizing packet required")
   return self._add(393,"OPERATOR_PACKET_DRAFTED",{"operator_ref":operator_ref,"checks":checks,"authorization_token":None},key,version)
  def seal(self,previous_snapshot,key,version):
   if previous_snapshot is not None and not _d(previous_snapshot):raise GovernanceRejected("valid previous snapshot required")
