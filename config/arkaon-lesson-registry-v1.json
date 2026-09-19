@@ -112,6 +112,18 @@
       "ethernian_remediation_reference": "ETH-6301-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_correction_comparison_consent_conflict_review_readiness.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_correction_comparison_consent_conflict_review_readiness", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-6701-001",
+      "discovery_scope": "#6701-#7100 nonbinding alternative simulation independent audit",
+      "defect_category": "packet-provenance-projection-completeness",
+      "root_cause": "the final simulation packet projected source compilers but omitted source reviewers and the source lineage digest",
+      "exploit_scenario": "a packet is detached from in-memory anchor context and presented with only partial actor provenance while retaining a valid packet digest",
+      "mandatory_prevention_rules": ["self-contained-packet-provenance", "reviewer-and-compiler-projection", "source-lineage-digest-projection"],
+      "required_negative_tests": ["test_packet_source_reviewer_rehash_tamper", "test_packet_source_lineage_rehash_tamper"],
+      "ethernian_remediation_reference": "ETH-6701-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_nonbinding_resolution_alternative_simulation.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_nonbinding_resolution_alternative_simulation", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
