@@ -208,6 +208,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_canary_readiness_docket_evidence.py
       - name: Verify synthetic readiness decision intent #1701-#1900
         run: PYTHONPATH=src python scripts/run_synthetic_readiness_decision_intent_evidence.py
+      - name: Verify synthetic intent planning proposal #1901-#2100
+        run: PYTHONPATH=src python scripts/run_synthetic_intent_planning_proposal_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -268,6 +270,8 @@ jobs:
             build/synthetic-patch-draft-review-evidence.json.sha256
             build/synthetic-patch-draft-shadow-evidence.json
             build/synthetic-patch-draft-shadow-evidence.json.sha256
+            build/synthetic-intent-planning-proposal-evidence.json
+            build/synthetic-intent-planning-proposal-evidence.json.sha256
             build/synthetic-patch-draft-shadow-review-evidence.json
             build/synthetic-patch-draft-shadow-review-evidence.json.sha256
             build/patch-draft-promotion-operator-packet-evidence.json
