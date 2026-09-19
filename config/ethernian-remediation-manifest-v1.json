@@ -14,6 +14,7 @@
     {"remediation_id": "ETH-6701-AUDIT-001", "scope": "#6701-#7100", "required_lesson_ids": ["ARL-6701-001"]},
     {"remediation_id": "ETH-7101-AUDIT-001", "scope": "#7101-#7500", "required_lesson_ids": ["ARL-7101-001"]},
     {"remediation_id": "ETH-7501-AUDIT-001", "scope": "#7501-#7900", "required_lesson_ids": ["ARL-7501-001"]},
-    {"remediation_id": "ETH-7901-AUDIT-001", "scope": "#7901-#8300", "required_lesson_ids": ["ARL-7901-001"]}
+    {"remediation_id": "ETH-7901-AUDIT-001", "scope": "#7901-#8300", "required_lesson_ids": ["ARL-7901-001"]},
+    {"remediation_id": "ETH-8301-AUDIT-001", "scope": "#8301-#8700", "required_lesson_ids": ["ARL-8301-001"]}
   ]
 }

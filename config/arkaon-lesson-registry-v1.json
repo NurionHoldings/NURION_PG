@@ -160,6 +160,18 @@
       "ethernian_remediation_reference": "ETH-7901-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_cross_party_answer_reconciliation.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_cross_party_answer_reconciliation", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-8301-001",
+      "discovery_scope": "#8301-#8700 reconciliation submission lineage independent audit",
+      "defect_category": "case-set-and-immediate-parent-lineage-derivation",
+      "root_cause": "the anchored case-set digest was accepted as an arbitrary hexadecimal value and later submissions pointed to the initial proposal instead of the immediately preceding document",
+      "exploit_scenario": "an attacker replaces the complete source case set and recomputes outer digests while retaining a stale case-set identifier, or omits the counterargument and attaches evidence directly to the proposal",
+      "mandatory_prevention_rules": ["case-set-digest-from-ordered-cases", "immediate-parent-submission-chain", "full-rehash-case-set-test", "intermediate-document-omission-test"],
+      "required_negative_tests": ["test_case_set_full_rehash_substitution", "test_evidence_requires_immediate_counterargument"],
+      "ethernian_remediation_reference": "ETH-8301-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_reconciliation_submission_lineage.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_reconciliation_submission_lineage", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
