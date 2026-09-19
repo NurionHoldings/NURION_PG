@@ -1,5 +1,9 @@
 # NURION PG
 
+Latest synthetic control extension: #2101-#2500 proposal feasibility assessment
+and observation-only review portfolio. See
+`docs/09-synthetic-proposal-feasibility-2101-2500.md`.
+
 Synthetic canary readiness docket controls #1501-#1700 are documented in
 [`docs/12-synthetic-canary-readiness-docket-1501-1700.md`](docs/12-synthetic-canary-readiness-docket-1501-1700.md).
 
