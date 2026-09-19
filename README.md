@@ -99,6 +99,9 @@ Synthetic canary readiness docket controls #1501-#1700 are documented in
 - #1301~#1500을 제한 카나리 관찰·오류율·지연·회귀 자동보류·완료영수증·감사증거의 합성·메모리 전용 control로 구현
 - #1501~#1700을 카나리 준비도 접수·최대 20개 포트폴리오·지표집계·독립검토·준비도 docket·감사증거의 합성·메모리 전용 control로 구현
 - #1701~#1900을 readiness docket 접수·최대 20개 intent 배치·operator 초안·독립검토·비인가 경계·자동보류·receipt 재사용차단·감사증거의 합성·메모리 전용 control로 구현
+- #1901~#2100을 합성 결정 의향에서 비실행 계획 제안을 작성·독립검토·영수증화하는 메모리 전용 control로 구현
+- #2101~#2500을 구현제안 타당성 평가와 최대 20개 독립 관찰 포트폴리오로 묶는 합성·메모리 전용 control로 구현
+- #2501~#2700을 타당성 포트폴리오 접수·최대 20개 결정대장 배치·source digest/version 결속·독립검토·비권한 영수증·capability-gap 자기점검의 합성·메모리 전용 control로 구현
 
 자세한 내용은 [ARKAON 통제형 부트스트랩](docs/01-arkaon-governed-bootstrap.md)을 참고합니다.
 

@@ -212,6 +212,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_intent_planning_proposal_evidence.py
       - name: Verify synthetic proposal feasibility assessment #2101-#2500
         run: PYTHONPATH=src python scripts/run_synthetic_proposal_feasibility_assessment_evidence.py
+      - name: Verify synthetic feasibility decision docket #2501-#2700
+        run: PYTHONPATH=src python scripts/run_synthetic_feasibility_decision_docket_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -388,5 +390,7 @@ jobs:
             build/synthetic-release-canary-observation-evidence.json.sha256
             build/synthetic-canary-readiness-docket-evidence.json
             build/synthetic-canary-readiness-docket-evidence.json.sha256
+            build/synthetic-feasibility-decision-docket-evidence.json
+            build/synthetic-feasibility-decision-docket-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
