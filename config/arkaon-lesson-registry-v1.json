@@ -64,6 +64,18 @@
       "ethernian_remediation_reference": "ETH-4701-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_onboarding_rehearsal_readiness.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_onboarding_rehearsal_readiness", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-5101-001",
+      "discovery_scope": "#5101-#5500 operator review preflight independent audit",
+      "defect_category": "semantic-key-profile-capability-binding",
+      "root_cause": "control storage keys, party profile digests, and review-item capability inputs were not all bound to their semantic identities with exact post-validation",
+      "exploit_scenario": "attacker swaps controls between registry slots or party profile digests and recomputes outer digests, or creates an item from a partial common capability",
+      "mandatory_prevention_rules": ["registry-key-object-id-binding", "party-profile-capability-binding-digest", "exact-common-capability-input", "full-control-matrix-reconstruction"],
+      "required_negative_tests": ["test_control_slot_swap_rehash_tamper", "test_anchor_party_profile_binding_rehash_tamper", "test_item_partial_common_capability_rejected"],
+      "ethernian_remediation_reference": "ETH-5101-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_operator_review_preflight_docket.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_operator_review_preflight_docket", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
