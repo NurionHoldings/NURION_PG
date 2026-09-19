@@ -1,0 +1,51 @@
+{
+  "registry_id": "ARKAON-LESSON-REGISTRY",
+  "version": 1,
+  "mode": "DEVELOPMENT_LEARNING_ONLY",
+  "automatic_prompt_policy_weight_change": false,
+  "scan_base_commit": "87110f4",
+  "lessons": [
+    {
+      "lesson_id": "ARL-3901-001",
+      "discovery_scope": "#3901-#4300 negotiation conformance independent audit",
+      "defect_category": "lineage-role-semantic-binding",
+      "root_cause": "latest round, common capability, source-derived maker and event artifact were not all revalidated semantically",
+      "exploit_scenario": "attacker rebinds cases to stale round, forges author, injects unsupported rule, or substitutes event artifact and recomputes digest",
+      "mandatory_prevention_rules": ["latest-round-only", "source-derived-maker", "common-capability-intersection", "event-action-artifact-reconstruction"],
+      "required_negative_tests": ["test_cases_and_review_require_latest_round", "test_mapping_rules_require_common_party_capability", "test_review_separation", "test_event_artifact_rehash_substitution_detected"],
+      "ethernian_remediation_reference": "e933f82^..e933f82",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "config/arkaon-audit-recurrence-prevention.json"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_document_negotiation_conformance", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-4301-001",
+      "discovery_scope": "#4301-#4700 integration package independent audit",
+      "defect_category": "derived-route-and-maker-lineage",
+      "root_cause": "assembler lived outside content-addressed manifest and route digest was not recomputed from tenant/upstream/flow",
+      "exploit_scenario": "attacker substitutes assembler or route digest, recomputes manifest digest, and attempts maker-checker or routing lineage bypass",
+      "mandatory_prevention_rules": ["maker-in-source-artifact", "derived-route-recalculation", "namespace-post-validation"],
+      "required_negative_tests": ["test_manifest_rehashed_route_substitution", "test_manifest_rehashed_assembler_substitution"],
+      "ethernian_remediation_reference": "98a8e0c^..98a8e0c",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_integration_package_acceptance.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_integration_package_acceptance", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-4301-002",
+      "discovery_scope": "#4301-#4700 integration package independent audit",
+      "defect_category": "safe-boolean-post-validation",
+      "root_cause": "accepted_for_review safe value was set at creation but omitted from post-mutation integrity validation",
+      "exploit_scenario": "attacker changes review boolean and recomputes receipt digest while retaining structurally valid receipt",
+      "mandatory_prevention_rules": ["boolean-post-validation", "status-maximum-post-validation"],
+      "required_negative_tests": ["test_receipt_rehash_review_false_tamper", "test_receipt_rehash_release_tamper"],
+      "ethernian_remediation_reference": "98a8e0c^..98a8e0c",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_integration_package_acceptance.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_integration_package_acceptance", "result": "PASS"}
+    }
+  ],
+  "next_stage_gate": {
+    "must_read_registry": true,
+    "must_record_registry_digest_in_evidence": true,
+    "must_record_applied_lesson_ids": true,
+    "fail_closed_on_unregistered_ethernian_fix": true
+  }
+}

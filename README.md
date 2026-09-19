@@ -110,6 +110,10 @@ Synthetic canary readiness docket controls #1501-#1700 are documented in
 - #2901~#3100을 기록된 decision portfolio에서 고정된 쉬운 문구·내부 증적 ID·역할분리·승인 비기록 경계를 갖는 비권한 운영자 브리핑으로 변환하는 합성·메모리 전용 control로 구현
 - #3101~#3500을 용어·신뢰경계·토큰화 데이터/개념 자금흐름·복식원장 불변식·결제/환불/정산 상태기계·대사예외·멱등/웹훅·권한·감사/DR/SLO·포털 IA·공식근거 추적성의 16개 P0 설계 기준선 RFC workstream으로 구현
 - #3501~#3900을 P0 설계검증과 입주사/대행업체 → NURION PG → 본 PG사의 양방향 전자문서·비실행 adapter 초안 추적성 16개 workstream으로 구현
+- #3901~#4300을 3자 전자문서 schema 협상·mapping AST·400개 conformance case·독립 검토 receipt의 합성 계층으로 구현
+- #4301~#4700을 4방향 전자문서·비실행 adapter artifact 28개 조립·route manifest·400개 mock acceptance case·독립 검토 receipt의 합성 계층으로 구현
+- 에테르니언 감사 교훈은 [ARKAON 감사 재발방지 지도사항](docs/70-arkaon-audit-recurrence-prevention.md)과 기계검증 정책으로 환류
+- 에테르니언 보완 커밋은 versioned lesson registry의 entry·ack·부정 테스트·재검증 증적이 없으면 전용 evidence 생성이 fail-closed
 
 자세한 내용은 [ARKAON 통제형 부트스트랩](docs/01-arkaon-governed-bootstrap.md)을 참고합니다.
 
