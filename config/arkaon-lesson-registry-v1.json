@@ -136,6 +136,18 @@
       "ethernian_remediation_reference": "ETH-7101-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_human_deliberation_question_docket.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_human_deliberation_question_docket", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-7501-001",
+      "discovery_scope": "#7501-#7900 answer material intake independent audit",
+      "defect_category": "semantic-claim-material-manifest-source-derivation",
+      "root_cause": "claim and material manifest digests were included downstream but accepted as arbitrary hexadecimal values rather than derived from source semantics",
+      "exploit_scenario": "attacker substitutes a claim, recomputes manifest, answer, receipt, and outer digest, and preserves structural validity",
+      "mandatory_prevention_rules": ["claim-source-derivation", "manifest-claim-route-version-derivation", "full-chain-rehash-test"],
+      "required_negative_tests": ["test_claim_manifest_answer_receipt_chain_rehash_tamper"],
+      "ethernian_remediation_reference": "ETH-7501-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_answer_material_intake_validation.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_answer_material_intake_validation", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
