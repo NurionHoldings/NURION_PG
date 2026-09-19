@@ -1,0 +1,24 @@
+{
+  "application_method_present": false,
+  "credentials_used": false,
+  "diff_content_present": false,
+  "eternian_review_required": true,
+  "execution_method_present": false,
+  "filesystem_written": false,
+  "manifest_chain_valid": true,
+  "manifest_count": 1,
+  "manifest_digests": [
+    "d6483217b1ea1e4c49fb9dfdd2de084f01e0668afee8b52ddd89fcb164869d03"
+  ],
+  "maximum_state": "SYNTHETIC_PATCH_DRAFT_MANIFESTED",
+  "metadata_only": true,
+  "money_movement_executed": false,
+  "network_access_method_present": false,
+  "patch_content_present": false,
+  "personal_data_used": false,
+  "production_activation_allowed": false,
+  "report_digest": "c07179c54a1a879e72ac3fd656e7c1fd82567c5a80a0afa8c6b18558e795d90c",
+  "safety_baseline_relaxation_allowed": false,
+  "schema": "nurion.pg.synthetic-patch-draft-manifest-evidence.v1",
+  "source_code_changed": false
+}
