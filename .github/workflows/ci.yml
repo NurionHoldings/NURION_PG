@@ -218,6 +218,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_feasibility_decision_portfolio_evidence.py
       - name: Verify synthetic decision portfolio briefing #2901-#3100
         run: PYTHONPATH=src python scripts/run_synthetic_decision_portfolio_briefing_evidence.py
+      - name: Verify synthetic design validation traceability #3501-#3900
+        run: PYTHONPATH=src python scripts/run_synthetic_design_validation_traceability_evidence.py
       - name: Verify synthetic P0 design baseline RFC #3101-#3500
         run: PYTHONPATH=src python scripts/run_synthetic_p0_design_baseline_rfc_evidence.py
       - name: Verify clean source formatting
@@ -402,5 +404,7 @@ jobs:
             build/synthetic-decision-portfolio-briefing-evidence.json.sha256
             build/synthetic-p0-design-baseline-rfc-evidence.json
             build/synthetic-p0-design-baseline-rfc-evidence.json.sha256
+            build/synthetic-design-validation-traceability-evidence.json
+            build/synthetic-design-validation-traceability-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
