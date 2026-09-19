@@ -3,14 +3,16 @@ import json
 from pathlib import Path
 
 from nurion_pg.synthetic_integration_package_acceptance import ALLOWED_ARTIFACTS, CONTROL_ASPECTS, FLOWS, FLOW_OWNERS, NEGATIVE, WORKSTREAMS, SyntheticIntegrationPackageAcceptance
-from validate_arkaon_lesson_registry import REGISTRY, discovered_fix_commits, validate
+from validate_arkaon_lesson_registry import (MANIFEST, REGISTRY, declared_remediations,
+                                             discovered_negative_tests, validate)
 
 ROOT=Path(__file__).resolve().parents[1]
 def d(x): return sha256(x.encode()).hexdigest()
 
 def main():
     registry_content=REGISTRY.read_bytes(); registry=json.loads(registry_content)
-    lesson_ids=validate(registry,discovered_fix_commits(registry["scan_base_commit"]))
+    remediation_manifest=json.loads(MANIFEST.read_text(encoding="utf-8"))
+    lesson_ids=validate(registry,declared_remediations(remediation_manifest),discovered_negative_tests())
     s=SyntheticIntegrationPackageAcceptance()
     for start,end,name in WORKSTREAMS:
         for cid in range(start,end+1):

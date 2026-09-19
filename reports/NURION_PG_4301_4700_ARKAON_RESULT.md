@@ -36,6 +36,7 @@
 - manifest의 package/tenant/upstream/assembler namespace를 사후 재검증
 - acceptance receipt의 `accepted_for_review=true`를 강제
 - route substitution, assembler substitution, review-state 의미 변조 공격 테스트 3개 추가
+- CI 보완: 로컬 전용 commit SHA와 git history 의존을 제거하고 stable remediation manifest↔lesson 1:1 검증으로 전환. 실제 부정 테스트 이름의 저장소 존재 여부까지 확인
 
 ## 재발방지 학습 게이트
 

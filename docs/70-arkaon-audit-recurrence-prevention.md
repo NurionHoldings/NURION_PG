@@ -2,7 +2,7 @@
 
 이 문서는 에테르니언 독립 감사에서 발견된 미비점을 아르카온의 반복실수 방지 지식으로 환류한다. 코드·검증기·테스트·증적 설계에만 적용하며 운영 Prompt, 가중치 또는 운영 정책을 자동 변경하지 않는다. 기계검증 원본은 [`config/arkaon-audit-recurrence-prevention.json`](../config/arkaon-audit-recurrence-prevention.json)이다.
 
-에테르니언이 코드를 보완한 모든 경우에는 [`arkaon-lesson-registry-v1.json`](../config/arkaon-lesson-registry-v1.json)에 lesson을 추가해야 완료된다. 각 lesson은 발견 범위, 결함 분류, 근본 원인, 공격 시나리오, 강제 예방 규칙, 필수 부정 테스트, 보완 commit/diff, 아르카온 확인, 재검증 증적을 가진다. validator는 기준 commit 이후 `fix:` 보완 커밋이 registry에 없거나 ack/test/evidence가 빠지면 fail-closed 한다. 모든 신규 단계는 구현 전에 누적 registry를 읽고 적용한 lesson ID와 registry digest를 해당 단계 evidence에 기록해야 한다.
+에테르니언이 코드를 보완한 모든 경우에는 안정적인 remediation ID를 [`ethernian-remediation-manifest-v1.json`](../config/ethernian-remediation-manifest-v1.json)에 선언하고 [`arkaon-lesson-registry-v1.json`](../config/arkaon-lesson-registry-v1.json)에 대응 lesson을 추가해야 완료된다. 각 lesson은 발견 범위, 결함 분류, 근본 원인, 공격 시나리오, 강제 예방 규칙, 실제 저장소에 존재하는 필수 부정 테스트, 보완 reference, 아르카온 확인, 재검증 증적을 가진다. validator는 remediation과 lesson이 1:1로 대응하지 않거나 ack/test/evidence가 빠지면 fail-closed 한다. 커밋 SHA나 checkout 깊이에 의존하지 않으므로 로컬·GitHub CI·복제 환경에서 동일하게 작동한다. 모든 신규 단계는 구현 전에 누적 registry를 읽고 적용한 lesson ID와 registry digest를 해당 단계 evidence에 기록해야 한다.
 
 ## 구현 전 필수 절차
 
