@@ -184,6 +184,18 @@
       "ethernian_remediation_reference": "ETH-8701-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_human_review_issue_matrix.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_human_review_issue_matrix", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-9101-001",
+      "discovery_scope": "#9101-#9500 human clarification docket independent audit",
+      "defect_category": "source-issue-outcome-and-bundle-semantic-derivation",
+      "root_cause": "source issue outcome and bundle identity were initially accepted as mutually consistent labels instead of being recalculated from claim, manifest, receipt, and version pairs",
+      "exploit_scenario": "an attacker changes issue outcome or source bundle identity and recomputes the issue, set, matrix, lineage, and anchor digests while retaining structural validity",
+      "mandatory_prevention_rules": ["outcome-from-paired-values", "bundle-projection-from-source-semantics", "full-rehash-source-issue-negative-tests"],
+      "required_negative_tests": ["test_issue_semantic_rehash_tamper", "test_issue_set_full_rehash_tamper"],
+      "ethernian_remediation_reference": "ETH-9101-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_human_review_clarification_docket.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_human_review_clarification_docket", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
