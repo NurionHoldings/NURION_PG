@@ -1,0 +1,183 @@
+{
+  "registry_id": "ARKAON-LESSON-REGISTRY",
+  "version": 1,
+  "mode": "DEVELOPMENT_LEARNING_ONLY",
+  "automatic_prompt_policy_weight_change": false,
+  "remediation_manifest": "config/ethernian-remediation-manifest-v1.json",
+  "lessons": [
+    {
+      "lesson_id": "ARL-3901-001",
+      "discovery_scope": "#3901-#4300 negotiation conformance independent audit",
+      "defect_category": "lineage-role-semantic-binding",
+      "root_cause": "latest round, common capability, source-derived maker and event artifact were not all revalidated semantically",
+      "exploit_scenario": "attacker rebinds cases to stale round, forges author, injects unsupported rule, or substitutes event artifact and recomputes digest",
+      "mandatory_prevention_rules": ["latest-round-only", "source-derived-maker", "common-capability-intersection", "event-action-artifact-reconstruction"],
+      "required_negative_tests": ["test_cases_and_review_require_latest_round", "test_mapping_rules_require_common_party_capability", "test_review_separation", "test_event_artifact_rehash_substitution_detected"],
+      "ethernian_remediation_reference": "ETH-3901-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "config/arkaon-audit-recurrence-prevention.json"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_document_negotiation_conformance", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-4301-001",
+      "discovery_scope": "#4301-#4700 integration package independent audit",
+      "defect_category": "derived-route-and-maker-lineage",
+      "root_cause": "assembler lived outside content-addressed manifest and route digest was not recomputed from tenant/upstream/flow",
+      "exploit_scenario": "attacker substitutes assembler or route digest, recomputes manifest digest, and attempts maker-checker or routing lineage bypass",
+      "mandatory_prevention_rules": ["maker-in-source-artifact", "derived-route-recalculation", "namespace-post-validation"],
+      "required_negative_tests": ["test_manifest_rehashed_route_substitution", "test_manifest_rehashed_assembler_substitution"],
+      "ethernian_remediation_reference": "ETH-4301-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_integration_package_acceptance.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_integration_package_acceptance", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-4301-002",
+      "discovery_scope": "#4301-#4700 integration package independent audit",
+      "defect_category": "safe-boolean-post-validation",
+      "root_cause": "accepted_for_review safe value was set at creation but omitted from post-mutation integrity validation",
+      "exploit_scenario": "attacker changes review boolean and recomputes receipt digest while retaining structurally valid receipt",
+      "mandatory_prevention_rules": ["boolean-post-validation", "status-maximum-post-validation"],
+      "required_negative_tests": ["test_receipt_rehash_review_false_tamper", "test_receipt_rehash_release_tamper"],
+      "ethernian_remediation_reference": "ETH-4301-AUDIT-002",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_integration_package_acceptance.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_integration_package_acceptance", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-4301-003",
+      "discovery_scope": "#4301-#4700 GitHub CI independent audit",
+      "defect_category": "environment-portability-and-stable-identity",
+      "root_cause": "lesson coverage depended on local-only commit SHAs and non-shallow git history",
+      "exploit_scenario": "a valid connector-created or shallow checkout cannot resolve the local base SHA, causing the mandatory learning gate to fail before evidence generation",
+      "mandatory_prevention_rules": ["stable-remediation-id", "manifest-lesson-one-to-one", "git-history-independent-validation", "negative-test-existence-check"],
+      "required_negative_tests": ["test_validator_has_no_git_history_dependency", "test_named_negative_test_must_exist", "test_unregistered_fix_fails_closed"],
+      "ethernian_remediation_reference": "ETH-4301-AUDIT-003",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "scripts/validate_arkaon_lesson_registry.py"},
+      "revalidation_evidence": {"suite": "tests.test_arkaon_lesson_registry", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-4701-001",
+      "discovery_scope": "#4701-#5100 onboarding rehearsal independent audit",
+      "defect_category": "claimed-capability-without-source-derivation",
+      "root_cause": "common capability values were compared to constants but not recalculated from each party profile",
+      "exploit_scenario": "a plan claims an operation or token class is common even when one party profile does not support it, then relies on outer digest validity",
+      "mandatory_prevention_rules": ["source-profile-spec-binding", "set-intersection-recalculation", "artifact-id-post-validation", "reviewer-namespace-post-validation"],
+      "required_negative_tests": ["test_anchor_recalculates_common_capability_intersection", "test_result_id_rehash_namespace_tamper", "test_anchor_profile_capability_rehash_tamper"],
+      "ethernian_remediation_reference": "ETH-4701-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_onboarding_rehearsal_readiness.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_onboarding_rehearsal_readiness", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-5101-001",
+      "discovery_scope": "#5101-#5500 operator review preflight independent audit",
+      "defect_category": "semantic-key-profile-capability-binding",
+      "root_cause": "control storage keys, party profile digests, and review-item capability inputs were not all bound to their semantic identities with exact post-validation",
+      "exploit_scenario": "attacker swaps controls between registry slots or party profile digests and recomputes outer digests, or creates an item from a partial common capability",
+      "mandatory_prevention_rules": ["registry-key-object-id-binding", "party-profile-capability-binding-digest", "exact-common-capability-input", "full-control-matrix-reconstruction"],
+      "required_negative_tests": ["test_control_slot_swap_rehash_tamper", "test_anchor_party_profile_binding_rehash_tamper", "test_item_partial_common_capability_rejected"],
+      "ethernian_remediation_reference": "ETH-5101-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_operator_review_preflight_docket.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_operator_review_preflight_docket", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-5501-001",
+      "discovery_scope": "#5501-#5900 review challenge reconsideration independent audit",
+      "defect_category": "challenge-document-challenger-source-binding",
+      "root_cause": "challenge document digest and challenger namespace were checked structurally but not derived from the flow source party and anchored party document",
+      "exploit_scenario": "attacker substitutes another flow's challenge document or source party, recomputes the outer challenge digest, and preserves an apparently valid route",
+      "mandatory_prevention_rules": ["flow-source-party-mapping", "challenge-document-source-derivation", "challenger-exact-party-binding", "rehash-substitution-negative-tests"],
+      "required_negative_tests": ["test_challenge_document_rehash_substitution", "test_challenge_challenger_rehash_substitution"],
+      "ethernian_remediation_reference": "ETH-5501-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_review_challenge_reconsideration_lineage.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_review_challenge_reconsideration_lineage", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-5901-001",
+      "discovery_scope": "#5901-#6300 disclosure rebuttal correction readiness independent audit",
+      "defect_category": "source-reviewer-receipt-lineage-binding",
+      "root_cause": "the three source reviewer identities were structurally validated but not directly derived together with the reconsideration receipt digest",
+      "exploit_scenario": "attacker substitutes a valid-looking reviewer tuple and recomputes the anchor digest while retaining the same source receipt digest",
+      "mandatory_prevention_rules": ["receipt-reviewer-lineage-digest", "reviewer-tuple-post-validation", "rehash-reviewer-substitution-test"],
+      "required_negative_tests": ["test_source_reviewer_lineage_rehash_tamper"],
+      "ethernian_remediation_reference": "ETH-5901-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_evidence_disclosure_rebuttal_correction_readiness.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_evidence_disclosure_rebuttal_correction_readiness", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-6301-001",
+      "discovery_scope": "#6301-#6700 correction comparison consent conflict independent audit",
+      "defect_category": "source-compiler-lineage-and-role-separation",
+      "root_cause": "the previous correction-readiness packet compiler was omitted from the next anchor and new compiler separation check",
+      "exploit_scenario": "the prior compiler is erased from provenance or reappears as the new independent compiler while all visible reviewer checks still pass",
+      "mandatory_prevention_rules": ["source-compiler-preservation", "receipt-reviewer-compiler-lineage-digest", "compiler-fourth-party-separation"],
+      "required_negative_tests": ["test_source_compiler_lineage_rehash_tamper", "test_compiler_separated_from_source_compiler"],
+      "ethernian_remediation_reference": "ETH-6301-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_correction_comparison_consent_conflict_review_readiness.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_correction_comparison_consent_conflict_review_readiness", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-6701-001",
+      "discovery_scope": "#6701-#7100 nonbinding alternative simulation independent audit",
+      "defect_category": "packet-provenance-projection-completeness",
+      "root_cause": "the final simulation packet projected source compilers but omitted source reviewers and the source lineage digest",
+      "exploit_scenario": "a packet is detached from in-memory anchor context and presented with only partial actor provenance while retaining a valid packet digest",
+      "mandatory_prevention_rules": ["self-contained-packet-provenance", "reviewer-and-compiler-projection", "source-lineage-digest-projection"],
+      "required_negative_tests": ["test_packet_source_reviewer_rehash_tamper", "test_packet_source_lineage_rehash_tamper"],
+      "ethernian_remediation_reference": "ETH-6701-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_nonbinding_resolution_alternative_simulation.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_nonbinding_resolution_alternative_simulation", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-7101-001",
+      "discovery_scope": "#7101-#7500 human deliberation question docket independent audit",
+      "defect_category": "chair-question-reviewer-role-separation",
+      "root_cause": "chair separation included source reviewers, compilers, and question drafters but omitted per-question human reviewers",
+      "exploit_scenario": "a human reviewer reappears as the deliberation chair and presides over questions that the same identity reviewed",
+      "mandatory_prevention_rules": ["chair-all-participant-separation", "question-human-reviewer-in-occupied-set", "same-identity-role-reuse-test"],
+      "required_negative_tests": ["test_chair_separated_from_question_human_reviewer"],
+      "ethernian_remediation_reference": "ETH-7101-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_human_deliberation_question_docket.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_human_deliberation_question_docket", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-7501-001",
+      "discovery_scope": "#7501-#7900 answer material intake independent audit",
+      "defect_category": "semantic-claim-material-manifest-source-derivation",
+      "root_cause": "claim and material manifest digests were included downstream but accepted as arbitrary hexadecimal values rather than derived from source semantics",
+      "exploit_scenario": "attacker substitutes a claim, recomputes manifest, answer, receipt, and outer digest, and preserves structural validity",
+      "mandatory_prevention_rules": ["claim-source-derivation", "manifest-claim-route-version-derivation", "full-chain-rehash-test"],
+      "required_negative_tests": ["test_claim_manifest_answer_receipt_chain_rehash_tamper"],
+      "ethernian_remediation_reference": "ETH-7501-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_answer_material_intake_validation.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_answer_material_intake_validation", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-7901-001",
+      "discovery_scope": "#7901-#8300 cross-party answer reconciliation independent audit",
+      "defect_category": "comparison-outcome-source-derivation",
+      "root_cause": "comparison outcomes were selected from answer-kind labels rather than derived from the paired claim, manifest, receipt, and version provenance values",
+      "exploit_scenario": "an attacker presents conflicting paired provenance under a kind mapped to CONSISTENT, or recomputes an outer case digest with a desired label, while structural validation still appears valid",
+      "mandatory_prevention_rules": ["paired-value-outcome-derivation", "claim-manifest-receipt-version-precedence", "rehash-outcome-label-negative-test"],
+      "required_negative_tests": ["test_rehashed_kind_label_cannot_override_actual_outcome"],
+      "ethernian_remediation_reference": "ETH-7901-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_cross_party_answer_reconciliation.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_cross_party_answer_reconciliation", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-8301-001",
+      "discovery_scope": "#8301-#8700 reconciliation submission lineage independent audit",
+      "defect_category": "case-set-and-immediate-parent-lineage-derivation",
+      "root_cause": "the anchored case-set digest was accepted as an arbitrary hexadecimal value and later submissions pointed to the initial proposal instead of the immediately preceding document",
+      "exploit_scenario": "an attacker replaces the complete source case set and recomputes outer digests while retaining a stale case-set identifier, or omits the counterargument and attaches evidence directly to the proposal",
+      "mandatory_prevention_rules": ["case-set-digest-from-ordered-cases", "immediate-parent-submission-chain", "full-rehash-case-set-test", "intermediate-document-omission-test"],
+      "required_negative_tests": ["test_case_set_full_rehash_substitution", "test_evidence_requires_immediate_counterargument"],
+      "ethernian_remediation_reference": "ETH-8301-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_reconciliation_submission_lineage.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_reconciliation_submission_lineage", "result": "PASS"}
+    }
+  ],
+  "next_stage_gate": {
+    "must_read_registry": true,
+    "must_record_registry_digest_in_evidence": true,
+    "must_record_applied_lesson_ids": true,
+    "fail_closed_on_unregistered_ethernian_fix": true
+  }
+}
