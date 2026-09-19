@@ -124,6 +124,18 @@
       "ethernian_remediation_reference": "ETH-6701-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_nonbinding_resolution_alternative_simulation.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_nonbinding_resolution_alternative_simulation", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-7101-001",
+      "discovery_scope": "#7101-#7500 human deliberation question docket independent audit",
+      "defect_category": "chair-question-reviewer-role-separation",
+      "root_cause": "chair separation included source reviewers, compilers, and question drafters but omitted per-question human reviewers",
+      "exploit_scenario": "a human reviewer reappears as the deliberation chair and presides over questions that the same identity reviewed",
+      "mandatory_prevention_rules": ["chair-all-participant-separation", "question-human-reviewer-in-occupied-set", "same-identity-role-reuse-test"],
+      "required_negative_tests": ["test_chair_separated_from_question_human_reviewer"],
+      "ethernian_remediation_reference": "ETH-7101-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_human_deliberation_question_docket.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_human_deliberation_question_docket", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
