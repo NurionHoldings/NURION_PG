@@ -100,6 +100,18 @@
       "ethernian_remediation_reference": "ETH-5901-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_evidence_disclosure_rebuttal_correction_readiness.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_evidence_disclosure_rebuttal_correction_readiness", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-6301-001",
+      "discovery_scope": "#6301-#6700 correction comparison consent conflict independent audit",
+      "defect_category": "source-compiler-lineage-and-role-separation",
+      "root_cause": "the previous correction-readiness packet compiler was omitted from the next anchor and new compiler separation check",
+      "exploit_scenario": "the prior compiler is erased from provenance or reappears as the new independent compiler while all visible reviewer checks still pass",
+      "mandatory_prevention_rules": ["source-compiler-preservation", "receipt-reviewer-compiler-lineage-digest", "compiler-fourth-party-separation"],
+      "required_negative_tests": ["test_source_compiler_lineage_rehash_tamper", "test_compiler_separated_from_source_compiler"],
+      "ethernian_remediation_reference": "ETH-6301-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_correction_comparison_consent_conflict_review_readiness.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_correction_comparison_consent_conflict_review_readiness", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
