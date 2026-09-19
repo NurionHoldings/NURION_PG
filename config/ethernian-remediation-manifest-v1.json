@@ -7,6 +7,7 @@
     {"remediation_id": "ETH-4301-AUDIT-002", "scope": "#4301-#4700", "required_lesson_ids": ["ARL-4301-002"]},
     {"remediation_id": "ETH-4301-AUDIT-003", "scope": "#4301-#4700 CI audit", "required_lesson_ids": ["ARL-4301-003"]},
     {"remediation_id": "ETH-4701-AUDIT-001", "scope": "#4701-#5100", "required_lesson_ids": ["ARL-4701-001"]},
-    {"remediation_id": "ETH-5101-AUDIT-001", "scope": "#5101-#5500", "required_lesson_ids": ["ARL-5101-001"]}
+    {"remediation_id": "ETH-5101-AUDIT-001", "scope": "#5101-#5500", "required_lesson_ids": ["ARL-5101-001"]},
+    {"remediation_id": "ETH-5501-AUDIT-001", "scope": "#5501-#5900", "required_lesson_ids": ["ARL-5501-001"]}
   ]
 }
