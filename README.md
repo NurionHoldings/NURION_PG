@@ -1,5 +1,9 @@
 # NURION PG
 
+## Synthetic design controls
+
+- [#3901~#4300 전자문서 협상·적합성 계층](docs/12-synthetic-document-negotiation-conformance-3901-4300.md)
+
 Latest synthetic control extension: #2101-#2500 proposal feasibility assessment
 and observation-only review portfolio. See
 `docs/09-synthetic-proposal-feasibility-2101-2500.md`.
