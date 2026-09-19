@@ -1,0 +1,21 @@
+{
+  "feature": 306,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.operations-console-boundary",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "review_contract_required",
+    "review_tamper_rejected",
+    "review_operational_authority_absent"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_306_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "1085e2f6e7e6d786c7705e8bf6d26fe803f3e96cfa27cbc9e7a513a51b44742a"
+}
