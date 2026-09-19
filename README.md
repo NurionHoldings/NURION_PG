@@ -103,6 +103,7 @@ Synthetic canary readiness docket controls #1501-#1700 are documented in
 - #2101~#2500을 구현제안 타당성 평가와 최대 20개 독립 관찰 포트폴리오로 묶는 합성·메모리 전용 control로 구현
 - #2501~#2700을 타당성 포트폴리오 접수·최대 20개 결정대장 배치·source digest/version 결속·독립검토·비권한 영수증·capability-gap 자기점검의 합성·메모리 전용 control로 구현
 - #2701~#2900을 최종 decision docket 검증·최대 20개 포트폴리오·결정분포·보류/기록 분리·4역할 독립감사·재사용차단의 합성·메모리 전용 control로 구현
+- #2901~#3100을 기록된 decision portfolio에서 고정된 쉬운 문구·내부 증적 ID·역할분리·승인 비기록 경계를 갖는 비권한 운영자 브리핑으로 변환하는 합성·메모리 전용 control로 구현
 
 자세한 내용은 [ARKAON 통제형 부트스트랩](docs/01-arkaon-governed-bootstrap.md)을 참고합니다.
 
