@@ -88,6 +88,18 @@
       "ethernian_remediation_reference": "ETH-5501-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_review_challenge_reconsideration_lineage.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_review_challenge_reconsideration_lineage", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-5901-001",
+      "discovery_scope": "#5901-#6300 disclosure rebuttal correction readiness independent audit",
+      "defect_category": "source-reviewer-receipt-lineage-binding",
+      "root_cause": "the three source reviewer identities were structurally validated but not directly derived together with the reconsideration receipt digest",
+      "exploit_scenario": "attacker substitutes a valid-looking reviewer tuple and recomputes the anchor digest while retaining the same source receipt digest",
+      "mandatory_prevention_rules": ["receipt-reviewer-lineage-digest", "reviewer-tuple-post-validation", "rehash-reviewer-substitution-test"],
+      "required_negative_tests": ["test_source_reviewer_lineage_rehash_tamper"],
+      "ethernian_remediation_reference": "ETH-5901-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_evidence_disclosure_rebuttal_correction_readiness.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_evidence_disclosure_rebuttal_correction_readiness", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
