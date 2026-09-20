@@ -220,6 +220,18 @@
       "ethernian_remediation_reference": "ETH-9901-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_rebuttal_correction_submission_validation.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_rebuttal_correction_submission_validation", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-10301-001",
+      "discovery_scope": "#10301-#10700 rebuttal/correction submission validation independent audit",
+      "defect_category": "submission-receipt-semantic-derivation",
+      "root_cause": "submission receipts were checked as arbitrary hexadecimal values instead of being derived from the source review, route, submitter, and document digest",
+      "exploit_scenario": "an attacker substitutes an unrelated document and receipt, then recomputes the submission chain, events, holds, and docket while preserving structural validity",
+      "mandatory_prevention_rules": ["receipt-from-source-review-route-submitter-document", "full-chain-rehash-rejection", "source-submission-semantic-reconstruction"],
+      "required_negative_tests": ["test_full_chain_rehash_with_unrelated_receipt_rejected"],
+      "ethernian_remediation_reference": "ETH-10301-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_rebuttal_correction_submission_validation.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_rebuttal_correction_submission_validation", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
