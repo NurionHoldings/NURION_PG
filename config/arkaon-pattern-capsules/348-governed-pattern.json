@@ -1,0 +1,21 @@
+{
+  "feature": 348,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.provenance-chain",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "completion_contract_required",
+    "completion_tamper_rejected",
+    "completion_operational_authority_absent"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_348_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "70d5c0eb4f4a042e313b96ef59748c7d1a665736cee7b87f5051ba37205280e7"
+}
