@@ -17,6 +17,7 @@
 - remediation: `ETH-12301-AUDIT-001`
 - 공통 검증기준 치환, source 재결속, rollback 삭제, 단일 방법 축소, 이전 source 변조 후 downstream 전체 재해시 공격을 fail-closed 음성시험으로 등록했다.
 - 에테르니언 HOLD 후 source metadata(registry/manifest/sequence/latest/lessons/rules)와 final docket namespace/state/status/authority를 사후에도 완전 재검증하도록 강화했다. 각 필드를 변조한 뒤 anchor/event/challenge/docket을 정합 재해시하는 공격에서도 integrity와 complete 판정이 모두 false임을 확인했다.
+- 원격 CI에서 새 lesson의 연속 evidence chain 전파 누락을 확인하여 response-review 진입 모듈과 submission-validation 상속 지점에 `ARL-12301-001`을 최소 전파했다. 장기적으로는 전역 exact tuple 전파 대신 단계별 versioned lesson snapshot을 명시하는 구조가 필요하지만, 이번 범위에서는 대규모 migration을 수행하지 않았다.
 
 ## 경계와 결과
 
@@ -35,4 +36,4 @@
 - governance: PASS
 - lesson registry: PASS, 23 lessons
 - compileall / diff-check: PASS
-- evidence SHA-256: `146a6da1a85efa6689770cb930ebe073afe1d77bb2342193a6f44599fc9bd52a`
+- evidence SHA-256: `348e342325cbf0c2ad21c2d9fe9cb713780806b428ec91136459ed10fb687e2e`
