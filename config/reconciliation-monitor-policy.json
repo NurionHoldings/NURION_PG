@@ -1,0 +1,19 @@
+{
+  "schema": "nurion.pg.synthetic-reconciliation-monitor-policy.v1",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "components": [
+    "PAYMENT_INTENT",
+    "SYNTHETIC_LEDGER",
+    "DURABLE_WEBHOOK_INBOX",
+    "ARKAON_PROPOSAL_BOOK",
+    "ETERNIAN_REVIEW_DOCKET"
+  ],
+  "read_only": true,
+  "automatic_repair_allowed": false,
+  "operator_decision_allowed": false,
+  "payment_execution_allowed": false,
+  "production_activation_allowed": false,
+  "real_credentials_allowed": false,
+  "real_personal_data_allowed": false,
+  "finding_destination": "ETERNIAN_REVIEW"
+}
