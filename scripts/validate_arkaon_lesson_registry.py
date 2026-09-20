@@ -11,6 +11,9 @@ FIELDS={"lesson_id","discovery_scope","defect_category","root_cause","exploit_sc
         "mandatory_prevention_rules","required_negative_tests","ethernian_remediation_reference",
         "arkaon_acknowledgement","revalidation_evidence"}
 LESSONS_12301=("ARL-10301-001","ARL-10701-001","ARL-11101-001","ARL-11501-001","ARL-12301-001","ARL-3901-001","ARL-4301-001","ARL-4301-002","ARL-4301-003","ARL-4701-001","ARL-5101-001","ARL-5501-001","ARL-5901-001","ARL-6301-001","ARL-6701-001","ARL-7101-001","ARL-7501-001","ARL-7901-001","ARL-8301-001","ARL-8701-001","ARL-9101-001","ARL-9501-001","ARL-9901-001")
+HISTORICAL_LESSON_SNAPSHOTS={
+    "ARKAON-LESSONS-7501":((7501,7900),("ARL-3901-001","ARL-4301-001","ARL-4301-002","ARL-4301-003","ARL-4701-001","ARL-5101-001","ARL-5501-001","ARL-5901-001","ARL-6301-001","ARL-6701-001","ARL-7101-001","ARL-7501-001")),
+}
 STAGE_LESSON_SNAPSHOTS={
     "ARKAON-LESSONS-12301":((9901,12700),LESSONS_12301),
     "ARKAON-LESSONS-12701":((12701,13100),tuple(sorted(LESSONS_12301+("ARL-12701-001",)))),
@@ -18,6 +21,7 @@ STAGE_LESSON_SNAPSHOTS={
     "ARKAON-LESSONS-13501":((13501,13900),tuple(sorted(LESSONS_12301+("ARL-12701-001","ARL-13101-001","ARL-13501-001")))),
     "ARKAON-LESSONS-13901":((13901,14300),tuple(sorted(LESSONS_12301+("ARL-12701-001","ARL-13101-001","ARL-13501-001","ARL-13901-001")))),
     "ARKAON-LESSONS-14301":((14301,14700),tuple(sorted(LESSONS_12301+("ARL-12701-001","ARL-13101-001","ARL-13501-001","ARL-13901-001","ARL-14301-001")))),
+    "ARKAON-LESSONS-14701":((14701,15100),tuple(sorted(LESSONS_12301+("ARL-12701-001","ARL-13101-001","ARL-13501-001","ARL-13901-001","ARL-14301-001","ARL-14701-001")))),
 }
 
 def validated_stage_chain(snapshots=STAGE_LESSON_SNAPSHOTS):
@@ -83,7 +87,7 @@ def validate(data, declared, test_names):
 def validated_stage_snapshot(validated_lessons, required_lessons, snapshot_id, stage_range):
     """Validate an immutable stage subset without equating it to the live registry."""
     validated_lessons=tuple(validated_lessons);required_lessons=tuple(required_lessons)
-    validated_stage_chain();declared=STAGE_LESSON_SNAPSHOTS.get(snapshot_id)
+    validated_stage_chain();declared=(STAGE_LESSON_SNAPSHOTS|HISTORICAL_LESSON_SNAPSHOTS).get(snapshot_id)
     if not snapshot_id or not isinstance(stage_range,tuple) or len(stage_range)!=2 or stage_range[0]>stage_range[1] or declared!=(stage_range,required_lessons):
         raise ValueError("valid stage snapshot identity and range required")
     if not required_lessons or len(required_lessons)!=len(set(required_lessons)) or not set(required_lessons)<=set(validated_lessons):
