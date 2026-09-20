@@ -42,7 +42,10 @@ def submitted():
     for pos, (flow, kind) in enumerate(CASE_KEYS):
         submission_id = f"synthetic:rebuttal-correction-submission:{flow}:{kind}"
         if ROUTES[pos % 5] == "NOT_APPLICABLE_PRESERVED": service.add_submission(submission_id, flow, kind)
-        else: service.add_submission(submission_id, flow, kind, d(f"document:{flow}:{kind}"), d(f"receipt:{flow}:{kind}"))
+        else:
+            document = d(f"document:{flow}:{kind}")
+            receipt = derived_receipt_digest(flow, kind, anchor.source_reviews[pos].digest, ROUTES[pos % 5], RESPONDER[flow], document)
+            service.add_submission(submission_id, flow, kind, document, receipt)
     return service, anchor
 
 def completed():
@@ -90,6 +93,20 @@ class Tests(unittest.TestCase):
     def test_immediate_parent_required(self):
         service, _ = anchored()
         with self.assertRaises(GovernanceRejected): service.add_submission("synthetic:rebuttal-correction-submission:second", FLOWS[0], ANSWER_KINDS[1], d("doc"), d("receipt"))
+    def test_full_chain_rehash_with_unrelated_receipt_rejected(self):
+        service, anchor = submitted(); rebuilt = {}
+        for pos, key in enumerate(CASE_KEYS):
+            old = service._submissions[key]; parent = None if pos == 0 else rebuilt[CASE_KEYS[pos-1]].digest
+            document = d("unrelated-document") if pos == 1 else old.document_digest
+            receipt = d("unrelated-receipt") if pos == 1 else old.receipt_digest
+            digest = submission_digest(old.flow, old.answer_kind, old.source_review_digest, old.route, old.submitter_party, document, receipt, old.marker, parent, old.position)
+            rebuilt[key] = replace(old, document_digest=document, receipt_digest=receipt, parent_submission_digest=parent, digest=digest)
+        service._submissions = rebuilt; service._events = []; service._holds = []
+        service._event("RESPONSE_REVIEW_DOCKET_ANCHORED", anchor.digest)
+        for row in rebuilt.values():
+            service._event("SUBMISSION_VALIDATED", row.digest)
+            if row.route != "NOT_APPLICABLE_PRESERVED": service._hold("HUMAN_REVIEW_REQUIRED", row.digest)
+        self.assertFalse(service.evidence()["integrity_valid"])
     def test_counts(self):
         service, _ = submitted(); evidence = service.evidence()
         self.assertEqual((evidence["submission_count"], evidence["no_submission_count"], evidence["rebuttal_submission_count"], evidence["correction_submission_count"], evidence["hold_count"]), (20, 4, 8, 8, 16))
