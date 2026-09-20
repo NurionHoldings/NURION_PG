@@ -12,7 +12,7 @@ def d(v):return sha256(v.encode()).hexdigest()
 def main():
     rb=REGISTRY.read_bytes();mb=MANIFEST.read_bytes();rules=tuple(x["id"] for x in json.loads(GUIDANCE.read_bytes())["rules"]);lessons=validate(json.loads(rb),declared_remediations(json.loads(mb)),discovered_negative_tests())
     if lessons!=APPLIED_LESSONS or rules!=APPLIED_RULES:raise ValueError("continuous lessons and rules required")
-    old=tuple(x for x in lessons if x!="ARL-12301-001");prior=prior_service(old,rules,sha256(rb).hexdigest(),sha256(mb).hexdigest());stress=SyntheticJudgmentPreparationStressTest()
+    old=lessons;prior=prior_service(old,rules,sha256(rb).hexdigest(),sha256(mb).hexdigest());stress=SyntheticJudgmentPreparationStressTest()
     for cid in range(11901,12301):
         w,a=stress._expected(cid);stress.add_control(cid,w,a,f"synthetic:judgment-stress-requirement:{(cid-11901)//25:02}",d(f"prior:{cid}"),"EXPECTED_REJECTION" if a in STRESS_NEGATIVE else "PASS")
     stress.anchor(prior,sha256(rb).hexdigest(),sha256(mb).hexdigest(),old,rules,26,True)
