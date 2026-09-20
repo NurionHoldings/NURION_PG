@@ -116,6 +116,7 @@ Synthetic canary readiness docket controls #1501-#1700 are documented in
 - #10301~#10700을 4개 N/A marker·8개 반박·8개 정정 제출물의 출처·영수증·즉시부모 계보를 검증하고 인간 재심사 hold까지만 허용하는 합성 계층으로 구현
 - #10701~#11100을 위 20개 제출물의 독립 재검토 계층으로 구현: 4개 N/A marker를 보존하고 8개 반박·8개 정정을 결론·수락·해결 없이 인간 재심사 대기 docket과 16개 append-only hold로만 고정
 - #11101~#11500을 독립 재심사 관찰·쟁점 기록 계층으로 구현: 원천 actor 32명·이전 재심사자 16명·compiler/validator 계보를 보존하고 4개 N/A, 8개 반박 finding, 8개 정정 finding을 결론·추천·수락·해결 없이 `HUMAN FINDING REVIEW PENDING`과 16개 append-only hold로만 고정
+- #11501~#11900을 독립 finding 검토·판단준비 계층으로 구현: 전체 원천 역할 계보를 재계산하고 4개 N/A를 보존하며 8개 반박·8개 정정 finding을 16개 append-only hold로 유지한다. 아르카온은 주장·증거·반증·불확실성·보류조건, 2개 이상 대안의 효과·위험·비용·가역성, 수락 기준·잔여위험·책임자·인간승인 gate, 원인 제거·수정·부정테스트·회귀·재발방지·rollback/재개조건으로 구성된 content-addressed 판단준비 패킷만 생성하며 결론·추천·수락·해결 권한은 갖지 않는다.
 - 에테르니언 감사 교훈은 [ARKAON 감사 재발방지 지도사항](docs/70-arkaon-audit-recurrence-prevention.md)과 기계검증 정책으로 환류
 - 에테르니언 보완 커밋은 versioned lesson registry의 entry·ack·부정 테스트·재검증 증적이 없으면 전용 evidence 생성이 fail-closed
 
