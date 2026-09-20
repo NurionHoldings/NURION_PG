@@ -14,7 +14,21 @@ LESSONS_12301=("ARL-10301-001","ARL-10701-001","ARL-11101-001","ARL-11501-001","
 STAGE_LESSON_SNAPSHOTS={
     "ARKAON-LESSONS-12301":((9901,12700),LESSONS_12301),
     "ARKAON-LESSONS-12701":((12701,13100),tuple(sorted(LESSONS_12301+("ARL-12701-001",)))),
+    "ARKAON-LESSONS-13101":((13101,13500),tuple(sorted(LESSONS_12301+("ARL-12701-001","ARL-13101-001")))),
 }
+
+def validated_stage_chain(snapshots=STAGE_LESSON_SNAPSHOTS):
+    """Reject duplicate/gapped/overlapping stages and lesson-chain regressions."""
+    rows=sorted((bounds[0],bounds[1],sid,tuple(lessons)) for sid,(bounds,lessons) in snapshots.items())
+    if not rows: raise ValueError("at least one stage snapshot required")
+    seen=set();previous=None
+    for start,end,sid,lessons in rows:
+        if not sid or start>end or (start,end) in seen: raise ValueError("unique valid stage range required")
+        if previous and start!=previous[1]+1: raise ValueError("contiguous stage snapshot chain required")
+        if len(lessons)!=len(set(lessons)) or tuple(sorted(lessons))!=lessons: raise ValueError("canonical unique lessons required")
+        if previous and not set(previous[3])<=set(lessons): raise ValueError("stage lesson chain cannot regress")
+        seen.add((start,end));previous=(start,end,sid,lessons)
+    return tuple((sid,(start,end),lessons) for start,end,sid,lessons in rows)
 
 def declared_remediations(data):
     if data.get("version") != 1: raise ValueError("versioned remediation manifest required")
@@ -56,7 +70,7 @@ def validate(data, declared, test_names):
 def validated_stage_snapshot(validated_lessons, required_lessons, snapshot_id, stage_range):
     """Validate an immutable stage subset without equating it to the live registry."""
     validated_lessons=tuple(validated_lessons);required_lessons=tuple(required_lessons)
-    declared=STAGE_LESSON_SNAPSHOTS.get(snapshot_id)
+    validated_stage_chain();declared=STAGE_LESSON_SNAPSHOTS.get(snapshot_id)
     if not snapshot_id or not isinstance(stage_range,tuple) or len(stage_range)!=2 or stage_range[0]>stage_range[1] or declared!=(stage_range,required_lessons):
         raise ValueError("valid stage snapshot identity and range required")
     if not required_lessons or len(required_lessons)!=len(set(required_lessons)) or not set(required_lessons)<=set(validated_lessons):
