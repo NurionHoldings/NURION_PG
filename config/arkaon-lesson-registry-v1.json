@@ -268,6 +268,18 @@
       "ethernian_remediation_reference": "ETH-11501-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_judgment_preparation_stress_test.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_judgment_preparation_stress_test", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-12301-001",
+      "discovery_scope": "#11901-#12300 counterfactual judgment preparation stress self-audit",
+      "defect_category": "per-option-methodology-semantic-binding",
+      "root_cause": "validation criteria, residual risks, escalation conditions, and rollback conditions were attached to a case-level stress record rather than content-addressed to each individual correction direction and overcoming option",
+      "exploit_scenario": "an attacker substitutes a common validation rule, removes one option's residual risk or rollback, and recomputes every downstream digest while the outer option count remains complete",
+      "mandatory_prevention_rules": ["one-content-addressed-methodology-card-per-option", "bind-direction-assumption-falsifier-stop-validation-risk-escalation-rollback", "reconstruct-prior-source-semantics", "full-downstream-rehash-negative-tests"],
+      "required_negative_tests": ["test_card_exchange_full_rehash_rejected", "test_common_criteria_substitution_full_rehash_rejected", "test_method_card_source_rebind_full_rehash_rejected", "test_hidden_rollback_full_rehash_rejected", "test_single_method_full_rehash_rejected", "test_prior_source_full_downstream_rehash_rejected", "test_source_metadata_full_downstream_rehash_rejected", "test_final_docket_semantic_full_rehash_rejected"],
+      "ethernian_remediation_reference": "ETH-12301-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_option_methodology_independent_challenge.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_option_methodology_independent_challenge", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
