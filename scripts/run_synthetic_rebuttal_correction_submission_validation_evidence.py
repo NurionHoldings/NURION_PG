@@ -33,11 +33,14 @@ def main():
     reviews = tuple(reviews); review_set = canonical_digest(tuple(x.digest for x in reviews))
     source_compiler = "synthetic:review-docket-compiler:source-compiler"; source_validator = "synthetic:review-docket-validator:source-validator"
     source_docket = canonical_digest(("RESPONSE_REVIEW_REBUTTAL_CORRECTION_DOCKET_SOURCE", review_set, source_compiler, source_validator))
-    service.anchor("synthetic:submission-validation-anchor:evidence", source_docket, review_set, sha256(registry_bytes).hexdigest(), sha256(manifest_bytes).hexdigest(), lessons, rules, reviews, source_compiler, source_validator, 22, True)
+    anchor = service.anchor("synthetic:submission-validation-anchor:evidence", source_docket, review_set, sha256(registry_bytes).hexdigest(), sha256(manifest_bytes).hexdigest(), lessons, rules, reviews, source_compiler, source_validator, 22, True)
     for pos, (flow, kind) in enumerate(CASE_KEYS):
         submission_id = f"synthetic:rebuttal-correction-submission:{flow}:{kind}"
         if ROUTES[pos % 5] == "NOT_APPLICABLE_PRESERVED": service.add_submission(submission_id, flow, kind)
-        else: service.add_submission(submission_id, flow, kind, d(f"document:{flow}:{kind}"), d(f"receipt:{flow}:{kind}"))
+        else:
+            document = d(f"document:{flow}:{kind}")
+            receipt = derived_receipt_digest(flow, kind, anchor.source_reviews[pos].digest, ROUTES[pos % 5], RESPONDER[flow], document)
+            service.add_submission(submission_id, flow, kind, document, receipt)
     service.finalize("synthetic:submission-validation-docket:evidence", "synthetic:submission-docket-compiler:compiler", "synthetic:submission-docket-validator:validator")
     evidence = service.evidence()
     if not evidence["complete_submission_docket_evidence"] or evidence["registered_control_count"] != 400: raise ValueError("incomplete evidence")
