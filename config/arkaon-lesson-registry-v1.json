@@ -352,6 +352,18 @@
       "ethernian_remediation_reference": "ETH-14701-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_approval_receipt_schema_contract.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_approval_receipt_schema_contract", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-15101-001",
+      "discovery_scope": "#14701-#15100 approval receipt schema self-audit",
+      "defect_category": "preissuance-validation-packet-and-dual-signature-input-under-specification",
+      "root_cause": "the non-issuing receipt schema bound idempotency and roles but did not define independently domain-separated issuer and verifier signature inputs with deterministic expiry, policy, audience, purpose, challenge, sequence, predecessor, and nonce bindings",
+      "exploit_scenario": "an attacker swaps or reuses challenges, actors, domains, audience, purpose, policy, or expiry; forges a signature or receipt; and recomputes downstream digests while claiming a valid pre-issuance packet",
+      "mandatory_prevention_rules": ["source-schema-bound-content-addressed-validation-packet", "exact-stage-policy-version-v1-gate-and-explicit-migration-only", "independent-global-actor-identity-and-domain-separated-dual-inputs", "bind-challenge-audience-purpose-policy-deterministic-expiry-sequence-predecessor-nonce", "same-key-same-payload-converges-serial-and-parallel", "cross-key-id-challenge-and-input-reuse-fail-closed", "two-content-addressed-recovery-paths", "full-downstream-rehash-negative-tests", "no-signature-key-credential-receipt-ledger-execution-observation-or-authority"],
+      "required_negative_tests": ["test_changed_payload_and_cross_key_ids_rejected", "test_current_other_source_and_namespace_aliases_rejected", "test_challenge_and_signature_input_reuse_rejected", "test_partial_batch_order_swap_rejected", "test_exchange_delete_relax_and_full_rehash_attacks_rejected", "test_forged_signature_receipt_and_authority_rejected", "test_source_schema_full_downstream_rehash_rejected", "test_namespace_and_docket_full_rehash_rejected", "test_policy_downgrade_missing_unknown_future_api_rejected", "test_policy_downgrade_complete_downstream_rehash_rejected"],
+      "ethernian_remediation_reference": "ETH-15101-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_preissuance_dual_signature_input_contract.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_preissuance_dual_signature_input_contract", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
