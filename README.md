@@ -112,6 +112,8 @@ Synthetic canary readiness docket controls #1501-#1700 are documented in
 - #3501~#3900을 P0 설계검증과 입주사/대행업체 → NURION PG → 본 PG사의 양방향 전자문서·비실행 adapter 초안 추적성 16개 workstream으로 구현
 - #3901~#4300을 3자 전자문서 schema 협상·mapping AST·400개 conformance case·독립 검토 receipt의 합성 계층으로 구현
 - #4301~#4700을 4방향 전자문서·비실행 adapter artifact 28개 조립·route manifest·400개 mock acceptance case·독립 검토 receipt의 합성 계층으로 구현
+- #9901~#10300을 응답 접수 원장을 독립 검토하고 반박기회·정정요청 경로를 파생하되 해결·수락하지 않는 합성 hold 계층으로 구현
+- #10301~#10700을 4개 N/A marker·8개 반박·8개 정정 제출물의 출처·영수증·즉시부모 계보를 검증하고 인간 재심사 hold까지만 허용하는 합성 계층으로 구현
 - 에테르니언 감사 교훈은 [ARKAON 감사 재발방지 지도사항](docs/70-arkaon-audit-recurrence-prevention.md)과 기계검증 정책으로 환류
 - 에테르니언 보완 커밋은 versioned lesson registry의 entry·ack·부정 테스트·재검증 증적이 없으면 전용 evidence 생성이 fail-closed
 
