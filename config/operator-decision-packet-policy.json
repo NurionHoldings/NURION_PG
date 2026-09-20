@@ -1,0 +1,24 @@
+{
+  "schema": "nurion.pg.synthetic-operator-decision-packet-policy.v1",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "required_source_state": "READY_FOR_OPERATOR_DECISION",
+  "maximum_state": "AWAITING_OPERATOR_DECISION",
+  "validity_days": 7,
+  "requested_scope": "SYNTHETIC_IMPLEMENTATION_PROPOSAL_DRAFT_ONLY",
+  "allowed_decisions": [
+    "AUTHORIZE_SYNTHETIC_IMPLEMENTATION_PROPOSAL_DRAFT",
+    "HOLD",
+    "REJECT"
+  ],
+  "operator_decision_recording_allowed": false,
+  "external_blocker_auto_close_allowed": false,
+  "code_change_allowed": false,
+  "automatic_application_allowed": false,
+  "payment_execution_allowed": false,
+  "money_movement_allowed": false,
+  "automatic_merge_allowed": false,
+  "automatic_deploy_allowed": false,
+  "production_activation_allowed": false,
+  "real_credentials_allowed": false,
+  "real_personal_data_allowed": false
+}
