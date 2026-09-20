@@ -118,6 +118,7 @@ Synthetic canary readiness docket controls #1501-#1700 are documented in
 - #11101~#11500을 독립 재심사 관찰·쟁점 기록 계층으로 구현: 원천 actor 32명·이전 재심사자 16명·compiler/validator 계보를 보존하고 4개 N/A, 8개 반박 finding, 8개 정정 finding을 결론·추천·수락·해결 없이 `HUMAN FINDING REVIEW PENDING`과 16개 append-only hold로만 고정
 - #11501~#11900을 독립 finding 검토·판단준비 계층으로 구현: 전체 원천 역할 계보를 재계산하고 4개 N/A를 보존하며 8개 반박·8개 정정 finding을 16개 append-only hold로 유지한다. 아르카온은 주장·증거·반증·불확실성·보류조건, 2개 이상 대안의 효과·위험·비용·가역성, 수락 기준·잔여위험·책임자·인간승인 gate, 원인 제거·수정·부정테스트·회귀·재발방지·rollback/재개조건으로 구성된 content-addressed 판단준비 패킷만 생성하며 결론·추천·수락·해결 권한은 갖지 않는다.
 - #11901~#12300을 `반사실 판단준비 스트레스테스트` 계층으로 구현: 앞선 판단준비 패킷의 원천·전 역할 계보를 보존하고, 16개 routed finding 각각에 대해 원천결속된 2개 선택지와 명시적 미검증 가정·반증시험·중단조건·검증기준·잔여위험·escalation/rollback을 고정한다. 선택지 순위화·선택·결론·추천·수락·해결·승인 권한은 없으며 4개 N/A와 16개 인간판단 hold를 유지한다.
+- #12301~#12700을 `원천결속 극복방법론 독립챌린지` 계층으로 구현: 16개 routed 사례의 32개 선택지 각각에 수정방향·극복방법·가정·반증시험·중단조건·검증기준·잔여위험·escalation·rollback을 하나의 content-addressed 카드로 결속한다. 4개 N/A와 16개 append-only 인간판단 hold를 보존하고 순위화·선택·결론·추천·수락·해결·승인·실행 권한은 갖지 않는다.
 - 에테르니언 감사 교훈은 [ARKAON 감사 재발방지 지도사항](docs/70-arkaon-audit-recurrence-prevention.md)과 기계검증 정책으로 환류
 - 에테르니언 보완 커밋은 versioned lesson registry의 entry·ack·부정 테스트·재검증 증적이 없으면 전용 evidence 생성이 fail-closed
 
