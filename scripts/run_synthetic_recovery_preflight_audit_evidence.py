@@ -14,7 +14,7 @@ def main():
     s=SyntheticRecoveryPreflightAudit()
     for cid in range(13101,13501):
         w,a=s._expected(cid);s.add_control(cid,w,a,f"synthetic:recovery-preflight-requirement:{(cid-13101)//25:02}",d(f"fixture:{cid}"),"EXPECTED_REJECTION" if a in NEGATIVE else "PASS")
-    mapping=tuple((sid,bounds) for sid,bounds,_ in chain);s.anchor(source,mapping_digest(mapping),registry_digest,manifest_digest,lessons,rules,source._snapshot.digest,29,True)
+    mapping=tuple((sid,bounds) for sid,bounds,_ in chain if bounds[1]<=13500);s.anchor(source,mapping_digest(mapping),registry_digest,manifest_digest,lessons,rules,source._snapshot.digest,29,True)
     for i,key in enumerate(CASE_KEYS):
         args=(f"synthetic:recovery-preflight-audit:{key[0]}:{key[1]}",*key)
         if source._guidance[key].alternatives:s.add_audit(*args,f"synthetic:recovery-preflight-auditor:a-{i}",f"synthetic:recovery-preflight-verifier:v-{i}")
