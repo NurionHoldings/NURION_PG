@@ -256,6 +256,18 @@
       "ethernian_remediation_reference": "ETH-11101-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_finding_independent_review.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_finding_independent_review", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-11501-001",
+      "discovery_scope": "#11501-#11900 judgment preparation methodology self-audit",
+      "defect_category": "option-assumption-falsifiability-and-source-binding",
+      "root_cause": "the preparation packet required two alternatives but represented them as generic labels without independently content-addressed assumptions, disconfirming tests, stop criteria, or source-bound option identities",
+      "exploit_scenario": "a superficially complete two-label packet can hide an unsupported assumption or collapse to one practical path while still satisfying the minimum alternative count",
+      "mandatory_prevention_rules": ["source-bound-distinct-option-profiles", "explicit-unverified-assumption-register", "per-option-disconfirming-test-and-stop-condition", "no-ranking-selection-or-judgment-authority"],
+      "required_negative_tests": ["test_single_alternative_full_rehash_rejected", "test_hidden_assumption_full_rehash_rejected", "test_source_bundle_digest_full_rehash_tamper_rejected", "test_prior_judgment_packet_full_downstream_rehash_rejected"],
+      "ethernian_remediation_reference": "ETH-11501-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_judgment_preparation_stress_test.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_judgment_preparation_stress_test", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
