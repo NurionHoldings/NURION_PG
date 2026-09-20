@@ -5,13 +5,12 @@ import sys
 
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT));sys.path.insert(0,str(ROOT/"src"))
 from nurion_pg.synthetic_observation_readiness_manifest import *
-from scripts.validate_arkaon_lesson_registry import REGISTRY,MANIFEST,declared_remediations,discovered_negative_tests,validate,validated_stage_chain,validated_stage_snapshot
+from scripts.validate_arkaon_lesson_registry import REGISTRY,MANIFEST,declared_remediations,discovered_negative_tests,validate,validated_stage_chain_through,validated_stage_snapshot
 from tests.test_synthetic_observation_contract_gate import completed as prior_completed
 POLICY=ROOT/"config/arkaon-audit-recurrence-prevention.json"
 def d(v):return sha256(v.encode()).hexdigest()
 def main():
-    rb=REGISTRY.read_bytes();mb=MANIFEST.read_bytes();rules=tuple(x["id"] for x in json.loads(POLICY.read_bytes())["rules"]);live=validate(json.loads(rb),declared_remediations(json.loads(mb)),discovered_negative_tests());chain=validated_stage_chain();lessons,registry_digest=validated_stage_snapshot(live,APPLIED_LESSONS,"ARKAON-LESSONS-13901",(13901,14300));source=prior_completed()[0]
-    if len(chain)!=5 or chain[-1][0]!="ARKAON-LESSONS-13901":raise ValueError("five-stage snapshot chain required")
+    rb=REGISTRY.read_bytes();mb=MANIFEST.read_bytes();rules=tuple(x["id"] for x in json.loads(POLICY.read_bytes())["rules"]);live=validate(json.loads(rb),declared_remediations(json.loads(mb)),discovered_negative_tests());validated_stage_chain_through(14300);lessons,registry_digest=validated_stage_snapshot(live,APPLIED_LESSONS,"ARKAON-LESSONS-13901",(13901,14300));source=prior_completed()[0]
     s=SyntheticObservationReadinessManifest()
     for cid in range(13901,14301):
         w,a=s._expected(cid);s.add_control(cid,w,a,f"synthetic:readiness-requirement:{(cid-13901)//25:02}",d(f"fixture:{cid}"),"EXPECTED_REJECTION" if a in NEGATIVE else "PASS")
