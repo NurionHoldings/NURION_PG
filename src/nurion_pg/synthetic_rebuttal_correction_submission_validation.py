@@ -28,7 +28,7 @@ ANSWER_KINDS = ("ASSUMPTION_RESPONSE", "RESIDUAL_RISK_RESPONSE", "ADDITIONAL_EVI
 ROUTES = ("NOT_APPLICABLE_PRESERVED", "REBUTTAL_OPPORTUNITY_REQUIRED", "REBUTTAL_OPPORTUNITY_REQUIRED", "CORRECTION_REQUEST_REQUIRED", "CORRECTION_REQUEST_REQUIRED")
 RESPONDER = {"tenant_to_nurion": "TENANT_AGENCY", "nurion_to_upstream": "NURION_PG", "upstream_to_nurion": "UPSTREAM_PG", "nurion_to_tenant": "NURION_PG"}
 APPLIED_LESSONS = (
-    "ARL-3901-001", "ARL-4301-001", "ARL-4301-002", "ARL-4301-003", "ARL-4701-001",
+    "ARL-10301-001", "ARL-3901-001", "ARL-4301-001", "ARL-4301-002", "ARL-4301-003", "ARL-4701-001",
     "ARL-5101-001", "ARL-5501-001", "ARL-5901-001", "ARL-6301-001", "ARL-6701-001",
     "ARL-7101-001", "ARL-7501-001", "ARL-7901-001", "ARL-8301-001", "ARL-8701-001",
     "ARL-9101-001", "ARL-9501-001", "ARL-9901-001",
@@ -78,6 +78,9 @@ def review_digest(review):
 
 def submission_digest(flow, kind, review, route, submitter, document, receipt, marker, parent, position):
     return canonical_digest(("REBUTTAL_CORRECTION_SUBMISSION", flow, kind, review, route, submitter, document, receipt, marker, parent, position))
+
+def derived_receipt_digest(flow, kind, source_review_digest, route, submitter, document_digest):
+    return canonical_digest(("SUBMISSION_RECEIPT", flow, kind, source_review_digest, route, submitter, document_digest))
 
 def _anchor_payload(payload):
     payload = dict(payload)
@@ -137,6 +140,8 @@ class SyntheticRebuttalCorrectionSubmissionValidation:
             else:
                 if not _hex(document_digest) or not _hex(receipt_digest): raise GovernanceRejected("document and receipt required")
                 submitter = RESPONDER[flow]; marker = "SUBMISSION_RECEIVED_FOR_HUMAN_REVIEW"
+                if receipt_digest != derived_receipt_digest(flow, kind, source.digest, route, submitter, document_digest):
+                    raise GovernanceRejected("receipt must be derived from submission semantics")
             parent = None if previous is None else previous.digest
             digest = submission_digest(flow, kind, source.digest, route, submitter, document_digest, receipt_digest, marker, parent, pos+1)
             row = Submission(submission_id, flow, kind, source.digest, route, submitter, document_digest,
@@ -195,7 +200,7 @@ class SyntheticRebuttalCorrectionSubmissionValidation:
         pos = _keys().index(key); source = self._anchor.source_reviews[pos]; route = ROUTES[pos % 5]
         previous = None if pos == 0 else self._submissions.get(_keys()[pos-1])
         if route == "NOT_APPLICABLE_PRESERVED": material_ok = row.submitter_party is None and row.document_digest is None and row.receipt_digest is None and row.marker == "NO_SUBMISSION_REQUIRED"
-        else: material_ok = row.submitter_party == RESPONDER[row.flow] and _hex(row.document_digest) and _hex(row.receipt_digest) and row.marker == "SUBMISSION_RECEIVED_FOR_HUMAN_REVIEW"
+        else: material_ok = row.submitter_party == RESPONDER[row.flow] and _hex(row.document_digest) and row.receipt_digest == derived_receipt_digest(row.flow, row.answer_kind, source.digest, route, row.submitter_party, row.document_digest) and row.marker == "SUBMISSION_RECEIVED_FOR_HUMAN_REVIEW"
         expected = submission_digest(row.flow, row.answer_kind, source.digest, route, row.submitter_party, row.document_digest, row.receipt_digest, row.marker, None if previous is None else previous.digest, pos+1)
         return _syn(row.submission_id, "rebuttal-correction-submission") and (row.flow, row.answer_kind) == key and row.source_review_digest == source.digest and row.route == route and material_ok and row.parent_submission_digest == (None if previous is None else previous.digest) and row.position == pos+1 and row.held is True and row.validated is True and not any((row.resolved, row.accepted)) and row.digest == expected
 
