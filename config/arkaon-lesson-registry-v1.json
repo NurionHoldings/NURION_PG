@@ -244,6 +244,18 @@
       "ethernian_remediation_reference": "ETH-10701-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_rebuttal_correction_independent_rereview.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_rebuttal_correction_independent_rereview", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-11101-001",
+      "discovery_scope": "#11101-#11500 rereview finding observation independent audit",
+      "defect_category": "complete-finding-role-lineage-binding",
+      "root_cause": "the finding docket full_lineage_digest copied only the pre-finding anchor lineage and omitted finding drafters, finding reviewers, and final compiler/validator",
+      "exploit_scenario": "a consumer trusting full_lineage_digest cannot prove which actors drafted and reviewed findings or compiled and validated the final docket",
+      "mandatory_prevention_rules": ["all-finding-actors-in-lineage", "final-compiler-validator-in-lineage", "recalculate-complete-role-lineage"],
+      "required_negative_tests": ["test_source_docket_incomplete_role_lineage_rejected"],
+      "ethernian_remediation_reference": "ETH-11101-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_finding_independent_review.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_finding_independent_review", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
