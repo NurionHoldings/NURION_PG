@@ -1,0 +1,24 @@
+{
+  "schema": "nurion.pg.synthetic-proposal-review-docket-policy.v1",
+  "version": "0.1.0",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "database_engine": "SQLite",
+  "states": [
+    "PENDING_ETERNIAN_REVIEW",
+    "READY_FOR_OPERATOR_DECISION",
+    "HELD",
+    "REJECTED"
+  ],
+  "maximum_automatic_state": "READY_FOR_OPERATOR_DECISION",
+  "arkaon_proposer_id": "synthetic:arkaon:NURION_PG",
+  "eternian_reviewer_prefix": "synthetic:eternian-reviewer:",
+  "proposer_reviewer_separation_required": true,
+  "proposal_assessment_chain_required": true,
+  "audit_hash_chain_required": true,
+  "automatic_review_allowed": false,
+  "operator_decision_method_allowed": false,
+  "automatic_operator_approval_allowed": false,
+  "execution_method_allowed": false,
+  "money_movement_allowed": false,
+  "production_activation_allowed": false
+}
