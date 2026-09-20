@@ -17,6 +17,7 @@ STAGE_LESSON_SNAPSHOTS={
     "ARKAON-LESSONS-13101":((13101,13500),tuple(sorted(LESSONS_12301+("ARL-12701-001","ARL-13101-001")))),
     "ARKAON-LESSONS-13501":((13501,13900),tuple(sorted(LESSONS_12301+("ARL-12701-001","ARL-13101-001","ARL-13501-001")))),
     "ARKAON-LESSONS-13901":((13901,14300),tuple(sorted(LESSONS_12301+("ARL-12701-001","ARL-13101-001","ARL-13501-001","ARL-13901-001")))),
+    "ARKAON-LESSONS-14301":((14301,14700),tuple(sorted(LESSONS_12301+("ARL-12701-001","ARL-13101-001","ARL-13501-001","ARL-13901-001","ARL-14301-001")))),
 }
 
 def validated_stage_chain(snapshots=STAGE_LESSON_SNAPSHOTS):
@@ -31,6 +32,16 @@ def validated_stage_chain(snapshots=STAGE_LESSON_SNAPSHOTS):
         if previous and not set(previous[3])<=set(lessons): raise ValueError("stage lesson chain cannot regress")
         seen.add((start,end));previous=(start,end,sid,lessons)
     return tuple((sid,(start,end),lessons) for start,end,sid,lessons in rows)
+
+def validated_stage_chain_through(max_end, snapshots=STAGE_LESSON_SNAPSHOTS):
+    """Validate the immutable chain visible at a stage boundary, ignoring future stages."""
+    if not isinstance(max_end,int) or isinstance(max_end,bool):
+        raise ValueError("integer stage boundary required")
+    bounded={sid:(bounds,lessons) for sid,(bounds,lessons) in snapshots.items() if bounds[1]<=max_end}
+    rows=validated_stage_chain(bounded)
+    if not rows or rows[-1][1][1]!=max_end:
+        raise ValueError("declared stage boundary required")
+    return rows
 
 def declared_remediations(data):
     if data.get("version") != 1: raise ValueError("versioned remediation manifest required")
