@@ -208,6 +208,18 @@
       "ethernian_remediation_reference": "ETH-9501-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_clarification_response_intake.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_clarification_response_intake", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-9901-001",
+      "discovery_scope": "#9901-#10300 response review independent audit and CI evidence wiring",
+      "defect_category": "source-review-semantic-reconstruction-and-ci-evidence-omission",
+      "root_cause": "the next stage could accept rehashed route labels without reconstructing the ordered source reviews, while the dedicated #9901-#10300 evidence runner existed but was not executed or uploaded by CI",
+      "exploit_scenario": "an attacker substitutes a review route or actor namespace and recomputes outer digests, or a deterministic evidence runner silently breaks while unit tests remain green",
+      "mandatory_prevention_rules": ["ordered-source-review-reconstruction", "route-and-actor-namespace-derivation", "full-rehash-source-review-negative-tests", "current-chain-evidence-ci-execution-and-upload"],
+      "required_negative_tests": ["test_source_route_full_rehash_tamper", "test_source_actor_namespace_rehash_tamper"],
+      "ethernian_remediation_reference": "ETH-9901-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_rebuttal_correction_submission_validation.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_rebuttal_correction_submission_validation", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
