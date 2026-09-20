@@ -340,6 +340,18 @@
       "ethernian_remediation_reference": "ETH-14301-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_approval_intent_envelope_gate.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_approval_intent_envelope_gate", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-14701-001",
+      "discovery_scope": "#14301-#14700 approval intent envelope self-audit",
+      "defect_category": "approval-receipt-schema-and-idempotency-contract-under-specification",
+      "root_cause": "pending approval intents bound plan identity and nonce domains but did not define a non-issuing receipt schema with an independent caller key, payload conflict semantics, source roles, predecessor, and replay scope",
+      "exploit_scenario": "a caller can reuse one key with a changed payload, reuse a schema identity under another key, forge a receipt or authority state, and recompute downstream records while claiming an idempotent approval receipt path",
+      "mandatory_prevention_rules": ["source-intent-bound-non-issuing-receipt-schema", "independent-idempotency-key-and-payload-scope", "same-key-same-payload-converges-serial-and-parallel", "same-key-changed-payload-and-cross-key-identity-reuse-fail-closed", "issuer-verifier-role-separation-and-predecessor-lineage", "two-content-addressed-recovery-paths", "full-downstream-rehash-negative-tests", "no-receipt-materialization-execution-observation-or-authority"],
+      "required_negative_tests": ["test_same_key_different_payload_conflict", "test_different_key_schema_id_reuse_fail_closed", "test_same_idempotency_key_other_logical_schema_conflict", "test_partial_batch_and_order_swap_fail_closed", "test_composite_identity_full_rehash_rejected", "test_source_intent_full_downstream_rehash_rejected", "test_idempotency_scope_full_rehash_rejected", "test_nonce_replay_full_rehash_rejected", "test_predecessor_removed_full_rehash_rejected", "test_receipt_forgery_full_rehash_rejected", "test_authority_forgery_full_rehash_rejected", "test_role_exchange_full_rehash_rejected", "test_current_source_actor_alias_issuer_rejected", "test_current_source_counter_alias_verifier_rejected", "test_other_key_source_actor_alias_rejected", "test_source_actor_alias_full_downstream_rehash_rejected", "test_single_recovery_path_full_rehash_rejected"],
+      "ethernian_remediation_reference": "ETH-14701-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_approval_receipt_schema_contract.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_approval_receipt_schema_contract", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
