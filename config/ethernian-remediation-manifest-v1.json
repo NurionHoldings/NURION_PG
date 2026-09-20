@@ -29,6 +29,7 @@
     {"remediation_id": "ETH-13101-AUDIT-001", "scope": "#12701-#13100 automatic snapshot-chain and cause-fit recovery preflight", "required_lesson_ids": ["ARL-13101-001"]},
     {"remediation_id": "ETH-13501-AUDIT-001", "scope": "#13101-#13500 content-free observation contract and independent verifier gate", "required_lesson_ids": ["ARL-13501-001"]},
     {"remediation_id": "ETH-13901-AUDIT-001", "scope": "#13501-#13900 non-executed readiness manifest and independent approval gate", "required_lesson_ids": ["ARL-13901-001"]},
-    {"remediation_id": "ETH-14301-AUDIT-001", "scope": "#13901-#14300 composite plan identity and dual pending approval-intent envelopes", "required_lesson_ids": ["ARL-14301-001"]}
+    {"remediation_id": "ETH-14301-AUDIT-001", "scope": "#13901-#14300 composite plan identity and dual pending approval-intent envelopes", "required_lesson_ids": ["ARL-14301-001"]},
+    {"remediation_id": "ETH-14701-AUDIT-001", "scope": "#14301-#14700 non-issuing approval receipt schema and independent idempotency-key contract", "required_lesson_ids": ["ARL-14701-001"]}
   ]
 }
