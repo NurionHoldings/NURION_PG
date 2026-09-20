@@ -121,6 +121,7 @@ Synthetic canary readiness docket controls #1501-#1700 are documented in
 - #12301~#12700을 `원천결속 극복방법론 독립챌린지` 계층으로 구현: 16개 routed 사례의 32개 선택지 각각에 수정방향·극복방법·가정·반증시험·중단조건·검증기준·잔여위험·escalation·rollback을 하나의 content-addressed 카드로 결속한다. 4개 N/A와 16개 append-only 인간판단 hold를 보존하고 순위화·선택·결론·추천·수락·해결·승인·실행 권한은 갖지 않는다.
 - #12701~#13100을 `단계별 교훈 스냅샷·가이드형 복구경로 감사` 계층으로 구현: 단계 범위·registry/manifest·선행 snapshot·원천 docket을 content-addressed snapshot으로 고정하고, 16개 routed 사례마다 실패 원인·비구속 안전후보·2개 극복안과 각 안의 가정·반증시험·중단/검증·잔여위험·비용/위험/가역성·escalation·rollback/재개조건을 결속한다. 4개 N/A와 16개 append-only 인간판단 hold를 유지하며 추천·선택·결론·수락·해결·승인·실행 권한은 갖지 않는다.
 - #13101~#13500을 `자동 스냅샷 체인·미확정 원인 진단 프리플라이트` 계층으로 구현: stage mapping 전체의 중복·공백·lesson 회귀를 자동 fail-closed 검증한다. source guidance·challenge·snapshot과 probe 상태를 cause evidence로 결속하며 probe 미실행 상태는 억지 분류 없이 `CAUSE_UNDETERMINED`로 hold한다. 16개 routed 사례마다 진단 최소안·독립 재검증안과 읽기 전용 preflight를 제공하고, 4개 N/A, 16개 append-only 인간판단 hold, 전체 actor lineage와 비실행 경계를 유지한다.
+- #13501~#13900을 `내용 없는 합성 관찰계약·독립 검증게이트` 계층으로 구현: NOT_RUN probe에 source-bound fixture/input identity, 기대 PASS/FAIL 전제, evidence completeness, 독립 verifier gate를 결속하되 관찰값과 판정은 만들지 않는다. 모호·상충 결과는 자동 승격하지 않고 hold하며 계약보수·독립 재관찰 계획의 2개 극복경로와 비용·위험·가역성·중단·검증·rollback·재개조건을 제공한다. 4개 N/A, 16개 append-only 인간판단 hold, 전체 actor lineage와 비실행 경계를 유지한다.
 - 에테르니언 감사 교훈은 [ARKAON 감사 재발방지 지도사항](docs/70-arkaon-audit-recurrence-prevention.md)과 기계검증 정책으로 환류
 - 에테르니언 보완 커밋은 versioned lesson registry의 entry·ack·부정 테스트·재검증 증적이 없으면 전용 evidence 생성이 fail-closed
 
