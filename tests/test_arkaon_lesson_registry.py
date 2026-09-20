@@ -13,7 +13,7 @@ class Tests(unittest.TestCase):
         cls.declared=declared_remediations(json.loads(MANIFEST.read_text(encoding="utf-8")))
         cls.tests=discovered_negative_tests()
     def test_registry_covers_detected_fixes(self):
-        ids=validate(self.data,self.declared,self.tests); self.assertEqual(len(ids),18)
+        ids=validate(self.data,self.declared,self.tests); self.assertEqual(len(ids),19)
     def test_unregistered_fix_fails_closed(self):
         bad=dict(self.declared)|{"ETH-UNREGISTERED": {"ARL-MISSING"}}
         with self.assertRaises(ValueError): validate(self.data,bad,self.tests)
