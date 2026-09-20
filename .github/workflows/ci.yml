@@ -248,6 +248,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_approval_intent_envelope_gate_evidence.py
       - name: Verify synthetic approval receipt schema contract #14701-#15100
         run: PYTHONPATH=src python scripts/run_synthetic_approval_receipt_schema_contract_evidence.py
+      - name: Verify pre-issuance dual signature-input contract #15101-#15500
+        run: PYTHONPATH=src python scripts/run_synthetic_preissuance_dual_signature_input_contract_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -450,6 +452,8 @@ jobs:
             build/synthetic-approval-intent-envelope-gate-evidence.json.sha256
             build/synthetic-approval-receipt-schema-contract-evidence.json
             build/synthetic-approval-receipt-schema-contract-evidence.json.sha256
+            build/synthetic-preissuance-dual-signature-input-contract-evidence.json
+            build/synthetic-preissuance-dual-signature-input-contract-evidence.json.sha256
             build/synthetic-rebuttal-correction-submission-validation-evidence.json
             build/synthetic-rebuttal-correction-submission-validation-evidence.json.sha256
             build/synthetic-rebuttal-correction-independent-rereview-evidence.json
