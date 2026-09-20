@@ -1,0 +1,21 @@
+{
+  "feature": 189,
+  "foundry_commit": "24ae4a601ee449649e40804119fa37667f731076",
+  "pattern_id": "apf.public.similarity-leakage-guard",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "status": "ETHERNIAN_REVIEW_REQUIRED",
+  "controls": [
+    "handoff_binding_required",
+    "handoff_tamper_rejected",
+    "handoff_non_operational"
+  ],
+  "maximum_state": "SYNTHETIC_FEATURE_189_CAPSULE_VALIDATED",
+  "production_allowed": false,
+  "network_allowed": false,
+  "real_credentials_allowed": false,
+  "money_movement_allowed": false,
+  "deployment_allowed": false,
+  "automatic_merge_allowed": false,
+  "self_modification_allowed": false,
+  "capsule_digest": "db2b7fbb84314d8aced51e2e4b4a7794d9304fec78c361c5b8f27894d6f5525d"
+}
