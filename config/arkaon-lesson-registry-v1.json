@@ -328,6 +328,18 @@
       "ethernian_remediation_reference": "ETH-13901-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_observation_readiness_manifest.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_observation_readiness_manifest", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-14301-001",
+      "discovery_scope": "#13901-#14300 observation readiness manifest self-audit",
+      "defect_category": "composite-plan-identity-and-dual-approval-intent-under-specification",
+      "root_cause": "the plan receipt schema did not directly bind plan id, flow, kind, source contract, and readiness manifest as one identity, while materialization and execution approval were textual gates without independent actor, sequence, nonce, or replay domains",
+      "exploit_scenario": "an attacker substitutes a plan identity, reuses an actor or nonce across approval kinds, removes the materialization predecessor, and recomputes the entire downstream chain while claiming a valid approval path",
+      "mandatory_prevention_rules": ["content-address-plan-flow-kind-source-manifest-identity", "separate-pending-materialization-and-execution-intent-envelopes", "independent-actors-sequence-predecessor-and-replay-scope", "shared-final-docket-invariant-interface", "two-guided-recovery-paths", "full-downstream-rehash-negative-tests", "no-receipt-issuance-materialization-execution-or-authority"],
+      "required_negative_tests": ["test_plan_identity_substitution_full_rehash_rejected", "test_flow_kind_substitution_full_rehash_rejected", "test_manifest_digest_substitution_full_rehash_rejected", "test_composite_identity_substitution_full_rehash_rejected", "test_cross_kind_actor_reuse_rejected", "test_materialization_execution_sequence_swap_full_rehash_rejected", "test_prior_intent_removed_full_rehash_rejected", "test_nonce_replay_full_rehash_rejected", "test_receipt_issue_forgery_full_rehash_rejected", "test_same_key_envelope_id_or_actor_conflict_rejected", "test_other_key_envelope_id_reuse_api_rejected", "test_single_recovery_path_full_rehash_rejected", "test_source_plan_full_downstream_rehash_rejected", "test_docket_invariant_interface_full_rehash_rejected"],
+      "ethernian_remediation_reference": "ETH-14301-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_approval_intent_envelope_gate.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_approval_intent_envelope_gate", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
