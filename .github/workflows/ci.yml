@@ -222,6 +222,10 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_design_validation_traceability_evidence.py
       - name: Verify synthetic P0 design baseline RFC #3101-#3500
         run: PYTHONPATH=src python scripts/run_synthetic_p0_design_baseline_rfc_evidence.py
+      - name: Verify synthetic response review docket #9901-#10300
+        run: PYTHONPATH=src python scripts/run_synthetic_response_review_rebuttal_correction_evidence.py
+      - name: Verify synthetic rebuttal correction submission validation #10301-#10700
+        run: PYTHONPATH=src python scripts/run_synthetic_rebuttal_correction_submission_validation_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -406,5 +410,9 @@ jobs:
             build/synthetic-p0-design-baseline-rfc-evidence.json.sha256
             build/synthetic-design-validation-traceability-evidence.json
             build/synthetic-design-validation-traceability-evidence.json.sha256
+            build/synthetic-response-review-rebuttal-correction-evidence.json
+            build/synthetic-response-review-rebuttal-correction-evidence.json.sha256
+            build/synthetic-rebuttal-correction-submission-validation-evidence.json
+            build/synthetic-rebuttal-correction-submission-validation-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
