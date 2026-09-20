@@ -1,0 +1,24 @@
+{
+  "manifest_id": "ETHERNian-REMEDIATION-MANIFEST",
+  "version": 1,
+  "remediations": [
+    {"remediation_id": "ETH-3901-AUDIT-001", "scope": "#3901-#4300", "required_lesson_ids": ["ARL-3901-001"]},
+    {"remediation_id": "ETH-4301-AUDIT-001", "scope": "#4301-#4700", "required_lesson_ids": ["ARL-4301-001"]},
+    {"remediation_id": "ETH-4301-AUDIT-002", "scope": "#4301-#4700", "required_lesson_ids": ["ARL-4301-002"]},
+    {"remediation_id": "ETH-4301-AUDIT-003", "scope": "#4301-#4700 CI audit", "required_lesson_ids": ["ARL-4301-003"]},
+    {"remediation_id": "ETH-4701-AUDIT-001", "scope": "#4701-#5100", "required_lesson_ids": ["ARL-4701-001"]},
+    {"remediation_id": "ETH-5101-AUDIT-001", "scope": "#5101-#5500", "required_lesson_ids": ["ARL-5101-001"]},
+    {"remediation_id": "ETH-5501-AUDIT-001", "scope": "#5501-#5900", "required_lesson_ids": ["ARL-5501-001"]},
+    {"remediation_id": "ETH-5901-AUDIT-001", "scope": "#5901-#6300", "required_lesson_ids": ["ARL-5901-001"]},
+    {"remediation_id": "ETH-6301-AUDIT-001", "scope": "#6301-#6700", "required_lesson_ids": ["ARL-6301-001"]},
+    {"remediation_id": "ETH-6701-AUDIT-001", "scope": "#6701-#7100", "required_lesson_ids": ["ARL-6701-001"]},
+    {"remediation_id": "ETH-7101-AUDIT-001", "scope": "#7101-#7500", "required_lesson_ids": ["ARL-7101-001"]},
+    {"remediation_id": "ETH-7501-AUDIT-001", "scope": "#7501-#7900", "required_lesson_ids": ["ARL-7501-001"]},
+    {"remediation_id": "ETH-7901-AUDIT-001", "scope": "#7901-#8300", "required_lesson_ids": ["ARL-7901-001"]},
+    {"remediation_id": "ETH-8301-AUDIT-001", "scope": "#8301-#8700", "required_lesson_ids": ["ARL-8301-001"]},
+    {"remediation_id": "ETH-8701-AUDIT-001", "scope": "#8701-#9100", "required_lesson_ids": ["ARL-8701-001"]},
+    {"remediation_id": "ETH-9101-AUDIT-001", "scope": "#9101-#9500", "required_lesson_ids": ["ARL-9101-001"]},
+    {"remediation_id": "ETH-9501-AUDIT-001", "scope": "#9501-#9900", "required_lesson_ids": ["ARL-9501-001"]},
+    {"remediation_id": "ETH-9901-AUDIT-001", "scope": "#9901-#10300 CI evidence and source review lineage", "required_lesson_ids": ["ARL-9901-001"]}
+  ]
+}
