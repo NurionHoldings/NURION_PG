@@ -25,6 +25,7 @@
     {"remediation_id": "ETH-11101-AUDIT-001", "scope": "#11101-#11500 complete finding role lineage binding", "required_lesson_ids": ["ARL-11101-001"]},
     {"remediation_id": "ETH-11501-AUDIT-001", "scope": "#11501-#11900 judgment preparation option falsifiability", "required_lesson_ids": ["ARL-11501-001"]},
     {"remediation_id": "ETH-12301-AUDIT-001", "scope": "#11901-#12300 per-option methodology semantic binding", "required_lesson_ids": ["ARL-12301-001"]},
-    {"remediation_id": "ETH-12701-AUDIT-001", "scope": "#12301-#12700 stage-scoped lesson snapshot and actionable recovery guidance", "required_lesson_ids": ["ARL-12701-001"]}
+    {"remediation_id": "ETH-12701-AUDIT-001", "scope": "#12301-#12700 stage-scoped lesson snapshot and actionable recovery guidance", "required_lesson_ids": ["ARL-12701-001"]},
+    {"remediation_id": "ETH-13101-AUDIT-001", "scope": "#12701-#13100 automatic snapshot-chain and cause-fit recovery preflight", "required_lesson_ids": ["ARL-13101-001"]}
   ]
 }
