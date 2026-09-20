@@ -292,6 +292,18 @@
       "ethernian_remediation_reference": "ETH-12701-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_versioned_lesson_recovery_guidance.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_versioned_lesson_recovery_guidance", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-13101-001",
+      "discovery_scope": "#12701-#13100 versioned recovery guidance self-audit",
+      "defect_category": "automatic-stage-chain-and-cause-fit-preflight",
+      "root_cause": "stage snapshot mappings were individually checked but not globally checked for gaps, overlaps, or lesson-chain regression; recovery guidance also used one generic cause and lacked option-specific executable preflight contracts",
+      "exploit_scenario": "a consumer inserts an overlapping or gapped stage, offers cosmetically distinct alternatives for the wrong cause, or claims readiness without satisfying a source-bound preflight and then recomputes all downstream digests",
+      "mandatory_prevention_rules": ["automatic-contiguous-nonoverlapping-stage-chain-validation", "monotonic-stage-lesson-chain", "source-bound-cause-classification", "materially-distinct-two-option-preflight-contracts", "bind-assumption-falsifier-stop-validation-risk-cost-reversibility-escalation-rollback-resume", "full-downstream-rehash-negative-tests", "no-recommendation-selection-or-resolution-authority"],
+      "required_negative_tests": ["test_stage_snapshot_overlap_rejected", "test_stage_snapshot_gap_rejected", "test_stage_snapshot_lesson_regression_rejected", "test_wrong_cause_full_rehash_rejected", "test_cause_evidence_removed_full_rehash_rejected", "test_ambiguous_promoted_to_certain_full_rehash_rejected", "test_probe_pass_forgery_full_rehash_rejected", "test_duplicate_strategy_full_rehash_rejected", "test_preflight_removed_full_rehash_rejected", "test_prior_guidance_full_downstream_rehash_rejected"],
+      "ethernian_remediation_reference": "ETH-13101-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_recovery_preflight_audit.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_recovery_preflight_audit", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
