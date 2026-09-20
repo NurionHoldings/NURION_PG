@@ -240,6 +240,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_versioned_lesson_recovery_guidance_evidence.py
       - name: Verify recovery preflight audit #13101-#13500
         run: PYTHONPATH=src python scripts/run_synthetic_recovery_preflight_audit_evidence.py
+      - name: Verify synthetic observation contract gate #13501-#13900
+        run: PYTHONPATH=src python scripts/run_synthetic_observation_contract_gate_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -290,6 +292,8 @@ jobs:
             build/synthetic-versioned-lesson-recovery-guidance-evidence.json.sha256
             build/synthetic-recovery-preflight-audit-evidence.json
             build/synthetic-recovery-preflight-audit-evidence.json.sha256
+            build/synthetic-observation-contract-gate-evidence.json
+            build/synthetic-observation-contract-gate-evidence.json.sha256
             build/synthetic-patch-shadow-evidence.json
             build/synthetic-patch-shadow-evidence.json.sha256
             build/synthetic-patch-shadow-review-docket-evidence.json
