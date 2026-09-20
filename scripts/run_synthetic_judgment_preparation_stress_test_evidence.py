@@ -7,7 +7,7 @@ from nurion_pg.synthetic_judgment_preparation_stress_test import *
 from nurion_pg.synthetic_finding_independent_review import SyntheticFindingIndependentReview
 from nurion_pg.synthetic_rereview_finding_observation import Finding, SourceReReview, SourceSubmission, SOURCE_ACTOR_KINDS, finding_digest, observation_projection_digest, rereview_digest
 from nurion_pg.synthetic_rebuttal_correction_submission_validation import RESPONDER, ROUTES, derived_receipt_digest, submission_digest
-from validate_arkaon_lesson_registry import MANIFEST, declared_remediations, discovered_negative_tests, validate
+from validate_arkaon_lesson_registry import MANIFEST, declared_remediations, discovered_negative_tests, validate, validated_stage_snapshot
 
 ROOT=Path(__file__).resolve().parents[1];REGISTRY=ROOT/"config/arkaon-lesson-registry-v1.json";GUIDANCE=ROOT/"config/arkaon-audit-recurrence-prevention.json"
 def d(v):return sha256(v.encode()).hexdigest()
@@ -33,19 +33,19 @@ def prior_service(old_lessons,rules,registry_digest,manifest_digest):
     s.finalize("synthetic:finding-independent-review-docket:stress-source","synthetic:finding-review-docket-compiler:compiler","synthetic:finding-review-docket-validator:validator");return s
 
 def main():
-    registry_bytes=REGISTRY.read_bytes();manifest_bytes=MANIFEST.read_bytes();rules=tuple(x["id"] for x in json.loads(GUIDANCE.read_bytes())["rules"]);lessons=validate(json.loads(registry_bytes),declared_remediations(json.loads(manifest_bytes)),discovered_negative_tests())
+    registry_bytes=REGISTRY.read_bytes();manifest_bytes=MANIFEST.read_bytes();rules=tuple(x["id"] for x in json.loads(GUIDANCE.read_bytes())["rules"]);live=validate(json.loads(registry_bytes),declared_remediations(json.loads(manifest_bytes)),discovered_negative_tests());lessons,stage_digest=validated_stage_snapshot(live,APPLIED_LESSONS,"ARKAON-LESSONS-12301",(9901,12700))
     if lessons!=APPLIED_LESSONS or rules!=APPLIED_RULES:raise ValueError("continuous lessons and rules required")
-    prior=prior_service(lessons,rules,sha256(registry_bytes).hexdigest(),sha256(manifest_bytes).hexdigest())
+    prior=prior_service(lessons,rules,stage_digest,sha256(manifest_bytes).hexdigest())
     s=SyntheticJudgmentPreparationStressTest()
     for cid in range(11901,12301):
         w,a=s._expected(cid);s.add_control(cid,w,a,f"synthetic:judgment-stress-requirement:{(cid-11901)//25:02}",d(f"fixture:{cid}"),"EXPECTED_REJECTION" if a in NEGATIVE else "PASS")
-    s.anchor(prior,sha256(registry_bytes).hexdigest(),sha256(manifest_bytes).hexdigest(),lessons,rules,26,True)
+    s.anchor(prior,stage_digest,sha256(manifest_bytes).hexdigest(),lessons,rules,26,True)
     for i,(flow,kind) in enumerate(CASE_KEYS):
         args=(f"synthetic:judgment-preparation-stress-test:{flow}:{kind}",flow,kind)
         if prior._reviews[(flow,kind)].judgment_packet:s.add_stress_test(*args,f"synthetic:judgment-stress-preparer:preparer-{i}",f"synthetic:judgment-stress-challenger:challenger-{i}")
         else:s.add_stress_test(*args)
     s.finalize("synthetic:judgment-stress-docket:evidence","synthetic:judgment-stress-docket-compiler:stress-final-compiler","synthetic:judgment-stress-docket-validator:stress-final-validator");e=s.evidence()
     if not e["complete_counterfactual_stress_evidence"] or e["registered_control_count"]!=400 or e["option_profile_count"]!=32 or e["judgment_authority"] is not False:raise ValueError("incomplete or over-authoritative evidence")
-    e.update({"lesson_registry_digest":sha256(registry_bytes).hexdigest(),"remediation_manifest_digest":sha256(manifest_bytes).hexdigest(),"audit_remediation":"ETH-11501-AUDIT-001"})
+    e.update({"lesson_registry_digest":stage_digest,"remediation_manifest_digest":sha256(manifest_bytes).hexdigest(),"audit_remediation":"ETH-11501-AUDIT-001"})
     out=ROOT/"build/synthetic-judgment-preparation-stress-test-evidence.json";out.parent.mkdir(exist_ok=True);payload=json.dumps(e,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode();out.write_bytes(payload);digest=sha256(payload).hexdigest();out.with_suffix(out.suffix+".sha256").write_text(digest+"\n",encoding="utf-8");print(digest)
 if __name__=="__main__":main()
