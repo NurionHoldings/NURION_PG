@@ -316,6 +316,18 @@
       "ethernian_remediation_reference": "ETH-13501-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_observation_contract_gate.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_observation_contract_gate", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-13901-001",
+      "discovery_scope": "#13501-#13900 observation contract self-audit",
+      "defect_category": "pre-materialization-readiness-manifest-under-specification",
+      "root_cause": "the content-free observation contract bound fixture and input identities but did not bind resource budgets, privacy and data classifications, determinism, isolation, timeout, side-effect prohibition, receipt schema, and independent materialization approval as one source-addressed plan",
+      "exploit_scenario": "an attacker can claim readiness from a formally complete observation contract while silently relaxing resource, privacy, isolation, timeout, side-effect, receipt, or approval constraints and recomputing all downstream digests",
+      "mandatory_prevention_rules": ["source-bound-non-executed-readiness-manifest", "bind-resource-privacy-data-determinism-isolation-timeout-side-effect-receipt", "separate-independent-materialization-and-execution-approval", "two-guided-recovery-paths", "full-downstream-rehash-negative-tests", "no-materialization-execution-observation-or-judgment-authority"],
+      "required_negative_tests": ["test_resource_budget_removed_full_rehash_rejected", "test_privacy_downgrade_full_rehash_rejected", "test_determinism_removed_full_rehash_rejected", "test_isolation_relaxed_full_rehash_rejected", "test_timeout_removed_full_rehash_rejected", "test_side_effect_permission_full_rehash_rejected", "test_receipt_schema_observation_value_full_rehash_rejected", "test_approval_gate_bypass_full_rehash_rejected", "test_materialization_forgery_full_rehash_rejected", "test_execution_forgery_full_rehash_rejected", "test_single_recovery_path_full_rehash_rejected", "test_source_contract_full_downstream_rehash_rejected", "test_duplicate_plan_id_other_key_rejected", "test_duplicate_plan_id_full_downstream_rehash_rejected"],
+      "ethernian_remediation_reference": "ETH-13901-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_observation_readiness_manifest.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_observation_readiness_manifest", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
