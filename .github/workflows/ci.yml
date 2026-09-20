@@ -230,6 +230,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_rebuttal_correction_independent_rereview_evidence.py
       - name: Verify synthetic rereview finding observation #11101-#11500
         run: PYTHONPATH=src python scripts/run_synthetic_rereview_finding_observation_evidence.py
+      - name: Verify synthetic independent finding review #11501-#11900
+        run: PYTHONPATH=src python scripts/run_synthetic_finding_independent_review_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -290,6 +292,8 @@ jobs:
             build/synthetic-patch-draft-review-evidence.json.sha256
             build/synthetic-patch-draft-shadow-evidence.json
             build/synthetic-patch-draft-shadow-evidence.json.sha256
+            build/synthetic-finding-independent-review-evidence.json
+            build/synthetic-finding-independent-review-evidence.json.sha256
             build/synthetic-intent-planning-proposal-evidence.json
             build/synthetic-intent-planning-proposal-evidence.json.sha256
             build/synthetic-patch-draft-shadow-review-evidence.json
