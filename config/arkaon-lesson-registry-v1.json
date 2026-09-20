@@ -232,6 +232,18 @@
       "ethernian_remediation_reference": "ETH-10301-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_rebuttal_correction_submission_validation.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_rebuttal_correction_submission_validation", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-10701-001",
+      "discovery_scope": "#10701-#11100 independent rereview audit",
+      "defect_category": "rereview-record-identity-binding",
+      "root_cause": "rereview_id was validated only by namespace and was omitted from the content digest, allowing duplicate or substituted record identities after a full outer rehash",
+      "exploit_scenario": "an attacker duplicates a valid rereview identifier across distinct cases and recomputes the rereview set, docket, event chain, and evidence while structural checks still pass",
+      "mandatory_prevention_rules": ["rereview-id-in-content-digest", "unique-rereview-id-set", "full-rehash-duplicate-id-negative-test"],
+      "required_negative_tests": ["test_rereview_id_full_rehash_tamper_rejected"],
+      "ethernian_remediation_reference": "ETH-10701-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_rebuttal_correction_independent_rereview.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_rebuttal_correction_independent_rereview", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
