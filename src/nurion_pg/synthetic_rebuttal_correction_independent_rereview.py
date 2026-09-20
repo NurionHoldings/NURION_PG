@@ -86,8 +86,8 @@ def source_submission_digest(row):
                              row.submitter_party, row.document_digest, row.receipt_digest,
                              row.marker, row.parent_submission_digest, row.position)
 
-def rereview_digest(flow, kind, source, route, reviewer, marker, parent, position):
-    return canonical_digest(("INDEPENDENT_REBUTTAL_CORRECTION_REREVIEW", flow, kind, source,
+def rereview_digest(rereview_id, flow, kind, source, route, reviewer, marker, parent, position):
+    return canonical_digest(("INDEPENDENT_REBUTTAL_CORRECTION_REREVIEW", rereview_id, flow, kind, source,
                              route, reviewer, marker, parent, position))
 
 def _anchor_payload(payload):
@@ -159,7 +159,7 @@ class SyntheticRebuttalCorrectionIndependentReReview:
                 if _identity(reviewer) in {_identity(x) for x in occupied}: raise GovernanceRejected("rereviewer role collision")
                 marker = "HUMAN_REEXAMINATION_PENDING"
             parent = None if previous is None else previous.digest
-            digest = rereview_digest(flow, kind, source.digest, source.route, reviewer, marker, parent, position + 1)
+            digest = rereview_digest(rereview_id, flow, kind, source.digest, source.route, reviewer, marker, parent, position + 1)
             row = ReReview(rereview_id, flow, kind, source.digest, source.route, reviewer, marker,
                            parent, position + 1, True, source.route != "NOT_APPLICABLE_PRESERVED",
                            False, False, False, digest)
@@ -223,9 +223,10 @@ class SyntheticRebuttalCorrectionIndependentReReview:
             state = row.reviewer is None and row.marker == "NO_SUBMISSION_MARKER_PRESERVED" and row.pending_human_reexamination is False
         else:
             state = _syn(row.reviewer, "independent-human-rereviewer") and row.marker == "HUMAN_REEXAMINATION_PENDING" and row.pending_human_reexamination is True
-        expected = rereview_digest(row.flow, row.answer_kind, source.digest, source.route, row.reviewer,
+        expected = rereview_digest(row.rereview_id, row.flow, row.answer_kind, source.digest, source.route, row.reviewer,
                                    row.marker, None if previous is None else previous.digest, position + 1)
-        return _syn(row.rereview_id, "independent-rereview") and (row.flow, row.answer_kind) == key and row.source_submission_digest == source.digest and row.route == source.route and state and row.parent_rereview_digest == (None if previous is None else previous.digest) and row.position == position + 1 and row.held is True and not any((row.concluded, row.resolved, row.accepted)) and row.digest == expected
+        ids = [x.rereview_id for k, x in self._rereviews.items() if k != key]
+        return _syn(row.rereview_id, "independent-rereview") and row.rereview_id not in ids and (row.flow, row.answer_kind) == key and row.source_submission_digest == source.digest and row.route == source.route and state and row.parent_rereview_digest == (None if previous is None else previous.digest) and row.position == position + 1 and row.held is True and not any((row.concluded, row.resolved, row.accepted)) and row.digest == expected
 
     def _event(self, action, artifact):
         previous = self._events[-1]["digest"] if self._events else None
