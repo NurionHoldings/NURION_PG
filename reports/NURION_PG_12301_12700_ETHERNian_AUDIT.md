@@ -22,7 +22,9 @@
 - governance manifest: PASS
 - ARKAON lesson registry: PASS (23 lessons)
 - compileall·diff-check: PASS
-- Evidence SHA-256: `146a6da1a85efa6689770cb930ebe073afe1d77bb2342193a6f44599fc9bd52a`
+- Evidence SHA-256: `348e342325cbf0c2ad21c2d9fe9cb713780806b428ec91136459ed10fb687e2e`
+
+원격 CI의 lesson 전파 실패에는 거부 사유와 함께 두 극복안을 제시했다. 이번 범위에서는 최소·가역 변경인 기존 evidence chain 전파를 적용했고, 단계별 versioned lesson snapshot은 후속 구조개선 과제로 남겼다. 이후 에테르니언의 `HOLD`는 통과 가능한 수정방향, 대안별 비용·위험·가역성, 재검증 기준, 중단·재개 조건을 함께 제공한다.
 
 ## 잔여 위험
 
