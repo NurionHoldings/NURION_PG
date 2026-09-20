@@ -234,6 +234,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_finding_independent_review_evidence.py
       - name: Verify counterfactual judgment preparation stress #11901-#12300
         run: PYTHONPATH=src python scripts/run_synthetic_judgment_preparation_stress_test_evidence.py
+      - name: Verify option methodology independent challenge #12301-#12700
+        run: PYTHONPATH=src python scripts/run_synthetic_option_methodology_independent_challenge_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -278,6 +280,8 @@ jobs:
             build/synthetic-implementation-proposal-evidence.json.sha256
             build/synthetic-implementation-review-evidence.json
             build/synthetic-implementation-review-evidence.json.sha256
+            build/synthetic-option-methodology-independent-challenge-evidence.json
+            build/synthetic-option-methodology-independent-challenge-evidence.json.sha256
             build/synthetic-patch-shadow-evidence.json
             build/synthetic-patch-shadow-evidence.json.sha256
             build/synthetic-patch-shadow-review-docket-evidence.json
