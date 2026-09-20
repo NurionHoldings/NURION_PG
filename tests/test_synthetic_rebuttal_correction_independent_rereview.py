@@ -112,6 +112,14 @@ class Tests(unittest.TestCase):
     def test_parent_tamper(self):
         service, _ = reviewed(); key = CASE_KEYS[1]; service._rereviews[key] = replace(service._rereviews[key], parent_rereview_digest=d("bad"))
         self.assertFalse(service.evidence()["integrity_valid"])
+    def test_rereview_id_full_rehash_tamper_rejected(self):
+        service, _ = reviewed(); first, second = CASE_KEYS[:2]
+        row = service._rereviews[second]
+        service._rereviews[second] = replace(row, rereview_id=service._rereviews[first].rereview_id,
+            digest=rereview_digest(service._rereviews[first].rereview_id, row.flow, row.answer_kind,
+                row.source_submission_digest, row.route, row.reviewer, row.marker,
+                row.parent_rereview_digest, row.position))
+        self.assertFalse(service.evidence()["integrity_valid"])
     def test_missing_hold(self):
         service, _ = reviewed(); service._holds.pop(); self.assertFalse(service.evidence()["integrity_valid"])
     def test_event_tamper(self):
