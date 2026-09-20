@@ -23,6 +23,7 @@
     {"remediation_id": "ETH-10301-AUDIT-001", "scope": "#10301-#10700 submission receipt semantic binding", "required_lesson_ids": ["ARL-10301-001"]},
     {"remediation_id": "ETH-10701-AUDIT-001", "scope": "#10701-#11100 rereview identity binding", "required_lesson_ids": ["ARL-10701-001"]},
     {"remediation_id": "ETH-11101-AUDIT-001", "scope": "#11101-#11500 complete finding role lineage binding", "required_lesson_ids": ["ARL-11101-001"]},
-    {"remediation_id": "ETH-11501-AUDIT-001", "scope": "#11501-#11900 judgment preparation option falsifiability", "required_lesson_ids": ["ARL-11501-001"]}
+    {"remediation_id": "ETH-11501-AUDIT-001", "scope": "#11501-#11900 judgment preparation option falsifiability", "required_lesson_ids": ["ARL-11501-001"]},
+    {"remediation_id": "ETH-12301-AUDIT-001", "scope": "#11901-#12300 per-option methodology semantic binding", "required_lesson_ids": ["ARL-12301-001"]}
   ]
 }
