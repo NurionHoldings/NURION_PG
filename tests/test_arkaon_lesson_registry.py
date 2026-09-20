@@ -7,7 +7,7 @@ from pathlib import Path
 from scripts.validate_arkaon_lesson_registry import (MANIFEST, REGISTRY, declared_remediations,
                                                      discovered_negative_tests, validate,
                                                      LESSONS_12301, STAGE_LESSON_SNAPSHOTS,
-                                                     validated_stage_snapshot)
+                                                     validated_stage_chain, validated_stage_snapshot)
 
 class Tests(unittest.TestCase):
     @classmethod
@@ -16,7 +16,7 @@ class Tests(unittest.TestCase):
         cls.declared=declared_remediations(json.loads(MANIFEST.read_text(encoding="utf-8")))
         cls.tests=discovered_negative_tests()
     def test_registry_covers_detected_fixes(self):
-        ids=validate(self.data,self.declared,self.tests); self.assertEqual(len(ids),24)
+        ids=validate(self.data,self.declared,self.tests); self.assertEqual(len(ids),25)
     def test_unregistered_fix_fails_closed(self):
         bad=dict(self.declared)|{"ETH-UNREGISTERED": {"ARL-MISSING"}}
         with self.assertRaises(ValueError): validate(self.data,bad,self.tests)
@@ -49,5 +49,16 @@ class Tests(unittest.TestCase):
         required=STAGE_LESSON_SNAPSHOTS["ARKAON-LESSONS-12701"][1]
         self.assertEqual(validated_stage_snapshot(current,required,"ARKAON-LESSONS-12701",(12701,13100)),validated_stage_snapshot(future,required,"ARKAON-LESSONS-12701",(12701,13100)))
         with self.assertRaises(ValueError):validated_stage_snapshot(future,tuple(sorted(required+("ARL-FUTURE-001",))),"ARKAON-LESSONS-12701",(12701,13100))
+    def test_stage_snapshot_chain_is_contiguous(self):
+        self.assertEqual(len(validated_stage_chain()),3)
+    def test_stage_snapshot_overlap_rejected(self):
+        bad=dict(STAGE_LESSON_SNAPSHOTS);bad["OVERLAP"]=((13000,13200),STAGE_LESSON_SNAPSHOTS["ARKAON-LESSONS-12701"][1])
+        with self.assertRaises(ValueError):validated_stage_chain(bad)
+    def test_stage_snapshot_gap_rejected(self):
+        bad=dict(STAGE_LESSON_SNAPSHOTS);bad["ARKAON-LESSONS-13101"]=((13102,13500),bad["ARKAON-LESSONS-13101"][1])
+        with self.assertRaises(ValueError):validated_stage_chain(bad)
+    def test_stage_snapshot_lesson_regression_rejected(self):
+        bad=dict(STAGE_LESSON_SNAPSHOTS);bad["ARKAON-LESSONS-13101"]=((13101,13500),LESSONS_12301)
+        with self.assertRaises(ValueError):validated_stage_chain(bad)
 
 if __name__=="__main__": unittest.main()
