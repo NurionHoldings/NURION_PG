@@ -37,6 +37,7 @@
     {"remediation_id": "ETH-16301-AUDIT-001", "scope": "#15901-#16300 isolated PostgreSQL fixture migration and repository proof contract", "required_lesson_ids": ["ARL-16301-001"]},
     {"remediation_id": "ETH-16701-AUDIT-001", "scope": "#16301-#16700 PostgreSQL bounded retry and ambiguous commit recovery proof", "required_lesson_ids": ["ARL-16701-001"]},
     {"remediation_id": "ETH-17101-AUDIT-001", "scope": "#16701-#17100 actual PostgreSQL deadlock and lock contention proof", "required_lesson_ids": ["ARL-17101-001"]},
-    {"remediation_id": "ETH-17501-AUDIT-001", "scope": "#17101-#17500 actual PostgreSQL backend termination and reconciliation proof", "required_lesson_ids": ["ARL-17501-001"]}
+    {"remediation_id": "ETH-17501-AUDIT-001", "scope": "#17101-#17500 actual PostgreSQL backend termination and reconciliation proof", "required_lesson_ids": ["ARL-17501-001"]},
+    {"remediation_id": "ETH-17901-AUDIT-001", "scope": "#17501-#17900 precommit loss recovery quarantine proof", "required_lesson_ids": ["ARL-17901-001"]}
   ]
 }
