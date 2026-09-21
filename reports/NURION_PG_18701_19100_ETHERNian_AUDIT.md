@@ -18,6 +18,7 @@
 |---|---|---|---|---|---|---|
 | lineage sequence gap 허용 | `lineage_sequence`가 양수·UNIQUE만 강제돼 version 3에 sequence 99가 가능 | 단일 case·단일 chain 모델에 맞춰 DB `CHECK(lineage_sequence=version)` 적용 | predecessor lineage sequence를 복합 FK에 포함하고 +1 CHECK | 낮음·중간·높음; 단일 계보에서는 version 대응이 단순·명확 | sequence 재사용과 실제 gap 99를 분리해 INSERT 거부 | gap 성공 시 HOLD, CHECK 복구 후 fresh DB 재실행, fixture schema drop |
 | lesson/stage 고정 개수 실패 | 신규 lesson과 stage 추가 후 기대값이 이전 수치 유지 | lesson 39, stage chain 17로 갱신 | 동적 계산 | 낮음·낮음·높음 | 전체 회귀 1,995 PASS | 불일치 시 registry HOLD, 선언과 테스트 동시 검토, patch revert |
+| 기존 retry proof 간헐 실패 | loser가 최초 winner의 commit 완료 전에 즉시 재진입해 실제 `40001`을 3회 소진 가능 | winner commit `Event` handoff 후 attempt 2가 bounded wait하고 fresh connection으로 재시도 | 고정 sleep 또는 max-attempt 확대 | 낮음·낮음·높음; 운영 로직이 아닌 disposable harness만 변경 | 첫 실제 40001 1건, attempt 2 성공, fresh PID, 전체 1,996 PASS | 5초 내 handoff 없으면 fail closed, 원인 수정 후 fresh schema 재실행, harness patch revert |
 
 향후 복수 계보 또는 병합이 필요하면 현재 단일 successor 제약을 느슨하게 바꾸지 않고 별도 branch/merge 모델, 충돌 판정, 인간 승인 경계를 설계해야 한다.
 
@@ -26,7 +27,7 @@
 - PR: #414
 - 검증 head: `a4ca064cd872973328ee6012d38481da6e5c69bb`
 - CI run: `35582610647` / run number `1881`
-- 전체 회귀: 1,995 PASS
+- 전체 회귀: 1,996 PASS
 - PostgreSQL proof: SUCCESS
 - supersession evidence SHA-256: `e826681a535d73c27689ca5580a28365a0eefd8de20d902195dc279451f2426f`
 - PostgreSQL artifact: `10630613944`
