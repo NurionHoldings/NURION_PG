@@ -364,6 +364,18 @@
       "ethernian_remediation_reference": "ETH-15101-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_preissuance_dual_signature_input_contract.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_preissuance_dual_signature_input_contract", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-15501-001",
+      "discovery_scope": "#15101-#15500 preissuance dual signature-input self-audit",
+      "defect_category": "nonissuance-result-seal-and-atomic-idempotency-reservation-under-specification",
+      "root_cause": "dual signature inputs did not define a non-authoritative result candidate, seal input, or atomic reservation contract binding source inputs, policy, deterministic expiry, sequence, predecessor, nonce, and independent owner and validator identities",
+      "exploit_scenario": "an attacker reuses a token, scope, nonce, actor, or expired packet; swaps source inputs; forges commit, receipt, or authority; and recomputes downstream records while claiming a valid reservation",
+      "mandatory_prevention_rules": ["source-packet-bound-noncryptographic-result-candidate-and-seal-input", "exact-policy-v1-and-closed-deterministic-issued-to-expiry-window", "snapshot-anchor-and-post-integrity-sequence-parity", "atomic-same-key-same-payload-convergence", "cross-key-id-token-scope-nonce-reuse-fail-closed", "global-id-based-actor-independence", "sequence-predecessor-and-composite-identity-binding", "two-content-addressed-recovery-paths", "full-downstream-rehash-negative-tests", "no-commit-signature-receipt-ledger-database-execution-observation-or-authority"],
+      "required_negative_tests": ["test_same_key_changed_payload_and_cross_key_identity_reuse_rejected", "test_token_scope_nonce_reuse_rejected", "test_owner_validator_exchange_alias_and_global_actor_collision_rejected", "test_policy_v0_missing_unknown_future_and_downstream_rehash_rejected", "test_deterministic_expiry_boundary_and_expired_resume_rejected", "test_snapshot_sequence_api_and_full_downstream_rehash_rejected", "test_partial_batch_and_order_swap_fail_closed", "test_source_input_exchange_full_rehash_rejected", "test_owner_validator_exchange_full_rehash_rejected", "test_commit_receipt_and_authority_forgery_rejected", "test_reservation_id_namespace_and_docket_roles_rejected"],
+      "ethernian_remediation_reference": "ETH-15501-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_nonissuance_result_seal_reservation.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_nonissuance_result_seal_reservation", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
