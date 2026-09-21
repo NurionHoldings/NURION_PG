@@ -9,7 +9,7 @@ SCHEMA="nurion_pg_ops_e03_ci"
 
 
 def main()->None:
-    connection=psycopg.connect(connect_timeout=5)
+    connection=psycopg.connect(connect_timeout=5,autocommit=True)
     foundation=PostgresFoundation(connection,SCHEMA)
     foundation.rollback()
     try:
@@ -28,7 +28,7 @@ def main()->None:
         assert connection.execute(f"SELECT count(*) FROM {SCHEMA}.merchants WHERE merchant_id='merchant-rollback'").fetchone()[0]==0
     finally:
         foundation.rollback();connection.close()
-    verify=psycopg.connect(connect_timeout=5)
+    verify=psycopg.connect(connect_timeout=5,autocommit=True)
     assert verify.execute("SELECT 1 FROM pg_namespace WHERE nspname=%s",(SCHEMA,)).fetchone() is None
     verify.close()
     print("OPS-E03 PostgreSQL foundation integration: PASS")

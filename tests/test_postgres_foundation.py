@@ -1,5 +1,5 @@
 import unittest
-from nurion_pg.storage.postgres import migration_down_sql,migration_up_sql
+from nurion_pg.storage.postgres import PostgresFoundation,migration_down_sql,migration_up_sql
 
 
 class PostgresMigrationContractTests(unittest.TestCase):
@@ -18,6 +18,10 @@ class PostgresMigrationContractTests(unittest.TestCase):
         sql=migration_down_sql("nurion_pg_test")
         self.assertLess(sql.index("api_keys"),sql.index("principals"))
         self.assertLess(sql.index("principals"),sql.index("merchants"))
+
+    def test_foundation_rejects_implicit_transaction_connections(self):
+        connection=type("Connection",(),{"autocommit":False})()
+        with self.assertRaises(ValueError):PostgresFoundation(connection)
 
 
 if __name__=="__main__":unittest.main()

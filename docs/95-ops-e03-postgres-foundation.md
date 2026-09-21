@@ -14,6 +14,7 @@ The migration creates:
 ## Guarantees
 
 - Migration application is serialized with a PostgreSQL transaction advisory lock.
+- Connections must use autocommit mode; every write path opens its own explicit transaction block, preventing caller reads from silently widening transaction scope.
 - Reapplying the current migration is idempotent and reports no change.
 - Merchant, principal, API-key digest, and provisioning outbox event commit in one transaction.
 - A uniqueness or constraint failure rolls the entire provisioning transaction back.

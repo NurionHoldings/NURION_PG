@@ -86,7 +86,10 @@ class PostgresFoundation:
     connection: Any
     schema: str = "nurion_pg"
 
-    def __post_init__(self) -> None:_schema(self.schema)
+    def __post_init__(self) -> None:
+        _schema(self.schema)
+        if not self.connection.autocommit:
+            raise ValueError("PostgresFoundation requires an autocommit connection; writes use explicit transaction blocks")
 
     def migrate_up(self) -> bool:
         with self.connection.transaction():
