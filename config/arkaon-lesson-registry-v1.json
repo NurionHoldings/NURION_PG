@@ -436,6 +436,18 @@
       "ethernian_remediation_reference": "ETH-17501-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_postgres_connection_loss_proof.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_postgres_connection_loss_proof", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-17901-001",
+      "discovery_scope": "#17501-#17900 PostgreSQL backend termination proof self-audit",
+      "defect_category": "precommit-hold-recovery-quarantine-under-specification",
+      "root_cause": "a pre-commit terminated source was held safely but had no durable append-only non-executable quarantine case, deterministic identity, exact replay convergence, or read-only operator packet",
+      "exploit_scenario": "a held operation is blindly retried, conflicting payload or cross-key identity is accepted, a quarantine record gains payment or approval authority, or an unperformed partition/failover is claimed",
+      "mandatory_prevention_rules": ["separate-append-only-recovery-quarantine", "domain-separated-deterministic-case-identity", "exact-source-event-idempotency-payload-sqlstate-provenance-time-sequence-state-binding", "same-envelope-one-row-convergence", "changed-payload-and-cross-key-fail-closed", "quarantined-non-executable-zero-authority", "fresh-read-only-operator-packet-and-view", "precommit-source-zero-write-and-zero-retry", "narrow-cleanup-and-artifact-integrity", "no-network-partition-failover-or-production-overclaim"],
+      "required_negative_tests": ["test_deterministic_identity_binds_all_fields", "test_changed_replay_authority_source_write_and_overclaim_fail_closed", "test_missing_unknown_and_extra_proof_fields_fail_closed", "test_mutated_prior_snapshot_cleanup_and_append_only_fail_closed", "test_recovery_guidance_is_complete_and_actionable"],
+      "ethernian_remediation_reference": "ETH-17901-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_postgres_recovery_quarantine_proof.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_postgres_recovery_quarantine_proof", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
