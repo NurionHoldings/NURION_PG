@@ -6,6 +6,7 @@ import unittest
 from nurion_pg.arkaon.governance import GovernanceRejected, canonical_digest
 from nurion_pg.synthetic_postgres_ephemeral_repository_proof import *
 from tests.test_synthetic_postgres_reservation_ledger_contract import completed as prior_completed
+from scripts.run_postgres_ephemeral_repository_integration import row as integration_row
 
 def d(v):return sha256(v.encode()).hexdigest()
 def planned():
@@ -84,5 +85,10 @@ class Tests(unittest.TestCase):
     def test_workflow_has_no_password_or_url_userinfo(self):
         workflow=Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
         self.assertNotIn("POSTGRES_PASSWORD",workflow);self.assertNotIn("PGPASSWORD",workflow);self.assertNotIn("PGPASSFILE",workflow);self.assertNotIn("postgresql://",workflow);self.assertNotIn("postgres://",workflow)
+    def test_response_loss_fixture_has_independent_logical_and_unique_identity(self):
+        winner=integration_row();response=integration_row("response-loss",kind="case-response-loss")
+        self.assertNotEqual((winner["flow"],winner["kind"],winner["intent_kind"]),(response["flow"],response["kind"],response["intent_kind"]))
+        for field in ("row_id","reservation_id","idempotency_key_id","reservation_token_id","reservation_scope_digest","nonce_scope_digest"):
+            self.assertNotEqual(winner[field],response[field],field)
 
 if __name__=="__main__":unittest.main()
