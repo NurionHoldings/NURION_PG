@@ -2,7 +2,7 @@
 
 ## 결론
 
-**구조·로컬검증 수락 — PR 생성 가능. 실제 PostgreSQL 최종 수락은 원격 ephemeral CI proof 확인 후 확정한다. 병합·배포 불가.**
+**구조·로컬·원격 ephemeral PostgreSQL 증명 수락. PR #408은 OPEN 상태로 유지하며 병합·배포는 별도 인간 승인 전까지 불가하다.**
 
 아르카온의 `격리형 PostgreSQL fixture·migration·repository proof 계약`을 독립 검수했다. 로컬에는 사전 구성 PostgreSQL이 없어 integration 1건은 정직하게 SKIP됐으며, 원격 CI의 PostgreSQL 16.4 disposable service에서만 실제 migration·introspection·repository concurrency proof를 실행한다.
 
@@ -32,22 +32,31 @@
 - proof 인수가 없는 로컬 경로만 SKIP을 생성할 수 있고, 외부 주입 SKIP이나 불완전·변조 PASS는 fail-closed한다.
 - 두 수정은 disposable test harness에 한정되어 운영 데이터 영향이 없고, exact schema cleanup으로 가역적이다.
 
+### 원격 실패 극복 이력
+
+- 최초 실패는 PostgreSQL constraint 행의 OID 순서를 계약 순서로 간주한 것이 원인이었다. 행 순서는 이름 exact set으로 검증한 뒤 canonical 순서로 재조립하고, 의미가 있는 각 제약 내부 컬럼 순서는 계속 엄격히 비교한다.
+- run #1770 실패는 response-loss fixture가 winner의 논리키를 재사용한 것이 원인이었다. response-loss에 독립 `kind`를 부여하고 논리키 및 6개 UNIQUE identity의 독립성을 회귀검증했다.
+- CI는 runner-local trust service만 사용하며 password-bearing DSN, `PGPASSWORD`, `POSTGRES_PASSWORD`, `PGPASSFILE`을 연결 전에 거부한다. 비밀번호를 마스킹하는 대안은 미구성 증명이 아니므로 채택하지 않았다.
+- 각 실패에서는 disposable schema/container만 정리하고 수정된 새 HEAD에서 재개했다. 운영 데이터 write, 병합, 배포는 수행하지 않았다.
+
 ## 독립 로컬 재검증
 
-- 전용·인접·registry: 44 PASS
-- 전체 회귀: 1,947 PASS
+- 전용·인접·registry: 46 PASS
+- 전체 회귀: 1,949 PASS
 - #9901~#16700 직접 계보 17단계 evidence: PASS
 - #7501 historical evidence: PASS
 - lesson registry: 33 lessons PASS
 - 로컬 PostgreSQL integration: 1 SKIP (`SKIP_NO_PRECONFIGURED_TEST_DATABASE`)
 - governance/compileall/diff-check: PASS
-- 계약 Evidence SHA-256: `898c89e4c0a1174957c4079ede62f9a6cdd195e1a38c687c0132a927b50b387a`
+- 계약 Evidence SHA-256: `f04278246d12a23f489e4c4e571eabf31c6b79e5f34ffbb47375073d43ffd004`
 
 ## 원격 PostgreSQL proof
 
-- 상태: `PENDING_PR_CI`
-- 수락조건: PostgreSQL 16.4 service 연결, exact live schema parity, 20-way one-row convergence, 충돌·rollback·read-back, cleanup 및 semantic proof validation이 모두 GREEN이어야 한다.
-- 실패하거나 artifact가 없으면 실제 PostgreSQL 수락은 HOLD다.
+- 상태: `PASS_EPHEMERAL_POSTGRESQL` — CI run #1775, workflow run `35553825048`, head `8d443f985d91395142da478f343ecf336b476ab5`.
+- 실증 Evidence SHA-256: `2e5bcaf9fc7a3ab21c813e50070895f2e22b6051a63d5c91dc9377b7508826a5`.
+- artifact: `postgres-ephemeral-repository-proof`, ID `10619502021`, 859 bytes, ZIP SHA-256 `f04563542324190247191485e580e124e275a7f0da7ac88d94a26c8f0dbe26ca`.
+- PostgreSQL 16.4 연결, exact live schema parity, 20-way one-row convergence, 충돌·rollback·응답유실 read-back, semantic validation, artifact upload, container cleanup이 모두 GREEN이다.
+- 같은 run의 `ARKAON governed synthetic bootstrap`도 SUCCESS다.
 
 ## 잔여 위험
 
