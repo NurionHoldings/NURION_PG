@@ -15,8 +15,11 @@ def exact_insert_or_read(connection, table, record):
     values=tuple(record[field] for field in fields)
     with connection.cursor() as cur:
         cur.execute(f'''INSERT INTO {table} ({','.join(fields)}) VALUES ({','.join(['%s']*len(fields))}) ON CONFLICT (case_id) DO NOTHING''',values)
-        cur.execute(f'''SELECT {','.join(fields)} FROM {table} WHERE case_id=%s FOR SHARE''',(record["case_id"],));rows=cur.fetchall()
-    if len(rows)!=1 or rows[0]!=values:
+        cur.execute(f'''SELECT case_id,source_event_id,idempotency_key,payload_digest,sqlstate,provenance,
+            observed_at = %s::timestamptz AS observed_at_exact,case_sequence,case_state
+            FROM {table} WHERE case_id=%s FOR SHARE''',(record["observed_at"],record["case_id"]));rows=cur.fetchall()
+    expected=values[:6]+(True,)+values[7:]
+    if len(rows)!=1 or rows[0]!=expected:
         connection.rollback();raise RuntimeError("quarantine replay conflict; exact original case preserved")
     connection.commit()
 
