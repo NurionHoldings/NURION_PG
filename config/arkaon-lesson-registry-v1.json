@@ -412,6 +412,18 @@
       "ethernian_remediation_reference": "ETH-16701-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_postgres_retry_resilience_proof.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_postgres_retry_resilience_proof", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-17101-001",
+      "discovery_scope": "#16701-#17100 PostgreSQL retry resilience proof self-audit",
+      "defect_category": "actual-deadlock-and-lock-contention-evidence-gap",
+      "root_cause": "the retry classifier accepted 40P01 but the disposable PostgreSQL proof had not produced a real two-backend deadlock or a blocked-row lock timeout",
+      "exploit_scenario": "unit injection is mislabeled as database evidence, an aborted backend is reused, a timeout is blindly retried, environment permission failure is hidden, or network partition and failover are overclaimed",
+      "mandatory_prevention_rules": ["opposite-row-lock-order-two-backend-actual-40p01", "exactly-one-deadlock-victim-and-one-winner", "rollback-close-and-fresh-backend-attempt-two", "actual-blocked-row-55p03-non-retry", "deadlock-timeout-preflight-fail-closed", "actual-unit-harness-provenance-separation", "no-network-partition-or-failover-overclaim", "narrow-disposable-schema-cleanup", "zero-production-writes"],
+      "required_negative_tests": ["test_honest_skip_and_exact_actual_provenance_pass", "test_40p01_retryable_and_55p03_non_retryable", "test_deadlock_timeout_permission_and_missing_actual_result_fail_closed", "test_mutated_prior_and_snapshot_fail_closed", "test_recovery_guidance_contains_executable_paths"],
+      "ethernian_remediation_reference": "ETH-17101-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_postgres_deadlock_proof.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_postgres_deadlock_proof", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
