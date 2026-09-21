@@ -388,6 +388,18 @@
       "ethernian_remediation_reference": "ETH-15901-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_postgres_reservation_ledger_contract.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_postgres_reservation_ledger_contract", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-16301-001",
+      "discovery_scope": "#15901-#16300 PostgreSQL ledger contract self-audit",
+      "defect_category": "ephemeral-postgresql-migration-repository-and-concurrency-proof-gap",
+      "root_cause": "the canonical PostgreSQL schema and transaction plan had no isolated disposable database lifecycle, exact live introspection, repository implementation proof, or concurrent crash recovery execution",
+      "exploit_scenario": "a production target is selected, migration drifts, constraints weaken, an aborted transaction is reused, concurrent requests create ambiguity, cleanup becomes broad, or a missing PostgreSQL proof is misreported as PASS",
+      "mandatory_prevention_rules": ["validated-local-or-ci-database-and-prefixed-disposable-schema-only", "exact-up-down-migration-and-narrow-cleanup", "column-nullability-six-unique-check-and-order-introspection", "repository-insert-or-rollback-new-transaction-readback", "barrier-twenty-way-same-payload-one-row", "changed-payload-and-cross-key-reuse-fail-closed", "commit-response-loss-readback-convergence", "pass-skip-fail-distinction-no-connection-failure-pass", "test-only-writes-separated-from-zero-production-writes", "no-receipt-signature-key-finance-approval-or-deployment"],
+      "required_negative_tests": ["test_production_host_database_and_schema_refused", "test_migration_is_exact_and_cleanup_is_narrow", "test_schema_constraint_nullability_check_and_order_drift_rejected", "test_source_schema_and_ddl_drift_rejected", "test_snapshot_registry_manifest_and_sequence_rejected", "test_unknown_or_failed_proof_cannot_be_claimed_pass"],
+      "ethernian_remediation_reference": "ETH-16301-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_postgres_ephemeral_repository_proof.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_postgres_ephemeral_repository_proof", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
