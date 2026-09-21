@@ -16,6 +16,8 @@ Synthetic canary readiness docket controls #1501-#1700 are documented in
 현재 단계는 `UNREGISTERED_SYNTHETIC_ONLY`입니다. 실제 결제, 승인, 취소, 환불,
 송금, 정산, 가맹점 승인, 계약 체결, 운영 자격증명 접근 및 배포를 수행하지 않습니다.
 
+> **#20300 통합 감사:** 합성 통제·감사 연구는 약 95%이나 실제 PG 운영 플랫폼 완성도는 약 28%로 재산정했습니다. 이후에는 synthetic stage 번호 확장을 동결하고 실행 가능한 운영 서비스 epic `OPS-E01~E10`으로 전환합니다. 근거와 계획은 [운영 완성도 통합 감사](docs/91-production-readiness-integration-audit.md) 및 [운영 플랫폼 전환 로드맵](docs/92-production-build-roadmap.md)을 참고하십시오.
+
 ## 최초 기능 묶음
 
 - ARKAON 능력 프로필과 권한 경계
