@@ -46,3 +46,7 @@ No schema, external system, or payment state is changed by OPS-E01. Rollback is 
 ## Next gate
 
 OPS-E02 may add authenticated principal, merchant tenancy, and role boundaries. Payment mutation routes remain prohibited until the identity, persistence, and provider-adapter gates are separately reviewed.
+
+## Runtime closure
+
+The OPS-E01 runtime scope is complete against the ten machine-checked criteria in `config/runtime-closure-v1.json`: executable entrypoint, validated settings, three health probes, correlation propagation, stable errors, request-size bounds, security headers, secret-free runtime metadata, graceful termination, and a non-root health-checked container. `scripts/validate_runtime_closure.py` enforces this boundary in CI. Runtime completion does not imply payment execution or production deployment readiness.
