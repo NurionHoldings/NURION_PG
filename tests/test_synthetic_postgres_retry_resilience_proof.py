@@ -1,5 +1,6 @@
 from hashlib import sha256
 from dataclasses import replace
+from pathlib import Path
 import unittest
 
 from nurion_pg.arkaon.governance import GovernanceRejected
@@ -36,6 +37,12 @@ class Tests(unittest.TestCase):
             if attempt<3:raise SqlError("40001")
             return "ok"
         self.assertEqual(bounded_retry(operation),("ok",3));self.assertEqual(seen,[1,2,3])
+    def test_actual_retry_harness_waits_for_initial_winner_before_retry(self):
+        source=(Path(__file__).resolve().parents[1]/"scripts/run_postgres_retry_resilience_integration.py").read_text(encoding="utf-8")
+        self.assertIn("initial_commit_done=Event()",source)
+        self.assertIn("if attempt>1 and not initial_commit_done.wait(timeout=5)",source)
+        self.assertIn("if attempt==1:initial_commit_done.set()",source)
+        self.assertIn("return bounded_retry(operation,on_failure=failed)",source)
     def test_retry_exhaustion_fail_closed(self):
         failures=[]
         with self.assertRaisesRegex(RetryExhausted,"3 attempts"):bounded_retry(lambda _:(_ for _ in ()).throw(SqlError("40P01")),on_failure=lambda e,a:failures.append((e.sqlstate,a)))
