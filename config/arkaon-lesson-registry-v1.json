@@ -424,6 +424,18 @@
       "ethernian_remediation_reference": "ETH-17101-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_postgres_deadlock_proof.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_postgres_deadlock_proof", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-17501-001",
+      "discovery_scope": "#17101-#17500 actual PostgreSQL deadlock proof self-audit",
+      "defect_category": "actual-backend-termination-and-commit-outcome-reconciliation-gap",
+      "root_cause": "deadlock and harness response-loss proofs did not terminate a live PostgreSQL backend or distinguish a pre-commit absent outcome from a commit already acknowledged before termination",
+      "exploit_scenario": "connection loss is blindly retried, an unknown SQLSTATE is coerced, ambiguous rows are treated as committed, acknowledged commit termination is mislabeled as lost COMMIT response, or network partition and failover are overclaimed",
+      "mandatory_prevention_rules": ["actual-pg-terminate-backend-disposable-only", "exact-57p01-08006-allowlist", "precommit-fresh-read-absence-and-no-blind-retry", "precommit-explicit-hold", "acknowledged-commit-before-termination-provenance", "fresh-read-only-exact-idempotency-and-payload-match", "privilege-and-environment-fail-closed", "no-network-partition-failover-or-commit-response-loss-overclaim", "narrow-cleanup-and-artifact-integrity", "three-guided-recovery-paths-and-zero-production-writes"],
+      "required_negative_tests": ["test_unlisted_or_missing_sqlstate_fails_closed", "test_precommit_requires_absence_hold_and_zero_blind_retry", "test_commit_reconciliation_is_exact_and_does_not_overclaim", "test_mutated_prior_snapshot_cleanup_and_production_fail_closed", "test_recovery_guidance_contains_executable_paths"],
+      "ethernian_remediation_reference": "ETH-17501-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_postgres_connection_loss_proof.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_postgres_connection_loss_proof", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
