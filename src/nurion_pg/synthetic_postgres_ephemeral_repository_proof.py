@@ -46,6 +46,7 @@ def validated_disposable_target(dsn,schema_name,ci_marker=False):
     if not isinstance(dsn,str) or not dsn.startswith(("postgresql://","postgres://")):
         raise GovernanceRejected("PostgreSQL ephemeral DSN required")
     u=urlsplit(dsn)
+    if u.password is not None:raise GovernanceRejected("password-bearing PostgreSQL DSN refused")
     host=(u.hostname or "").casefold();database=u.path.lstrip("/")
     allowed_host=host in {"localhost","127.0.0.1","::1"} or (ci_marker is True and host=="postgres")
     if not allowed_host or database!=ALLOWED_DATABASE:
@@ -53,6 +54,13 @@ def validated_disposable_target(dsn,schema_name,ci_marker=False):
     if not _valid_schema_name(schema_name):
         raise GovernanceRejected("validated disposable schema required")
     return {"host_class":"LOCAL_OR_CI_SERVICE","database":database,"schema":schema_name}
+
+def validated_pg_environment(env,schema_name,ci_marker=False):
+    if not _valid_schema_name(schema_name):raise GovernanceRejected("validated disposable schema required")
+    expected={"PGHOST":"localhost","PGPORT":"5432","PGDATABASE":ALLOWED_DATABASE,"PGUSER":"nurion_ci"}
+    if ci_marker is not True or any(env.get(k)!=v for k,v in expected.items()) or any(env.get(k) for k in ("PGPASSWORD","POSTGRES_PASSWORD","PGPASSFILE")):
+        raise GovernanceRejected("passwordless isolated CI PostgreSQL environment required")
+    return {"host_class":"CI_RUNNER_LOCAL_SERVICE","database":ALLOWED_DATABASE,"schema":schema_name}
 
 def migration_sql(schema_name):
     if not _valid_schema_name(schema_name):raise GovernanceRejected("validated disposable schema required")
@@ -84,21 +92,24 @@ def normalize_live_columns(rows):
 
 def normalize_live_constraints(rows):
     """Validate live pg_catalog rows and return canonical name/kind/ordered-column tuples."""
-    actual=[]
+    records={}
     for name,kind,columns,deferrable,deferred,check_expr in rows:
+        if name in records:raise GovernanceRejected("duplicate live constraint name")
         label={"p":"PRIMARY KEY","u":"UNIQUE","c":"CHECK"}.get(kind)
         cols=tuple(columns or ())
         if label is None or deferrable is not False or deferred is not False:raise GovernanceRejected("exact immediate constraint required")
         if label=="CHECK":
             if name!="ck_plan_only_state" or cols!=("state",) or _normalized_check(check_expr)!=f"state='{MAX_STATE}'":raise GovernanceRejected("exact state ceiling check required")
-            actual.append((name,label,("state",MAX_STATE)))
-        else:actual.append((name,label,cols))
+            records[name]=(name,label,("state",MAX_STATE))
+        else:records[name]=(name,label,cols)
     expected=fixture_plan().expected_constraints
+    if set(records)!={x[0] for x in expected}:raise GovernanceRejected("exact live constraint name set required")
+    actual=tuple(records[x[0]] for x in expected)
     if tuple(actual)!=expected:raise GovernanceRejected("exact ordered live constraints required")
     return tuple(actual)
 
 def integration_proof_valid(proof):
-    expected={"status":"PASS_EPHEMERAL_POSTGRESQL","test_only_database_writes":2,"test_only_database_write_attempts":27,"production_database_writes":0,"cleanup_succeeded":True,"concurrency_workers":20,"concurrent_row_count":1,"isolation_level":"READ COMMITTED","conflict_classifications":list(PROOF_CLASSIFICATIONS),"database_url_disclosed":False,"credential_disclosed":False,"live_constraint_parity":True}
+    expected={"status":"PASS_EPHEMERAL_POSTGRESQL","test_only_database_writes":2,"test_only_database_write_attempts":27,"production_database_writes":0,"cleanup_succeeded":True,"concurrency_workers":20,"concurrent_row_count":1,"isolation_level":"READ COMMITTED","conflict_classifications":list(PROOF_CLASSIFICATIONS),"database_url_disclosed":False,"credential_disclosed":False,"password_credential_configured":False,"live_constraint_parity":True}
     return isinstance(proof,dict) and proof==expected
 
 def recovery_paths():return (
@@ -144,7 +155,7 @@ class SyntheticPostgresEphemeralRepositoryProof:
         controls_ok=set(self._controls)==set(range(16301,16701)) and all(r.digest==canonical_digest({k:v for k,v in r.__dict__.items() if k!="digest"}) and self._expected(cid)==(r.workstream,r.aspect) for cid,r in self._controls.items())
         complete=bool(docket_ok and controls_ok)
         paths=recovery_paths()
-        return {"range":[16301,16700],"control_count":400,"registered_control_count":len(self._controls),"fixture_plan_count":1 if self._fixture else 0,"migration_up_count":1 if self._fixture else 0,"migration_down_count":1 if self._fixture else 0,"expected_unique_constraint_count":6,"recovery_path_count":64,"human_judgment_hold_count":32,"postgresql_proof_status":status,"postgresql_proof_claimed":status=="PASS_EPHEMERAL_POSTGRESQL","postgresql_integration_skip_count":1 if status.startswith("SKIP_") else 0,"test_only_database_writes":(proof or {}).get("test_only_database_writes",0),"test_only_database_write_attempts":(proof or {}).get("test_only_database_write_attempts",0),"production_database_writes":0,"database_url_disclosed":False,"credential_disclosed":False,"cleanup_succeeded":(proof or {}).get("cleanup_succeeded",False),"concurrency_workers":(proof or {}).get("concurrency_workers",0),"concurrent_row_count":(proof or {}).get("concurrent_row_count",0),"isolation_level":(proof or {}).get("isolation_level","READ COMMITTED"),"conflict_classifications":(proof or {}).get("conflict_classifications",[]),"recovery_guidance_digest":canonical_digest(paths),"complete_postgres_ephemeral_repository_proof_contract_evidence":complete,"maximum_state":MAXIMUM_STATE if complete else "CONTRACT_INCOMPLETE","applied_lesson_ids":list(APPLIED_LESSONS),"applied_rule_ids":list(APPLIED_RULES),"approval_receipts_issued":0,"signatures_created":0,"keys_read":0,"credentials_read":0,"external_pg_calls":0,"financial_operations":0,"approved":False,"activated":False,"deployed":False}
+        return {"range":[16301,16700],"control_count":400,"registered_control_count":len(self._controls),"fixture_plan_count":1 if self._fixture else 0,"migration_up_count":1 if self._fixture else 0,"migration_down_count":1 if self._fixture else 0,"expected_unique_constraint_count":6,"recovery_path_count":64,"human_judgment_hold_count":32,"postgresql_proof_status":status,"postgresql_proof_claimed":status=="PASS_EPHEMERAL_POSTGRESQL","postgresql_integration_skip_count":1 if status.startswith("SKIP_") else 0,"test_only_database_writes":(proof or {}).get("test_only_database_writes",0),"test_only_database_write_attempts":(proof or {}).get("test_only_database_write_attempts",0),"production_database_writes":0,"database_url_disclosed":False,"credential_disclosed":False,"password_credential_configured":(proof or {}).get("password_credential_configured",False),"cleanup_succeeded":(proof or {}).get("cleanup_succeeded",False),"concurrency_workers":(proof or {}).get("concurrency_workers",0),"concurrent_row_count":(proof or {}).get("concurrent_row_count",0),"isolation_level":(proof or {}).get("isolation_level","READ COMMITTED"),"conflict_classifications":(proof or {}).get("conflict_classifications",[]),"recovery_guidance_digest":canonical_digest(paths),"complete_postgres_ephemeral_repository_proof_contract_evidence":complete,"maximum_state":MAXIMUM_STATE if complete else "CONTRACT_INCOMPLETE","applied_lesson_ids":list(APPLIED_LESSONS),"applied_rule_ids":list(APPLIED_RULES),"approval_receipts_issued":0,"signatures_created":0,"keys_read":0,"credentials_read":0,"external_pg_calls":0,"financial_operations":0,"approved":False,"activated":False,"deployed":False}
 
 def insert_or_read(conn,schema,row):
     """DB-API repository path: aborted insert tx is rolled back; read-back uses a new tx."""
