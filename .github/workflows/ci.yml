@@ -252,6 +252,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_preissuance_dual_signature_input_contract_evidence.py
       - name: Verify non-issuing result seal and atomic reservation #15501-#15900
         run: PYTHONPATH=src python scripts/run_synthetic_nonissuance_result_seal_reservation_evidence.py
+      - name: Verify PostgreSQL reservation ledger plan contract #15901-#16300
+        run: PYTHONPATH=src python scripts/run_synthetic_postgres_reservation_ledger_contract_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
