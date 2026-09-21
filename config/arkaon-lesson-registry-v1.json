@@ -496,6 +496,18 @@
       "ethernian_remediation_reference": "ETH-19501-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_postgres_recovery_recommendation_concurrence_proof.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_postgres_recovery_recommendation_concurrence_proof", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-19901-001",
+      "discovery_scope": "#19501-#19900 PostgreSQL recovery recommendation concurrence proof self-audit",
+      "defect_category": "conflict-set-resolution-docket-and-rereview-lineage-gap",
+      "root_cause": "conflicting concurrence correctly preserved HOLD but had no immutable canonical conflict set, resolution docket, or predecessor-bound independent rereview lineage",
+      "exploit_scenario": "a conflict is omitted, added, reordered, overwritten, resolved against another recommendation, forked from one predecessor, self-reviewed, or treated as execution approval",
+      "mandatory_prevention_rules": ["canonical-exact-conflict-set-digest", "resolution-docket-recommendation-binding", "domain-separated-docket-and-round-identities", "single-genesis-and-single-successor-rounds", "exact-monotonic-predecessor-binding", "author-reviewer-separation", "append-only-docket-round-and-source", "changed-cross-stale-fork-fail-closed", "conflict-hold-and-zero-authority", "read-only-operator-view", "narrow-cleanup-and-content-addressed-artifact"],
+      "required_negative_tests": ["test_conflict_set_missing_added_and_changed_fail_identity", "test_duplicate_conflict_rejected", "test_round_requires_independent_reviewer_and_exact_predecessor", "test_single_genesis_and_successor_fork_rejected", "test_hold_and_zero_authority", "test_invalid_verdict_and_non_monotonic_round_rejected", "test_database_contract_contains_required_constraints"],
+      "ethernian_remediation_reference": "ETH-19901-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_postgres_recovery_conflict_resolution_proof.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_postgres_recovery_conflict_resolution_proof", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
