@@ -376,6 +376,18 @@
       "ethernian_remediation_reference": "ETH-15501-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_nonissuance_result_seal_reservation.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_nonissuance_result_seal_reservation", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-15901-001",
+      "discovery_scope": "#15501-#15900 nonissuance reservation self-audit",
+      "defect_category": "postgresql-ledger-schema-transaction-and-crash-recovery-under-specification",
+      "root_cause": "the in-memory reservation contract did not define a canonical PostgreSQL schema AST, exact uniqueness targets, transaction abort semantics, or crash-before/after-commit convergence",
+      "exploit_scenario": "an attacker weakens or reorders constraints, permits nullable bindings, uses the wrong conflict target, skips payload comparison, aliases actors, downgrades policy, or claims a commit after an ambiguous crash",
+      "mandatory_prevention_rules": ["canonical-structured-schema-and-deterministic-quoted-ddl", "exact-unique-target-order-and-nonnullable-bindings", "source-result-seal-policy-window-lineage-and-actor-binding", "unique-violation-transaction-abort-and-locked-read-back-semantics", "same-payload-convergence-and-changed-payload-conflict", "crash-before-commit-rollback-and-after-commit-read-back", "two-content-addressed-recovery-paths", "full-downstream-rehash-negative-tests", "honest-postgresql-proof-skip-and-no-sqlite-substitution", "no-database-write-commit-receipt-finance-or-authority"],
+      "required_negative_tests": ["test_schema_drift_constraint_delete_nullable_and_wrong_order_rejected", "test_identifier_quoting_fail_closed", "test_changed_payload_and_cross_key_unique_reuse_rejected", "test_policy_window_source_result_seal_and_actor_binding_rehash_rejected", "test_sequence_predecessor_scope_nonce_full_rehash_attacks_rejected", "test_transaction_exact_semantics_full_rehash_attacks_rejected", "test_premature_written_committed_receipt_and_authority_rejected", "test_partial_batch_order_and_role_alias_rejected", "test_docket_namespace_and_role_alias_full_rehash_rejected", "test_snapshot_registry_manifest_full_rehash_rejected", "test_postgresql_proof_honest_skip_not_sqlite_substitute"],
+      "ethernian_remediation_reference": "ETH-15901-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_postgres_reservation_ledger_contract.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_postgres_reservation_ledger_contract", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
