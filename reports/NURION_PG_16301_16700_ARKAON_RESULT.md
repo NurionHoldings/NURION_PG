@@ -48,14 +48,32 @@
 - 비용·위험·가역성: 비용 낮음, 위험 낮음, 가역성 높음. 누락·추가·순서·수치·격리수준·운영쓰기·비밀노출 변조시험으로 검증한다.
 - 중단·재개·rollback: 한 필드라도 불일치하면 PASS 주장을 중단한다. 새 disposable schema에서 전체 실증을 재수행한 완전 proof로만 재개하며 불완전 artifact는 승인 근거로 사용하지 않는다.
 
+### 원격 CI FAIL — constraint 행 순서와 비밀번호 노출
+
+- 원인 1: PostgreSQL의 constraint OID 반환순서를 계약 순서로 잘못 가정했다. 제약 내부 컬럼 ordinality는 의미가 있지만 제약 행 사이의 OID 순서는 의미가 없다.
+- 극복: exact name set과 duplicate/unknown 여부를 먼저 확인하고, name→record mapping을 canonical expected-name 순서로 재조립한다. 각 제약의 종류·내부 ordered columns·immediate 속성·CHECK ceiling exact 검증은 유지한다. 임의 순열은 통과하고 내부 역순은 거부하는 회귀시험을 추가했다.
+- 원인 2: test-only password와 command DSN이 GitHub service/log metadata에 나타나 비노출 주장과 충돌했다.
+- 극복: runner-local PostgreSQL service를 `POSTGRES_HOST_AUTH_METHOD=trust`로 제한하고 `POSTGRES_PASSWORD`, `PGPASSWORD`, URL DSN을 모두 제거했다. client는 exact PGHOST/PGPORT/PGDATABASE/PGUSER만 사용하며 별도 password credential은 구성하지 않는다.
+- 대안: SQL `ORDER BY CASE`는 계약 중복·드리프트 위험, GitHub secret/masking은 service metadata 노출 가능성이 있어 채택하지 않았다.
+- 비용·위험·가역성: 비용 낮음, 격리 CI runner 내부에만 trust를 허용하므로 운영 위험은 낮고 job 삭제로 완전 가역적이다.
+- 검증·중단·재개·rollback: workflow 정적검사에서 password 변수·URL 0건을 강제한다. 원격 integration이 PASS, artifact upload, cleanup을 모두 증명하기 전까지 실환경 PostgreSQL proof는 HOLD한다. 실패 시 disposable schema만 cleanup하고 수정된 새 CI run으로 재개한다.
+
+### 추가 HOLD — 우회 가능한 passwordless 주장
+
+- 원인: DSN 경로에 password가 포함되거나 `PGPASSFILE`이 설정되어도 proof가 비밀번호 미구성으로 고정될 수 있었다.
+- 권장안·반영: URL password가 존재하는 DSN을 거부하고 환경 경로에서 `PGPASSWORD`, `POSTGRES_PASSWORD`, `PGPASSFILE`을 모두 거부한다. PASS evidence 값은 exact 검증을 마친 integration proof의 필드에서 파생한다.
+- 대안: password 사용 후 masking하는 방식은 service metadata와 외부 파일 경로를 별도로 신뢰해야 하므로 채택하지 않았다.
+- 비용·위험·가역성: 비용 낮음, 위험 낮음, 가역성 높음. password DSN·PGPASSFILE 거부와 passwordless DSN 허용, workflow 정적 0건을 회귀검증한다.
+- 중단·재개·rollback: password source가 하나라도 탐지되면 연결 전에 중단한다. runner-local trust와 exact target guard가 확인된 새 job에서만 재개하고 disposable schema만 rollback한다.
+
 검증 결과:
 
-- focused/adjacent/registry: 44 PASS
-- full regression: 1,947 PASS
+- focused/adjacent/registry: 45 PASS
+- full regression: 1,948 PASS
 - 17단계 direct evidence chain: PASS
 - #7501 historical snapshot: PASS
 - 로컬 PostgreSQL integration: 1 SKIP (`SKIP_NO_PRECONFIGURED_TEST_DATABASE`)
-- 계약 evidence SHA-256: `898c89e4c0a1174957c4079ede62f9a6cdd195e1a38c687c0132a927b50b387a`
+- 계약 evidence SHA-256: `f04278246d12a23f489e4c4e571eabf31c6b79e5f34ffbb47375073d43ffd004`
 - compileall, governance/lesson registry, diff-check: PASS
 
 에테르니언 독립검수 요청. commit·push·PR·merge·deploy는 수행하지 않았다.
