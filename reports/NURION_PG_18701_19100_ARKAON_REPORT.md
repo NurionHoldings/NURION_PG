@@ -38,3 +38,13 @@ DB 제약이 application-only 검사 없이 race·alias·fork·stale head를 실
 - 비용·위험·가역성: 낮음·낮음·높음. disposable schema에만 적용되며 되돌릴 수 있다.
 - 검증: sequence 재사용과 실제 99 gap을 서로 다른 probe/증거 필드로 확인한다.
 - 중지·재개·롤백: 어느 probe라도 성공하면 HOLD, 제약 복구 후 fresh fixture 재실행, 실패 트랜잭션 rollback 및 exact schema cleanup.
+
+## ETHERNIAN HOLD-002 반영 — 기존 serializable retry CI flake
+
+- 관측: audit-head CI run `35583496417`에서 기존 retry proof 참가자가 실제 `40001` 이후 3회 모두 충돌해 `RetryExhausted`가 발생했다. 직전 run 1881은 같은 코드로 성공해 timing-dependent flake로 판정했다.
+- 원인: 첫 시도의 실제 충돌은 barrier로 의도했지만, loser의 다음 fresh transaction이 winner의 최초 commit 완료 전에 즉시 재진입할 수 있었다. 빠른 재진입은 동일 경쟁 cycle을 반복해 3회 한도를 소진할 수 있다.
+- 권고·적용: `max_attempts=3`과 실제 첫 `40001`은 유지하고, 최초 attempt winner가 commit한 뒤 `Event`를 설정하게 했다. retry attempt는 최대 5초 동안 해당 정확한 cycle의 완료만 기다린 뒤 fresh connection으로 진행한다.
+- 대안: 고정 sleep/backoff는 머신 부하에 따라 불안정하고 불필요하게 느리므로 비채택했다. max attempts 확대와 예외 무시는 안전 의미를 약화하므로 금지했다.
+- 비용·위험·가역성: 낮음·낮음·높음. disposable proof harness 동기화만 바꾸며 운영 로직은 바꾸지 않는다.
+- 검증: 실제 PostgreSQL에서 첫 attempt의 exact 40001 1건, loser의 attempt 2 성공, fresh backend PID, 전체 proof PASS를 확인한다. 정적 회귀는 Event wait/set 및 bounded retry 유지 여부를 검사한다.
+- 중지·재개·rollback: winner가 5초 내 commit하지 않거나 retry가 실패하면 HOLD한다. 원인 수정 후 새 disposable schema에서 전체 proof를 재개하며, 실패 transaction rollback·connection close·정확한 schema cleanup을 유지한다.
