@@ -400,6 +400,18 @@
       "ethernian_remediation_reference": "ETH-16301-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_postgres_ephemeral_repository_proof.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_postgres_ephemeral_repository_proof", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-16701-001",
+      "discovery_scope": "#16301-#16700 ephemeral PostgreSQL repository proof self-audit",
+      "defect_category": "bounded-retry-and-ambiguous-commit-recovery-under-specification",
+      "root_cause": "the repository proved uniqueness and basic response-loss read-back but did not classify transient SQLSTATEs, bound retry attempts, require fresh connections, fail closed on exhaustion, or separate transaction retry from ambiguous commit reconciliation",
+      "exploit_scenario": "an implementation blindly retries timeouts or connection loss, exceeds its retry budget, reuses an aborted connection, duplicates an ambiguously committed write, or claims unperformed network and deadlock tests",
+      "mandatory_prevention_rules": ["exact-sqlstate-failure-taxonomy", "serialization-and-deadlock-only-bounded-blind-retry", "three-attempt-ceiling-and-fresh-connection", "rollback-close-before-retry", "exhaustion-timeout-and-unique-fail-closed", "commit-unknown-exact-idempotent-readback", "harness-injection-disclosed-no-network-or-deadlock-overclaim", "two-guided-recovery-paths", "zero-production-writes-and-narrow-cleanup"],
+      "required_negative_tests": ["test_serialization_and_deadlock_only_are_blind_retryable", "test_retry_exhaustion_fail_closed", "test_timeout_and_unique_are_not_retried", "test_commit_unknown_exact_readback_or_hold", "test_mutated_source_snapshot_and_proof_fail_closed"],
+      "ethernian_remediation_reference": "ETH-16701-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_postgres_retry_resilience_proof.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_postgres_retry_resilience_proof", "result": "PASS"}
     }
   ],
   "next_stage_gate": {
