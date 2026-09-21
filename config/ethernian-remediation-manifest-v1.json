@@ -35,6 +35,7 @@
     {"remediation_id": "ETH-15501-AUDIT-001", "scope": "#15101-#15500 non-issuing validation-result seal input and atomic idempotency reservation", "required_lesson_ids": ["ARL-15501-001"]},
     {"remediation_id": "ETH-15901-AUDIT-001", "scope": "#15501-#15900 PostgreSQL non-writing reservation ledger schema and transaction contract", "required_lesson_ids": ["ARL-15901-001"]},
     {"remediation_id": "ETH-16301-AUDIT-001", "scope": "#15901-#16300 isolated PostgreSQL fixture migration and repository proof contract", "required_lesson_ids": ["ARL-16301-001"]},
-    {"remediation_id": "ETH-16701-AUDIT-001", "scope": "#16301-#16700 PostgreSQL bounded retry and ambiguous commit recovery proof", "required_lesson_ids": ["ARL-16701-001"]}
+    {"remediation_id": "ETH-16701-AUDIT-001", "scope": "#16301-#16700 PostgreSQL bounded retry and ambiguous commit recovery proof", "required_lesson_ids": ["ARL-16701-001"]},
+    {"remediation_id": "ETH-17101-AUDIT-001", "scope": "#16701-#17100 actual PostgreSQL deadlock and lock contention proof", "required_lesson_ids": ["ARL-17101-001"]}
   ]
 }
