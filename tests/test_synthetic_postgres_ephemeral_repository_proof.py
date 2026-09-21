@@ -1,5 +1,6 @@
 from dataclasses import replace
 from hashlib import sha256
+from pathlib import Path
 import unittest
 
 from nurion_pg.arkaon.governance import GovernanceRejected, canonical_digest
@@ -15,7 +16,7 @@ def planned():
     return s
 def complete():
     s=planned();s.plan_fixture();s.finalize("synthetic:postgres-ephemeral-proof-docket:final");return s
-def valid_proof():return {"status":"PASS_EPHEMERAL_POSTGRESQL","test_only_database_writes":2,"test_only_database_write_attempts":27,"production_database_writes":0,"cleanup_succeeded":True,"concurrency_workers":20,"concurrent_row_count":1,"isolation_level":"READ COMMITTED","conflict_classifications":list(PROOF_CLASSIFICATIONS),"database_url_disclosed":False,"credential_disclosed":False,"live_constraint_parity":True}
+def valid_proof():return {"status":"PASS_EPHEMERAL_POSTGRESQL","test_only_database_writes":2,"test_only_database_write_attempts":27,"production_database_writes":0,"cleanup_succeeded":True,"concurrency_workers":20,"concurrent_row_count":1,"isolation_level":"READ COMMITTED","conflict_classifications":list(PROOF_CLASSIFICATIONS),"database_url_disclosed":False,"credential_disclosed":False,"password_credential_configured":False,"live_constraint_parity":True}
 def live_constraints():
     return [(n,{"PRIMARY KEY":"p","UNIQUE":"u","CHECK":"c"}[k],list(c[:1] if k=="CHECK" else c),False,False,f"((state = '{MAX_STATE}'::text))" if k=="CHECK" else None) for n,k,c in fixture_plan().expected_constraints]
 
@@ -26,11 +27,15 @@ class Tests(unittest.TestCase):
         s=complete();skip=s.evidence();self.assertEqual(skip["postgresql_proof_status"],"SKIP_NO_PRECONFIGURED_TEST_DATABASE");self.assertFalse(skip["postgresql_proof_claimed"]);self.assertEqual(skip["postgresql_integration_skip_count"],1)
         passed=s.evidence(valid_proof());self.assertTrue(passed["postgresql_proof_claimed"]);self.assertEqual(passed["production_database_writes"],0)
     def test_production_host_database_and_schema_refused(self):
-        bad=("postgresql://u:p@prod.example.com/nurion_pg_ci","postgresql://u:p@localhost/nurion_prod")
+        bad=("postgresql://u@prod.example.com/nurion_pg_ci","postgresql://u@localhost/nurion_prod")
         for x in bad:
             with self.assertRaisesRegex(GovernanceRejected,"production host or database refused"):validated_disposable_target(x,"nurion_pg_ci_x")
-        with self.assertRaisesRegex(GovernanceRejected,"validated disposable schema"):validated_disposable_target("postgresql://u:p@localhost/nurion_pg_ci","public")
-        self.assertEqual(validated_disposable_target("postgresql://u:p@postgres/nurion_pg_ci","nurion_pg_ci_x",True)["database"],ALLOWED_DATABASE)
+        with self.assertRaisesRegex(GovernanceRejected,"validated disposable schema"):validated_disposable_target("postgresql://u@localhost/nurion_pg_ci","public")
+        with self.assertRaisesRegex(GovernanceRejected,"password-bearing"):validated_disposable_target("postgresql://u:p@localhost/nurion_pg_ci","nurion_pg_ci_x")
+        self.assertEqual(validated_disposable_target("postgresql://u@postgres/nurion_pg_ci","nurion_pg_ci_x",True)["database"],ALLOWED_DATABASE)
+        env={"PGHOST":"localhost","PGPORT":"5432","PGDATABASE":"nurion_pg_ci","PGUSER":"nurion_ci"};self.assertEqual(validated_pg_environment(env,"nurion_pg_ci_x",True)["database"],ALLOWED_DATABASE)
+        with self.assertRaisesRegex(GovernanceRejected,"passwordless"):validated_pg_environment(dict(env,PGPASSWORD="secret"),"nurion_pg_ci_x",True)
+        with self.assertRaisesRegex(GovernanceRejected,"passwordless"):validated_pg_environment(dict(env,PGPASSFILE="/tmp/pgpass"),"nurion_pg_ci_x",True)
     def test_migration_is_exact_and_cleanup_is_narrow(self):
         up,down=migration_sql("nurion_pg_ci_contract");self.assertIn('CREATE SCHEMA "nurion_pg_ci_contract"',up);self.assertIn(f'CREATE TABLE "nurion_pg_ci_contract"."{TABLE}"',up);self.assertEqual(down,'DROP SCHEMA "nurion_pg_ci_contract" CASCADE;');self.assertNotIn("DROP DATABASE",down)
     def test_schema_constraint_nullability_check_and_order_drift_rejected(self):
@@ -38,12 +43,14 @@ class Tests(unittest.TestCase):
         for bad in (replace(p,expected_columns=p.expected_columns[::-1]),replace(p,expected_constraints=p.expected_constraints[:-1]),replace(p,isolation_level="SERIALIZABLE")):
             with self.assertRaisesRegex(GovernanceRejected,"exact source-bound"):planned().plan_fixture(bad)
     def test_live_introspection_wrong_target_order_missing_nullable_and_relaxed_check_rejected(self):
-        rows=live_constraints();self.assertEqual(normalize_live_constraints(rows),fixture_plan().expected_constraints)
+        rows=live_constraints();expected=fixture_plan().expected_constraints;self.assertEqual(normalize_live_constraints(rows),expected);self.assertEqual(normalize_live_constraints(rows[::-1]),expected);self.assertEqual(normalize_live_constraints(rows[2:]+rows[:2]),expected)
         attacks=[]
         wrong=list(rows);wrong[1]=(wrong[1][0],wrong[1][1],["payload_digest"],False,False,None);attacks.append(wrong)
         reversed_order=list(rows);reversed_order[4]=(reversed_order[4][0],reversed_order[4][1],list(reversed(reversed_order[4][2])),False,False,None);attacks.append(reversed_order)
         attacks.append(rows[:-2]+rows[-1:])
         relaxed=list(rows);relaxed[-1]=(relaxed[-1][0],"c",["state"],False,False,"state IN ('PERSISTENCE_PLAN_ONLY_NOT_WRITTEN','WRITTEN')");attacks.append(relaxed)
+        unknown=list(rows);unknown.append(("uq_unknown","u",["payload_digest"],False,False,None));attacks.append(unknown)
+        duplicate=list(rows);duplicate.append(rows[1]);attacks.append(duplicate)
         for bad in attacks:
             with self.assertRaises(GovernanceRejected):normalize_live_constraints(bad)
         columns=[(n,t,"YES" if nullable else "NO") for n,t,nullable in fixture_plan().expected_columns];self.assertEqual(normalize_live_columns(columns),fixture_plan().expected_columns)
@@ -67,12 +74,15 @@ class Tests(unittest.TestCase):
     def test_incomplete_or_mutated_pass_proof_fails_closed(self):
         s=complete();base=valid_proof()
         mutations=[]
-        for key,value in (("cleanup_succeeded",False),("test_only_database_writes",3),("test_only_database_write_attempts",26),("production_database_writes",1),("concurrency_workers",19),("concurrent_row_count",2),("isolation_level","SERIALIZABLE"),("database_url_disclosed",True),("credential_disclosed",True),("live_constraint_parity",False)):
+        for key,value in (("cleanup_succeeded",False),("test_only_database_writes",3),("test_only_database_write_attempts",26),("production_database_writes",1),("concurrency_workers",19),("concurrent_row_count",2),("isolation_level","SERIALIZABLE"),("database_url_disclosed",True),("credential_disclosed",True),("password_credential_configured",True),("live_constraint_parity",False)):
             mutations.append(dict(base,**{key:value}))
         missing=dict(base);missing.pop("cleanup_succeeded");mutations.append(missing)
         fewer=dict(base);fewer["conflict_classifications"]=fewer["conflict_classifications"][:-1];mutations.append(fewer)
         extra=dict(base);extra["conflict_classifications"]=extra["conflict_classifications"]+["EXTRA"];mutations.append(extra)
         for bad in mutations:
             with self.assertRaisesRegex(GovernanceRejected,"complete exact"):s.evidence(bad)
+    def test_workflow_has_no_password_or_url_userinfo(self):
+        workflow=Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+        self.assertNotIn("POSTGRES_PASSWORD",workflow);self.assertNotIn("PGPASSWORD",workflow);self.assertNotIn("PGPASSFILE",workflow);self.assertNotIn("postgresql://",workflow);self.assertNotIn("postgres://",workflow)
 
 if __name__=="__main__":unittest.main()
