@@ -56,6 +56,8 @@ jobs:
         run: PYTHONPATH=src:. python scripts/run_postgres_connection_loss_integration.py
       - name: Prove append-only recovery quarantine boundaries
         run: PYTHONPATH=src:. python scripts/run_postgres_recovery_quarantine_integration.py
+      - name: Prove append-only recovery disposition boundaries
+        run: PYTHONPATH=src:. python scripts/run_postgres_recovery_disposition_integration.py
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: postgres-ephemeral-repository-proof
@@ -70,6 +72,8 @@ jobs:
             build/postgres-connection-loss-integration-evidence.json.sha256
             build/postgres-recovery-quarantine-integration-evidence.json
             build/postgres-recovery-quarantine-integration-evidence.json.sha256
+            build/postgres-recovery-disposition-integration-evidence.json
+            build/postgres-recovery-disposition-integration-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
 
@@ -322,6 +326,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_postgres_connection_loss_proof_evidence.py
       - name: Verify PostgreSQL recovery quarantine proof contract #17901-#18300
         run: PYTHONPATH=src python scripts/run_synthetic_postgres_recovery_quarantine_proof_evidence.py
+      - name: Verify PostgreSQL recovery disposition proof contract #18301-#18700
+        run: PYTHONPATH=src python scripts/run_synthetic_postgres_recovery_disposition_proof_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -538,6 +544,8 @@ jobs:
             build/synthetic-postgres-connection-loss-proof-evidence.json.sha256
             build/synthetic-postgres-recovery-quarantine-proof-evidence.json
             build/synthetic-postgres-recovery-quarantine-proof-evidence.json.sha256
+            build/synthetic-postgres-recovery-disposition-proof-evidence.json
+            build/synthetic-postgres-recovery-disposition-proof-evidence.json.sha256
             build/synthetic-rebuttal-correction-submission-validation-evidence.json
             build/synthetic-rebuttal-correction-submission-validation-evidence.json.sha256
             build/synthetic-rebuttal-correction-independent-rereview-evidence.json
