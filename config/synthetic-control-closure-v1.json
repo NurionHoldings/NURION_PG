@@ -1,0 +1,21 @@
+{
+  "schema_version": "synthetic-control-closure-v1",
+  "scope": "SYNTHETIC_CONTROL_AND_AUDIT_ONLY",
+  "stage_range_frozen_at": 20300,
+  "required_criteria": [
+    "MODULE_TEST_PARITY",
+    "FAIL_CLOSED_GOVERNANCE",
+    "NO_LIVE_EXECUTION_AUTHORITY",
+    "NO_AUTOMATIC_MERGE_OR_DEPLOY",
+    "EXTERNAL_BLOCKERS_OPEN",
+    "PINNED_CI_ACTIONS",
+    "DETERMINISTIC_EVIDENCE_RUNNERS",
+    "FULL_REGRESSION_GATE",
+    "POSTGRES_FAILURE_PROOFS",
+    "ROLE_SEPARATED_REVIEW"
+  ],
+  "production_readiness_implied": false,
+  "commercial_readiness_implied": false,
+  "live_payment_allowed": false,
+  "automatic_close_allowed": false
+}

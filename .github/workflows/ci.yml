@@ -118,6 +118,8 @@ jobs:
         run: PYTHONPATH=src python -m unittest discover -s tests -v
       - name: Validate governance manifests
         run: PYTHONPATH=src python scripts/validate_governance.py
+      - name: Validate frozen synthetic control closure
+        run: PYTHONPATH=src:. python scripts/validate_synthetic_control_closure.py
       - name: Generate deterministic bootstrap evidence
         run: PYTHONPATH=src python scripts/run_bootstrap_evidence.py
       - name: Validate official regulatory evidence registry
@@ -368,6 +370,8 @@ jobs:
         with:
           name: arkaon-bootstrap-evidence
           path: |
+            build/synthetic-control-closure-evidence.json
+            build/synthetic-control-closure-evidence.json.sha256
             build/arkaon-bootstrap-evidence.json
             build/arkaon-bootstrap-evidence.json.sha256
             build/regulatory-evidence-report.json
