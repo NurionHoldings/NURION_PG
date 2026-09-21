@@ -1,5 +1,6 @@
 from dataclasses import replace
 from hashlib import sha256
+from pathlib import Path
 import unittest
 from nurion_pg.arkaon.governance import GovernanceRejected
 from nurion_pg.synthetic_postgres_recovery_disposition_proof import *
@@ -33,6 +34,12 @@ class Tests(unittest.TestCase):
         for key in ("new_key_new_sequence_wrong_digest_fail_closed","composite_case_digest_fk_enforced"):
             bad=valid_proof();bad[key]=False
             with self.assertRaises(GovernanceRejected):complete().evidence(bad)
+    def test_database_enforces_one_disposition_per_case_and_safe_diagnostics(self):
+        source=(Path(__file__).resolve().parents[1]/"scripts/run_postgres_recovery_disposition_integration.py").read_text(encoding="utf-8")
+        self.assertIn("case_id text NOT NULL UNIQUE",source)
+        self.assertIn("FOREIGN KEY(case_id,case_digest)",source)
+        self.assertIn('failed=sorted(key for key,value in invariants.items() if not value)',source)
+        self.assertIn('"cross_key_same_case_rejected":cross_failed',source)
     def test_missing_extra_cleanup_and_prior_mutation_fail_closed(self):
         bad=valid_proof();bad.pop("sequence_exact_match")
         with self.assertRaises(GovernanceRejected):complete().evidence(bad)
