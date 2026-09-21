@@ -23,13 +23,15 @@ def row(seed="winner",idempotency=None,token=None,scope=None,nonce=None,payload=
     if nonce:r["nonce_scope_digest"]=nonce
     r["payload_digest"]=payload or value(f"{seed}:payload")
     return r
-def connect(psycopg,dsn):return psycopg.connect(dsn,connect_timeout=5)
+def connect(psycopg,dsn):return psycopg.connect(dsn,connect_timeout=5) if dsn else psycopg.connect(connect_timeout=5)
 
 def main():
     dsn=os.environ.get(ENV)
-    if not dsn:
+    ci_test=os.environ.get("NURION_PG_EPHEMERAL_TEST")=="1"
+    if not dsn and not ci_test:
         print("SKIP_NO_PRECONFIGURED_TEST_DATABASE");return 0
-    validated_disposable_target(dsn,SCHEMA,os.environ.get("CI")=="true")
+    if dsn:validated_disposable_target(dsn,SCHEMA,os.environ.get("CI")=="true")
+    else:validated_pg_environment(os.environ,SCHEMA,os.environ.get("CI")=="true")
     try:import psycopg
     except ImportError as exc:raise RuntimeError("configured PostgreSQL proof requires psycopg") from exc
     up,down=migration_sql(SCHEMA);cleanup=False;results=[];attempts=0
@@ -41,7 +43,7 @@ def main():
         admin.commit()
         with admin.cursor() as cur:
             cur.execute("SELECT column_name,data_type,is_nullable FROM information_schema.columns WHERE table_schema=%s AND table_name=%s ORDER BY ordinal_position",(SCHEMA,TABLE));columns=tuple((n,t,nullable=="YES") for n,t,nullable in cur.fetchall())
-            cur.execute("""SELECT c.conname,c.contype,COALESCE(array_agg(a.attname ORDER BY u.ord) FILTER (WHERE a.attname IS NOT NULL),ARRAY[]::text[]),c.condeferrable,c.condeferred,CASE WHEN c.contype='c' THEN pg_get_expr(c.conbin,c.conrelid) ELSE NULL END FROM pg_constraint c LEFT JOIN LATERAL unnest(c.conkey) WITH ORDINALITY AS u(attnum,ord) ON true LEFT JOIN pg_attribute a ON a.attrelid=c.conrelid AND a.attnum=u.attnum WHERE c.conrelid=(%s||'.'||%s)::regclass GROUP BY c.oid,c.conname,c.contype,c.condeferrable,c.condeferred,c.conbin,c.conrelid ORDER BY c.oid""",(SCHEMA,TABLE));constraints=cur.fetchall()
+            cur.execute("""SELECT c.conname,c.contype,COALESCE(array_agg(a.attname ORDER BY u.ord) FILTER (WHERE a.attname IS NOT NULL),ARRAY[]::text[]),c.condeferrable,c.condeferred,CASE WHEN c.contype='c' THEN pg_get_expr(c.conbin,c.conrelid) ELSE NULL END FROM pg_constraint c LEFT JOIN LATERAL unnest(c.conkey) WITH ORDINALITY AS u(attnum,ord) ON true LEFT JOIN pg_attribute a ON a.attrelid=c.conrelid AND a.attnum=u.attnum WHERE c.conrelid=(%s||'.'||%s)::regclass GROUP BY c.oid,c.conname,c.contype,c.condeferrable,c.condeferred,c.conbin,c.conrelid""",(SCHEMA,TABLE));constraints=cur.fetchall()
             cur.execute("SHOW transaction_isolation");isolation=cur.fetchone()[0].upper()
         expected=fixture_plan(SCHEMA);assert normalize_live_columns(columns)==expected.expected_columns
         assert normalize_live_constraints(constraints)==expected.expected_constraints
@@ -94,7 +96,7 @@ def main():
         c=connect(psycopg,dsn)
         with c.cursor() as cur:cur.execute(f'SELECT payload_digest FROM "{SCHEMA}"."{TABLE}" WHERE idempotency_key_id=%s',(response_loss["idempotency_key_id"],));assert cur.fetchone()[0]==response_loss["payload_digest"]
         c.commit();c.close()
-        proof={"status":"PASS_EPHEMERAL_POSTGRESQL","test_only_database_writes":2,"test_only_database_write_attempts":attempts,"production_database_writes":0,"cleanup_succeeded":True,"concurrency_workers":20,"concurrent_row_count":1,"isolation_level":isolation,"conflict_classifications":list(PROOF_CLASSIFICATIONS),"database_url_disclosed":False,"credential_disclosed":False,"live_constraint_parity":True}
+        proof={"status":"PASS_EPHEMERAL_POSTGRESQL","test_only_database_writes":2,"test_only_database_write_attempts":attempts,"production_database_writes":0,"cleanup_succeeded":True,"concurrency_workers":20,"concurrent_row_count":1,"isolation_level":isolation,"conflict_classifications":list(PROOF_CLASSIFICATIONS),"database_url_disclosed":False,"credential_disclosed":False,"password_credential_configured":False,"live_constraint_parity":True}
     finally:
         try:
             admin.rollback()
