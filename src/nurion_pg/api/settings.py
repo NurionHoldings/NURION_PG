@@ -12,6 +12,7 @@ class Settings:
     log_level: str = "INFO"
     host: str = "0.0.0.0"
     port: int = 8080
+    api_keys_json: str = ""
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -24,7 +25,8 @@ class Settings:
         try:port=int(raw_port)
         except ValueError as exc:raise ValueError("NURION_PG_PORT must be an integer") from exc
         if not host or not 1<=port<=65535:raise ValueError("valid host and port required")
-        return cls(environment=environment,log_level=log_level,host=host,port=port)
+        api_keys_json=os.getenv("NURION_PG_API_KEYS_JSON","")
+        return cls(environment=environment,log_level=log_level,host=host,port=port,api_keys_json=api_keys_json)
 
     def public_view(self)->dict[str,object]:
         return {"service_name":self.service_name,"environment":self.environment,"log_level":self.log_level,"host":self.host,"port":self.port}
