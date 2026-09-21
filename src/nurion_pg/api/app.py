@@ -7,6 +7,8 @@ import time
 from uuid import uuid4
 
 from fastapi import Depends,FastAPI,Header,Request
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.responses import JSONResponse
 
 from .auth import ApiKeyRegistry,Principal,Role
@@ -18,6 +20,10 @@ LOGGER=logging.getLogger("nurion_pg.api")
 
 def _configure_logging(level:str)->None:
     logging.basicConfig(level=getattr(logging,level),format="%(asctime)s %(levelname)s %(name)s %(message)s")
+
+
+def _secure(response,correlation_id:str):
+    response.headers["x-correlation-id"]=correlation_id;response.headers["x-content-type-options"]="nosniff";response.headers["x-frame-options"]="DENY";response.headers["referrer-policy"]="no-referrer";response.headers["cache-control"]="no-store";return response
 
 
 class AuthError(Exception):
@@ -35,13 +41,27 @@ def create_app(settings:Settings|None=None,api_key_registry:ApiKeyRegistry|None=
     async def request_context(request:Request,call_next):
         incoming=request.headers.get("x-correlation-id","").strip();correlation_id=incoming if 1<=len(incoming)<=128 and incoming.isascii() else str(uuid4());token=correlation_id_var.set(correlation_id);started=time.monotonic()
         try:
-            response=await call_next(request);response.headers["x-correlation-id"]=correlation_id
+            raw_length=request.headers.get("content-length")
+            if raw_length:
+                try:content_length=int(raw_length)
+                except ValueError:return _secure(JSONResponse(status_code=400,content={"error":{"code":"INVALID_CONTENT_LENGTH","message":"Content-Length must be an integer","correlation_id":correlation_id}}),correlation_id)
+                if content_length>runtime.max_request_bytes:return _secure(JSONResponse(status_code=413,content={"error":{"code":"REQUEST_TOO_LARGE","message":"Request body exceeds the configured limit","correlation_id":correlation_id}}),correlation_id)
+            response=_secure(await call_next(request),correlation_id)
             LOGGER.info("request_completed method=%s path=%s status=%s duration_ms=%d correlation_id=%s",request.method,request.url.path,response.status_code,int((time.monotonic()-started)*1000),correlation_id)
             return response
         except Exception:
             LOGGER.exception("request_failed method=%s path=%s correlation_id=%s",request.method,request.url.path,correlation_id)
             return JSONResponse(status_code=500,content={"error":{"code":"INTERNAL_ERROR","message":"Internal server error","correlation_id":correlation_id}},headers={"x-correlation-id":correlation_id})
         finally:correlation_id_var.reset(token)
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_error(_request:Request,_exc:RequestValidationError):
+        return JSONResponse(status_code=422,content={"error":{"code":"REQUEST_VALIDATION_FAILED","message":"Request validation failed","correlation_id":correlation_id_var.get()}})
+
+    @app.exception_handler(StarletteHTTPException)
+    async def http_error(_request:Request,exc:StarletteHTTPException):
+        code={404:"ROUTE_NOT_FOUND",405:"METHOD_NOT_ALLOWED"}.get(exc.status_code,"HTTP_ERROR")
+        return JSONResponse(status_code=exc.status_code,content={"error":{"code":code,"message":"Request could not be served","correlation_id":correlation_id_var.get()}})
 
     @app.exception_handler(AuthError)
     async def auth_error(_request:Request,exc:AuthError):
@@ -69,8 +89,14 @@ def create_app(settings:Settings|None=None,api_key_registry:ApiKeyRegistry|None=
 
     @app.get("/health/ready",include_in_schema=False)
     async def ready():
-        if not app.state.ready:return JSONResponse(status_code=503,content={"status":"not_ready","service":runtime.service_name})
+        if not app.state.ready:return JSONResponse(status_code=503,content={"status":"not_ready","service":runtime.service_name},headers={"retry-after":"5"})
         return {"status":"ready","service":runtime.service_name,"environment":runtime.environment}
+
+    @app.get("/health/startup",include_in_schema=False)
+    async def startup():return {"status":"started","service":runtime.service_name}
+
+    @app.get("/runtime/info",include_in_schema=False)
+    async def runtime_info():return runtime.public_view()
 
     @app.get("/v1/auth/context")
     async def auth_context(principal:Principal=Depends(current_principal)):

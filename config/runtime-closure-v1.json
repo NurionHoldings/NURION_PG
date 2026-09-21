@@ -1,0 +1,19 @@
+{
+  "schema_version": "runtime-closure-v1",
+  "scope": "OPERATING_API_RUNTIME",
+  "required_criteria": [
+    "EXECUTABLE_ENTRYPOINT",
+    "VALIDATED_SETTINGS",
+    "LIVENESS_STARTUP_READINESS",
+    "CORRELATION_PROPAGATION",
+    "STANDARD_ERROR_ENVELOPE",
+    "REQUEST_SIZE_BOUNDARY",
+    "SECURITY_RESPONSE_HEADERS",
+    "SECRET_FREE_RUNTIME_INFO",
+    "GRACEFUL_TERMINATION",
+    "NON_ROOT_HEALTHCHECKED_CONTAINER"
+  ],
+  "completion_percent": 100,
+  "payment_execution_implied": false,
+  "production_deployment_implied": false
+}
