@@ -26,7 +26,7 @@ jobs:
           - 5432:5432
         env:
           POSTGRES_USER: nurion_ci
-          POSTGRES_PASSWORD: nurion_ci_test_only
+          POSTGRES_HOST_AUTH_METHOD: trust
           POSTGRES_DB: nurion_pg_ci
         options: >-
           --health-cmd "pg_isready -U nurion_ci -d nurion_pg_ci"
@@ -38,7 +38,7 @@ jobs:
       PGPORT: "5432"
       PGDATABASE: nurion_pg_ci
       PGUSER: nurion_ci
-      PGPASSWORD: nurion_ci_test_only
+      NURION_PG_EPHEMERAL_TEST: "1"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -47,7 +47,7 @@ jobs:
       - name: Install test-only PostgreSQL driver
         run: python -m pip install "psycopg[binary]==3.2.10"
       - name: Prove isolated migration repository and concurrency
-        run: NURION_PG_EPHEMERAL_POSTGRES_DSN="postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT}/${PGDATABASE}" PYTHONPATH=src python scripts/run_postgres_ephemeral_repository_integration.py
+        run: PYTHONPATH=src python scripts/run_postgres_ephemeral_repository_integration.py
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: postgres-ephemeral-repository-proof
