@@ -126,6 +126,7 @@ Synthetic canary readiness docket controls #1501-#1700 are documented in
 - #14301~#14700을 `복합계획 신원·이중 승인인텐트 봉투 게이트` 계층으로 구현: plan_id·flow·kind·source contract·readiness manifest를 하나의 content-addressed identity로 결속하고, materialization과 execution을 서로 다른 actor·sequence·predecessor·nonce/replay scope의 PENDING 봉투로 분리한다. receipt 발급·materialization·execution은 금지하며 실패 원인, 비용·위험·가역성·검증·중단·재개·rollback을 포함한 두 복구경로와 공통 final-docket 불변식을 제공한다.
 - #14701~#15100을 `비발급 승인영수증 스키마·독립 멱등키 계약` 계층으로 구현: 40개 PENDING intent 각각에 source identity·actor slots·순서·predecessor·nonce와 독립 idempotency key/payload scope를 결속한다. 동일 key·payload는 직렬/병렬 수렴하고 변경 payload·교차 key identity 재사용은 fail-closed하며, 실제 receipt 발급·materialization·execution·observation·PASS/FAIL·승인 권한은 모두 금지한다.
 - #15101~#15500을 `발급 전 검증 패킷·이중 서명입력 계약` 계층으로 구현: 40개 receipt schema마다 source identity·idempotency scope·sequence·predecessor·nonce와 issuer/verifier의 독립 actor, domain, challenge, audience, purpose, policy, 결정적 합성 expiry를 결속한 80개 서명 입력 digest를 만든다. 실제 서명값·키·자격증명·receipt·원장·실행·관찰·승인 권한은 생성하거나 읽지 않는다.
+- #15501~#15900을 `비발급 검증결과 봉인·원자적 멱등예약 계약` 계층으로 구현: 40개 preissuance packet마다 비암호학적 결과후보와 봉인입력, 독립 owner/validator, 결정적 expiry, source scope·서명입력·policy v1·sequence·predecessor·nonce를 결속한 원자적 예약을 하나씩 만든다. commit·서명·receipt·DB/원장·PG/API·실행·관찰·승인 권한은 모두 0으로 유지한다.
 - 에테르니언 감사 교훈은 [ARKAON 감사 재발방지 지도사항](docs/70-arkaon-audit-recurrence-prevention.md)과 기계검증 정책으로 환류
 - 에테르니언 보완 커밋은 versioned lesson registry의 entry·ack·부정 테스트·재검증 증적이 없으면 전용 evidence 생성이 fail-closed
 
