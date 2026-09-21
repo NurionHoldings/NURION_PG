@@ -40,6 +40,7 @@
     {"remediation_id": "ETH-17501-AUDIT-001", "scope": "#17101-#17500 actual PostgreSQL backend termination and reconciliation proof", "required_lesson_ids": ["ARL-17501-001"]},
     {"remediation_id": "ETH-17901-AUDIT-001", "scope": "#17501-#17900 precommit loss recovery quarantine proof", "required_lesson_ids": ["ARL-17901-001"]},
     {"remediation_id": "ETH-18301-AUDIT-001", "scope": "#17901-#18300 post-quarantine human-reviewed recovery disposition proof", "required_lesson_ids": ["ARL-18301-001"]},
-    {"remediation_id": "ETH-18701-AUDIT-001", "scope": "#18301-#18700 append-only recovery disposition supersession proof", "required_lesson_ids": ["ARL-18701-001"]}
+    {"remediation_id": "ETH-18701-AUDIT-001", "scope": "#18301-#18700 append-only recovery disposition supersession proof", "required_lesson_ids": ["ARL-18701-001"]},
+    {"remediation_id": "ETH-19101-AUDIT-001", "scope": "#18701-#19100 exact current-head review snapshot and non-executable receipt proof", "required_lesson_ids": ["ARL-19101-001"]}
   ]
 }

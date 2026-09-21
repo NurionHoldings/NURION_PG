@@ -60,6 +60,8 @@ jobs:
         run: PYTHONPATH=src:. python scripts/run_postgres_recovery_disposition_integration.py
       - name: Prove append-only recovery supersession lineage
         run: PYTHONPATH=src:. python scripts/run_postgres_recovery_supersession_integration.py
+      - name: Prove exact current-head recovery review receipt
+        run: PYTHONPATH=src:. python scripts/run_postgres_recovery_review_receipt_integration.py
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: postgres-ephemeral-repository-proof
@@ -78,6 +80,8 @@ jobs:
             build/postgres-recovery-disposition-integration-evidence.json.sha256
             build/postgres-recovery-supersession-integration-evidence.json
             build/postgres-recovery-supersession-integration-evidence.json.sha256
+            build/postgres-recovery-review-receipt-integration-evidence.json
+            build/postgres-recovery-review-receipt-integration-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
 
@@ -334,6 +338,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_postgres_recovery_disposition_proof_evidence.py
       - name: Verify PostgreSQL recovery supersession proof contract #18701-#19100
         run: PYTHONPATH=src python scripts/run_synthetic_postgres_recovery_supersession_proof_evidence.py
+      - name: Verify PostgreSQL recovery review receipt proof contract #19101-#19500
+        run: PYTHONPATH=src python scripts/run_synthetic_postgres_recovery_review_receipt_proof_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -552,6 +558,10 @@ jobs:
             build/synthetic-postgres-recovery-quarantine-proof-evidence.json.sha256
             build/synthetic-postgres-recovery-disposition-proof-evidence.json
             build/synthetic-postgres-recovery-disposition-proof-evidence.json.sha256
+            build/synthetic-postgres-recovery-supersession-proof-evidence.json
+            build/synthetic-postgres-recovery-supersession-proof-evidence.json.sha256
+            build/synthetic-postgres-recovery-review-receipt-proof-evidence.json
+            build/synthetic-postgres-recovery-review-receipt-proof-evidence.json.sha256
             build/synthetic-rebuttal-correction-submission-validation-evidence.json
             build/synthetic-rebuttal-correction-submission-validation-evidence.json.sha256
             build/synthetic-rebuttal-correction-independent-rereview-evidence.json
