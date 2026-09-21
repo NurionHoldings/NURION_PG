@@ -50,6 +50,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_postgres_ephemeral_repository_integration.py
       - name: Prove bounded retry and commit-unknown recovery
         run: PYTHONPATH=src:. python scripts/run_postgres_retry_resilience_integration.py
+      - name: Prove actual deadlock and lock timeout boundaries
+        run: PYTHONPATH=src:. python scripts/run_postgres_deadlock_integration.py
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: postgres-ephemeral-repository-proof
@@ -58,6 +60,8 @@ jobs:
             build/postgres-ephemeral-repository-integration-evidence.json.sha256
             build/postgres-retry-resilience-integration-evidence.json
             build/postgres-retry-resilience-integration-evidence.json.sha256
+            build/postgres-deadlock-integration-evidence.json
+            build/postgres-deadlock-integration-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
 
@@ -304,6 +308,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_postgres_ephemeral_repository_proof_evidence.py
       - name: Verify PostgreSQL bounded retry resilience contract #16701-#17100
         run: PYTHONPATH=src python scripts/run_synthetic_postgres_retry_resilience_proof_evidence.py
+      - name: Verify PostgreSQL actual deadlock proof contract #17101-#17500
+        run: PYTHONPATH=src python scripts/run_synthetic_postgres_deadlock_proof_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -514,6 +520,8 @@ jobs:
             build/synthetic-postgres-ephemeral-repository-proof-evidence.json.sha256
             build/synthetic-postgres-retry-resilience-proof-evidence.json
             build/synthetic-postgres-retry-resilience-proof-evidence.json.sha256
+            build/synthetic-postgres-deadlock-proof-evidence.json
+            build/synthetic-postgres-deadlock-proof-evidence.json.sha256
             build/synthetic-rebuttal-correction-submission-validation-evidence.json
             build/synthetic-rebuttal-correction-submission-validation-evidence.json.sha256
             build/synthetic-rebuttal-correction-independent-rereview-evidence.json
