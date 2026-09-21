@@ -13,10 +13,10 @@ ENV="NURION_PG_EPHEMERAL_POSTGRES_DSN"
 SCHEMA="nurion_pg_ci_proof_16301"
 
 def value(seed):return sha256(seed.encode()).hexdigest()
-def row(seed="winner",idempotency=None,token=None,scope=None,nonce=None,payload=None):
+def row(seed="winner",idempotency=None,token=None,scope=None,nonce=None,payload=None,kind="case-01"):
     r={c.name:value(f"{seed}:{c.name}") for c in schema_spec().columns if c.sql_type=="text"}
     r.update({"observed_epoch":100,"expires_at_epoch":200,"sequence":1,"predecessor_row_digest":None,"state":MAX_STATE})
-    r["flow"]="materialization";r["kind"]="case-01";r["intent_kind"]="MATERIALIZATION"
+    r["flow"]="materialization";r["kind"]=kind;r["intent_kind"]="MATERIALIZATION"
     if idempotency:r["idempotency_key_id"]=idempotency
     if token:r["reservation_token_id"]=token
     if scope:r["reservation_scope_digest"]=scope
@@ -92,7 +92,7 @@ def main():
             with c.cursor() as cur:cur.execute(f'SELECT payload_digest FROM "{SCHEMA}"."{TABLE}" WHERE idempotency_key_id=%s',(winner["idempotency_key_id"],));assert cur.fetchone()[0]==winner["payload_digest"]
             c.commit()
         finally:c.close()
-        response_loss=row("response-loss");c=connect(psycopg,dsn);insert_or_read(c,SCHEMA,response_loss);c.close();attempts+=1
+        response_loss=row("response-loss",kind="case-response-loss");c=connect(psycopg,dsn);insert_or_read(c,SCHEMA,response_loss);c.close();attempts+=1
         c=connect(psycopg,dsn)
         with c.cursor() as cur:cur.execute(f'SELECT payload_digest FROM "{SCHEMA}"."{TABLE}" WHERE idempotency_key_id=%s',(response_loss["idempotency_key_id"],));assert cur.fetchone()[0]==response_loss["payload_digest"]
         c.commit();c.close()
