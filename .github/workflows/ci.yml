@@ -108,6 +108,8 @@ jobs:
         run: python -m compileall -q src scripts tests
       - name: Verify API runtime skeleton
         run: PYTHONPATH=src python -m unittest tests.test_api_runtime -v
+      - name: Verify principal and merchant authorization boundary
+        run: PYTHONPATH=src python -m unittest tests.test_api_auth -v
       - name: Unit and policy tests
         run: PYTHONPATH=src python -m unittest discover -s tests -v
       - name: Validate governance manifests
