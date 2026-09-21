@@ -1,5 +1,6 @@
 from dataclasses import replace
 from hashlib import sha256
+from pathlib import Path
 import unittest
 
 from nurion_pg.arkaon.governance import GovernanceRejected
@@ -71,6 +72,13 @@ class Tests(unittest.TestCase):
         for path in paths:
             row=dict(path)
             for field in ("cause","recommended","method","alternative","cost","risk","reversibility","validation","stop","resume","rollback"):self.assertIn(field,row)
+
+    def test_integration_replay_uses_database_timestamptz_equality(self):
+        source=(Path(__file__).resolve().parents[1]/"scripts/run_postgres_recovery_quarantine_integration.py").read_text(encoding="utf-8")
+        self.assertGreaterEqual(source.count("observed_at = %s::timestamptz"),2)
+        self.assertNotIn("observed_at::text",source)
+        self.assertNotIn("startswith(",source)
+        self.assertIn("expected=values[:6]+(True,)+values[7:]",source)
 
 
 if __name__ == "__main__": unittest.main()
