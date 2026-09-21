@@ -1,0 +1,21 @@
+{
+  "policy_id": "ARKAON-AUDIT-RECURRENCE-PREVENTION-V1",
+  "mode": "DEVELOPMENT_GUIDANCE_ONLY",
+  "automatic_prompt_policy_weight_change": false,
+  "rules": [
+    {"id":"ARP-01","cause":"Opaque digest를 형식만 검증하고 의미 역할을 검증하지 않음","attack":"유효한 다른 digest를 의미 라벨에 대입하고 재해시","precheck":"모든 digest 필드에 허용 의미 라벨과 기대 source type을 선언","negative_test":"digest 교체 후 전체 artifact 재해시도 무결성 실패","done":"digest와 의미 라벨·source type의 양방향 대조"},
+    {"id":"ARP-02","cause":"파생 산출물이 source dossier 또는 review receipt에 간접 결속됨","attack":"동일 요청값으로 다른 dossier의 산출물을 재사용","precheck":"최종 artifact가 dossier_digest와 receipt_digest를 직접 보유하거나 검증 가능한 anchor에 결속","negative_test":"dossier 또는 receipt만 바꾸고 재해시해 실패","done":"두 source digest 직접 계보 검증 통과"},
+    {"id":"ARP-03","cause":"과거 라운드도 현재 자료처럼 수용됨","attack":"stale round에 case 또는 receipt 결속","precheck":"current/latest pointer와 sequence를 source artifact에서 파생","negative_test":"이전 round ID로 case·review 호출 시 실패","done":"최신 라운드 외 입력 fail-closed"},
+    {"id":"ARP-04","cause":"maker/checker identity를 호출자 입력으로 신뢰함","attack":"author 또는 assembler identity 위조로 역할분리 우회","precheck":"maker identity를 source round·manifest 등 권위 artifact에서 파생","negative_test":"호출자가 maker 값을 대체하거나 reviewer와 동일 identity 사용 시 실패","done":"source-derived maker와 독립 checker만 receipt 생성"},
+    {"id":"ARP-05","cause":"route 또는 derived digest의 존재만 확인하고 재계산하지 않음","attack":"route tuple이나 derived digest를 치환하고 outer digest 재해시","precheck":"파생값의 canonical 입력식을 명시","negative_test":"route endpoint·label·derived digest 치환 후 재해시해 실패","done":"검증 시 canonical 입력으로 모든 파생 digest 재계산"},
+    {"id":"ARP-06","cause":"개별 capability만 검사하고 당사자 공통 교집합을 누락","attack":"한 당사자가 지원하지 않는 op 또는 token class를 협상안에 삽입","precheck":"모든 참여자 profile의 operation·token·version 교집합 계산","negative_test":"한 profile에서만 capability 제거 후 제안 실패","done":"사용 규칙 전체가 공통 교집합의 부분집합"},
+    {"id":"ARP-07","cause":"event action allowlist만 검사하고 실제 artifact와 대조하지 않음","attack":"허용 action에 다른 artifact digest를 결속하고 chain 재해시","precheck":"도메인 상태에서 예상 event action↔artifact 목록을 재구성","negative_test":"artifact digest 치환 및 chain 재해시 후 실패","done":"event chain이 재구성된 예상 event와 순서·action·digest 모두 일치"},
+    {"id":"ARP-08","cause":"생성 시만 안전한 boolean/status를 확인하고 사후 무결성에서 누락","attack":"approval/release boolean 또는 상태를 변경하고 artifact 재해시","precheck":"비승인 최대 상태와 모든 안전 boolean 불변식을 정의","negative_test":"approval/release=true 또는 승인 상태로 재해시 후 실패","done":"evidence 직전 사후 무결성에서 안전값을 재검증"}
+  ],
+  "completion_gate": {
+    "required_rule_ids": ["ARP-01","ARP-02","ARP-03","ARP-04","ARP-05","ARP-06","ARP-07","ARP-08"],
+    "required_fields": ["cause","attack","precheck","negative_test","done"],
+    "fail_closed": true,
+    "requires_dedicated_negative_tests": true
+  }
+}

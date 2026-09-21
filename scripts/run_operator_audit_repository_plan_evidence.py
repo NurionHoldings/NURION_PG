@@ -1,0 +1,9 @@
+from hashlib import sha256
+import json
+from pathlib import Path
+from nurion_pg.operator_audit_repository_plan import OperatorAuditRepositoryPlan
+ROOT=Path(__file__).resolve().parents[1];h=lambda x:sha256(x).hexdigest()
+def main():
+ r=OperatorAuditRepositoryPlan(h(b"parity"));r.discover("SYNTHETIC_OPERATOR_AUDIT_REGISTRY_PARITY_COMPLETED",(456,470),"synthetic:key:471");r.requirements(("APPEND_ONLY","AUDITABLE","IDEMPOTENT","ROLE_SEPARATED","TAMPER_EVIDENT"),"synthetic:key:472",1);r.conflicts(("EXTERNAL_IO","LIVE_TRAFFIC","MONEY_MOVEMENT","OPERATING_CREDENTIALS","POLICY_MUTATION"),"synthetic:key:473",2);r.architecture(("DOMAIN_PORT","POSTGRES_ADAPTER","SQLITE_TEST_ADAPTER","MIGRATION","EVIDENCE_EXPORT"),"synthetic:key:474",3);r.schema(("id","checkpoint_digest","sequence","previous_digest","report_digest","created_at"),"synthetic:key:475",4);r.invariants(("DIGEST_CHAIN","IMMUTABLE_ROWS","MONOTONIC_SEQUENCE","UNIQUE_CHECKPOINT","UNIQUE_IDEMPOTENCY"),"synthetic:key:476",5);r.transactions("SERIALIZABLE_OR_LOCKED_EQUIVALENT",True,"synthetic:key:477",6);r.migration(True,True,"synthetic:key:478",7);r.parity(True,True,"synthetic:key:479",8);r.acceptance(("CONCURRENCY","FRESH_SCHEMA","IDEMPOTENCY","ROLLBACK","TAMPER","TYPE_PARITY"),"synthetic:key:480",9);r.fixtures(True,False,"synthetic:key:481",10);r.rollout(True,True,"synthetic:key:482",11);r.reviewers("synthetic:designer:1","synthetic:auditor:1","synthetic:key:483",12);r.seal(None,"synthetic:key:484",13);r.complete(("NO_IMPLEMENTATION","NO_MIGRATION_RUN","NO_PERSISTENCE","NO_PRODUCTION","PLANNING_LOCK"),"synthetic:key:485",14)
+ e=r.evidence();o=ROOT/"build/operator-audit-repository-plan-evidence.json";o.parent.mkdir(exist_ok=True);x=json.dumps(e,sort_keys=True,indent=2)+"\n";o.write_text(x);d=sha256(x.encode()).hexdigest();o.with_suffix(".json.sha256").write_text(d+"\n");print("operator audit repository planning lock: PASS",d)
+if __name__=="__main__":main()

@@ -1,0 +1,21 @@
+{
+  "schema": "nurion.pg.synthetic-remediation-proposal-policy.v1",
+  "mode": "UNREGISTERED_SYNTHETIC_ONLY",
+  "required_case_state": "READY_FOR_REMEDIATION_PROPOSAL",
+  "destination": "ETERNIAN_REVIEW",
+  "action_types": [
+    "EVIDENCE_CHAIN_INVESTIGATION",
+    "WORKFLOW_LINKAGE_REVIEW",
+    "PAYMENT_LEDGER_RECONCILIATION",
+    "STABLE_SNAPSHOT_REPRODUCTION"
+  ],
+  "unknown_finding_decision": "HUMAN_REVIEW",
+  "code_change_allowed": false,
+  "automatic_application_allowed": false,
+  "safety_baseline_relaxation_allowed": false,
+  "operator_decision_allowed": false,
+  "payment_execution_allowed": false,
+  "production_activation_allowed": false,
+  "real_credentials_allowed": false,
+  "real_personal_data_allowed": false
+}
