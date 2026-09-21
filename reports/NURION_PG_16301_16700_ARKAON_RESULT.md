@@ -66,10 +66,18 @@
 - 비용·위험·가역성: 비용 낮음, 위험 낮음, 가역성 높음. password DSN·PGPASSFILE 거부와 passwordless DSN 허용, workflow 정적 0건을 회귀검증한다.
 - 중단·재개·rollback: password source가 하나라도 탐지되면 연결 전에 중단한다. runner-local trust와 exact target guard가 확인된 새 job에서만 재개하고 disposable schema만 rollback한다.
 
+### 원격 run #1770 FAIL — response-loss fixture 논리키 충돌
+
+- 원인: response-loss fixture가 winner와 동일한 `(flow, kind, intent_kind)`를 사용해 `uq_logical_intent`와 충돌했으며 두 번째 유효 write가 되지 못했다.
+- 권장안·반영: fixture 생성기에 명시적 `kind` 입력을 추가하고 response-loss에 `case-response-loss`를 부여했다. idempotency read-back 의미와 writes=2, attempts=27 계약은 유지한다.
+- 대안: 기존 logical unique 제약을 완화하거나 충돌을 무시하는 방식은 운영 의미를 훼손하므로 채택하지 않았다.
+- 비용·위험·가역성: fixture 한 필드 수정으로 비용·위험이 낮고 완전 가역적이다.
+- 검증·중단·재개·rollback: winner와 response-loss의 logical tuple 및 나머지 6개 unique identity가 모두 독립인지 단위검증한다. 새 원격 run에서 두 번째 commit·read-back·cleanup이 확인될 때 재개하며 실패 시 해당 disposable schema만 rollback한다.
+
 검증 결과:
 
-- focused/adjacent/registry: 45 PASS
-- full regression: 1,948 PASS
+- focused/adjacent/registry: 46 PASS
+- full regression: 1,949 PASS
 - 17단계 direct evidence chain: PASS
 - #7501 historical snapshot: PASS
 - 로컬 PostgreSQL integration: 1 SKIP (`SKIP_NO_PRECONFIGURED_TEST_DATABASE`)
