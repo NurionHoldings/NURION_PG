@@ -26,11 +26,13 @@
 | 단일 PostgreSQL service라 실제 failover 불가 | 격리 primary/standby·통제된 fault·role 판별·복구 reconciliation·cleanup을 future preflight로 요구 | 현재 모든 실제 claim false 유지 | 높음·중간·높음 | future fixture의 역할/partition/복구/cleanup 증거 | 단일노드/비통제 target 즉시 중단, 승인된 disposable multi-node에서 재개, exact fixture만 폐기 |
 | 신규 단위시험이 outcome을 실제 변조하지 않음 | 비허용 outcome `other`로 변경해 fail-closed 경로를 실제 실행 | 별도 parameterized mutation | 낮음·낮음·높음 | 집중 23 PASS 및 전체 회귀 | 예외 미발생 시 중단, mutation 수정 후 전체 재실행, 시험 patch revert |
 | disposition이 case ID만 FK로 참조해 새 key·새 sequence·wrong digest 삽입 가능 | quarantine의 `(case_id, case_digest)` UNIQUE와 disposition composite FK를 DB에서 강제 | insert 전 application lookup은 race와 우회 위험으로 비채택 | 낮음·중간·높음 | 독립 key·sequence의 wrong digest 실제 INSERT 거부와 row count 1 | 삽입 성공 시 HOLD, composite 제약 복구 후 fresh DB 전체 재실행, fixture schema drop |
+| 원격 CI에서 동일 case의 cross-key 처분이 성공 | 현재 단계는 `UNIQUE(case_id)`로 case당 처분 1개를 강제하고 재검토는 별도 supersession/versioning 공정으로 분리 | 현 단계에서 복수 처분 허용은 계보가 없어 비채택 | 낮음·중간·높음 | cross-key·새 sequence 실제 INSERT 거부, 처분 row count 1 | 성공 시 HOLD, unique 제약 복구 후 fresh DB 재실행, fixture schema drop |
+| 통합 invariant 실패가 단일 일반 오류로만 노출 | 비밀값 없이 실패한 boolean invariant 이름만 정렬 출력 | 각 단계 개별 assert | 낮음·낮음·높음 | 실패 메시지의 `failed=<keys>` | 값·DSN·credential 출력 금지, 원인 수정 후 전체 재실행 |
 
 ## 로컬 검증
 
-- focused: 24 PASS
-- full regression: 1,986 PASS
+- focused: 25 PASS
+- full regression: 1,987 PASS
 - 22단계 direct evidence SHA-256: `94302d567def1c8b5bd4ac39f9bb74e4d833efe2afbf84e147e9b7e5b9677827`
 - local actual PostgreSQL: `SKIP_NO_PRECONFIGURED_TEST_DATABASE`
 - compileall, diff-check: PASS
