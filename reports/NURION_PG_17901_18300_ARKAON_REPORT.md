@@ -37,12 +37,20 @@ pre-commit connection loss의 `HOLD_NOT_COMMITTED`를 자동 재실행하지 않
 ## 로컬 검증 결과
 
 - focused: 7 PASS
-- full regression: 1,977 PASS
+- full regression: 1,978 PASS
 - 21단계 direct evidence chain: PASS
 - lesson registry: 37 PASS
 - 계약 evidence SHA-256: `c5f9a973016fb1f6d63e7ce96969c86f04aa6520dfa1676d82607266cb0056cd`
 - 로컬 PostgreSQL integration: `SKIP_NO_PRECONFIGURED_TEST_DATABASE`
 - compileall, governance, diff-check, credential 정적검사: PASS
-- ETHERNIAN HOLD 재검증: 집계형 view 및 DML 3종 exact rejection 계약, SQL temporal equality 반영 후 full 1,977·21단계 evidence 재실행 PASS
+- ETHERNIAN HOLD 재검증: 집계형 view 및 DML 3종 exact rejection 계약, SQL temporal equality와 psycopg temporal type-boundary 회귀시험 반영 후 full 1,978·21단계 evidence PASS
+
+### 원격 run `35573236643` HOLD — psycopg temporal type boundary
+
+- 원인: 최초 insert 뒤 replay read-back의 `observed_at`은 psycopg aware `datetime`인데 expected tuple은 ISO 문자열이어서, 동일 instant임에도 Python 객체 타입 차이로 exact tuple 비교가 실패했다.
+- 권고·반영: DB SELECT에서 `observed_at = %s::timestamptz`를 계산하고 exact `true`를 나머지 필드 tuple과 함께 비교한다. 최초 insert와 replay 모두 동일한 PostgreSQL temporal equality를 사용한다.
+- 대안: Python에서 ISO 문자열을 aware datetime으로 정규화해 비교할 수 있으나 PostgreSQL parsing/timezone semantics와 이중 구현이 생겨 채택하지 않았다. text cast·prefix 비교는 정확성이 약해 금지한다.
+- 비용·위험·가역성: read-back SELECT 한 필드의 표현만 바꾸므로 비용과 위험이 낮고, 단일 patch revert로 가역적이다. unique conflict, changed/cross-key rollback, append-only trigger에는 영향이 없다.
+- 검증·중단·재개·rollback: SQL equality가 false/null이거나 tuple의 다른 필드가 다르면 PASS를 중단한다. focused/full과 새 disposable CI 전체 실행이 성공할 때만 재개하며, 실패 시 exact fixture schema만 drop한다.
 
 실제 PostgreSQL PASS, cleanup, artifact upload는 원격 disposable CI가 성공하기 전까지 HOLD한다. commit·push·PR·merge·deploy는 수행하지 않았다.
