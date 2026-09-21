@@ -25,15 +25,16 @@
 ## 원격 증거
 
 - PR: #414
-- 검증 head: `a4ca064cd872973328ee6012d38481da6e5c69bb`
-- CI run: `35582610647` / run number `1881`
+- 검증 head: `9b2eab7d91cc393787618b6398d96147e12a8254`
+- CI run: `35584431980` / run number `1888`
 - 전체 회귀: 1,996 PASS
 - PostgreSQL proof: SUCCESS
 - supersession evidence SHA-256: `e826681a535d73c27689ca5580a28365a0eefd8de20d902195dc279451f2426f`
-- PostgreSQL artifact: `10630613944`
-- PostgreSQL artifact ZIP SHA-256: `7668baeb33cbb219969837b0c2fd8e0ae52a06ec18b2a8caed851788e95df9a6`
-- bootstrap artifact: `10630911865`
-- bootstrap artifact ZIP SHA-256: `21f1f6c6389a631c11c55b9b9d5d8654721e96c0c2386995e1100e32d1fece72`
+- retry resilience evidence SHA-256: `6c096c6fc0198eaed665f03b20fad4dfc47a885c721cf7e4bb071fc0cc54d749`
+- PostgreSQL artifact: `10631613394`
+- PostgreSQL artifact ZIP SHA-256: `af247d880248e5d38ea32c74e1e283d3729beedea68e3529664a6446b0662e5c`
+- bootstrap artifact: `10632265194`
+- bootstrap artifact ZIP SHA-256: `e11637de1f21866622a2b8925b205b8052e4791cd6445e78123b70d38fc2e679`
 
 ## 아티팩트 직접 대조
 
