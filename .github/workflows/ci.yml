@@ -58,6 +58,8 @@ jobs:
         run: PYTHONPATH=src:. python scripts/run_postgres_recovery_quarantine_integration.py
       - name: Prove append-only recovery disposition boundaries
         run: PYTHONPATH=src:. python scripts/run_postgres_recovery_disposition_integration.py
+      - name: Prove append-only recovery supersession lineage
+        run: PYTHONPATH=src:. python scripts/run_postgres_recovery_supersession_integration.py
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: postgres-ephemeral-repository-proof
@@ -74,6 +76,8 @@ jobs:
             build/postgres-recovery-quarantine-integration-evidence.json.sha256
             build/postgres-recovery-disposition-integration-evidence.json
             build/postgres-recovery-disposition-integration-evidence.json.sha256
+            build/postgres-recovery-supersession-integration-evidence.json
+            build/postgres-recovery-supersession-integration-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
 
@@ -328,6 +332,8 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_postgres_recovery_quarantine_proof_evidence.py
       - name: Verify PostgreSQL recovery disposition proof contract #18301-#18700
         run: PYTHONPATH=src python scripts/run_synthetic_postgres_recovery_disposition_proof_evidence.py
+      - name: Verify PostgreSQL recovery supersession proof contract #18701-#19100
+        run: PYTHONPATH=src python scripts/run_synthetic_postgres_recovery_supersession_proof_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
