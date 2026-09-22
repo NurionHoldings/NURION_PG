@@ -73,11 +73,22 @@ class PostgresPaymentRepository:
             if intent is None or op is None:raise PaymentProblem(404,"PAYMENT_OPERATION_NOT_FOUND","Payment operation was not found")
             if op[2]!="pending":return intent
             command=PaymentCommand(op[0]);amount=op[1]
-            if not succeeded:status=PaymentStatus.FAILED;authorized=intent.authorized_amount;captured=intent.captured_amount;refunded=intent.refunded_amount
+            expected_pending=PENDING_STATUS[command]
+            if intent.status!=expected_pending:raise PaymentProblem(409,"PROVIDER_RESULT_STATE_CONFLICT","Payment Intent is not awaiting this provider result")
+            authorized=intent.authorized_amount;captured=intent.captured_amount;refunded=intent.refunded_amount
+            if not succeeded:
+                if command==PaymentCommand.AUTHORIZE:status=PaymentStatus.REQUIRES_AUTHORIZATION
+                elif command==PaymentCommand.CAPTURE:status=PaymentStatus.PARTIALLY_CAPTURED if captured else PaymentStatus.AUTHORIZED
+                elif command==PaymentCommand.CANCEL:status=PaymentStatus.AUTHORIZED if authorized else PaymentStatus.REQUIRES_AUTHORIZATION
+                else:status=PaymentStatus.PARTIALLY_REFUNDED if refunded else (PaymentStatus.CAPTURED if captured==authorized else PaymentStatus.PARTIALLY_CAPTURED)
             elif command==PaymentCommand.AUTHORIZE:status=PaymentStatus.AUTHORIZED;authorized=intent.amount;captured=intent.captured_amount;refunded=intent.refunded_amount
             elif command==PaymentCommand.CAPTURE:captured=intent.captured_amount+amount;authorized=intent.authorized_amount;refunded=intent.refunded_amount;status=PaymentStatus.CAPTURED if captured==authorized else PaymentStatus.PARTIALLY_CAPTURED
             elif command==PaymentCommand.CANCEL:status=PaymentStatus.CANCELED;authorized=intent.authorized_amount;captured=intent.captured_amount;refunded=intent.refunded_amount
             else:refunded=intent.refunded_amount+amount;authorized=intent.authorized_amount;captured=intent.captured_amount;status=PaymentStatus.REFUNDED if refunded==captured else PaymentStatus.PARTIALLY_REFUNDED
-            self.connection.execute(f"UPDATE {self.schema}.payment_operations SET status=%s,completed_at=now() WHERE operation_id=%s",("succeeded" if succeeded else "failed",operation_id))
+            operation_status="succeeded" if succeeded else "failed"
+            self.connection.execute(f"UPDATE {self.schema}.payment_operations SET status=%s,completed_at=now() WHERE operation_id=%s",(operation_status,operation_id))
             row=self.connection.execute(f"UPDATE {self.schema}.payment_intents SET status=%s,authorized_amount=%s,captured_amount=%s,refunded_amount=%s,version=version+1,updated_at=now() WHERE payment_intent_id=%s RETURNING payment_intent_id,merchant_id,amount,currency,status,authorized_amount,captured_amount,refunded_amount,version,external_reference,metadata",(status.value,authorized,captured,refunded,payment_intent_id)).fetchone()
-        return self._intent(row)
+            updated=self._intent(row)
+            payload={"operation_id":operation_id,"payment_intent_id":payment_intent_id,"merchant_id":merchant_id,"operation_type":command.value,"operation_status":operation_status,"payment_status":updated.status.value,"version":updated.version}
+            self.connection.execute(f"INSERT INTO {self.schema}.outbox_events(event_id,aggregate_type,aggregate_id,event_type,payload) VALUES (%s,'payment_intent',%s,%s,%s::jsonb)",(str(uuid4()),payment_intent_id,f"payment_intent.{command.value}_{operation_status}",json.dumps(payload)))
+        return updated

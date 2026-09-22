@@ -90,7 +90,7 @@ def validate_command(intent:PaymentIntent,command:PaymentCommand,amount:int|None
         amount=remaining if amount is None else amount
         if isinstance(amount,bool) or not 1<=amount<=remaining:raise PaymentProblem(422,"CAPTURE_LIMIT_EXCEEDED","Capture exceeds the authorized remainder")
     elif command==PaymentCommand.CANCEL:
-        if intent.status not in {PaymentStatus.REQUIRES_AUTHORIZATION,PaymentStatus.AUTHORIZATION_PENDING,PaymentStatus.AUTHORIZED}:raise PaymentProblem(409,"INVALID_PAYMENT_STATE","Cancellation is unavailable from the current state")
+        if intent.status not in {PaymentStatus.REQUIRES_AUTHORIZATION,PaymentStatus.AUTHORIZED}:raise PaymentProblem(409,"INVALID_PAYMENT_STATE","Cancellation is unavailable from the current state")
         if amount is not None:raise PaymentProblem(422,"UNEXPECTED_AMOUNT","Cancel does not accept an amount")
     elif command==PaymentCommand.REFUND:
         if intent.status not in {PaymentStatus.PARTIALLY_CAPTURED,PaymentStatus.CAPTURED,PaymentStatus.PARTIALLY_REFUNDED}:raise PaymentProblem(409,"INVALID_PAYMENT_STATE","Refund requires captured funds")

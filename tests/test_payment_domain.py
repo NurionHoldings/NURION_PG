@@ -21,5 +21,11 @@ class PaymentDomainTests(unittest.TestCase):
         for command in (PaymentCommand.CAPTURE,PaymentCommand.REFUND):
             with self.assertRaises(PaymentProblem):validate_command(created,command,None)
 
+    def test_cancel_rejects_an_inflight_authorization(self):
+        pending=self.intent(status=PaymentStatus.AUTHORIZATION_PENDING,authorized_amount=0)
+        with self.assertRaises(PaymentProblem) as caught:
+            validate_command(pending,PaymentCommand.CANCEL,None)
+        self.assertEqual(caught.exception.code,"INVALID_PAYMENT_STATE")
+
 
 if __name__=="__main__":unittest.main()
