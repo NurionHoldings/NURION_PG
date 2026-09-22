@@ -9,7 +9,7 @@ from typing import Any
 from uuid import uuid4
 
 SCHEMA_NAME = re.compile(r"^[a-z][a-z0-9_]{0,62}$")
-MIGRATION_VERSION = 5
+MIGRATION_VERSION = 6
 MIGRATION_LOCK = 73192003
 
 
@@ -95,9 +95,24 @@ def migration_v5_sql(schema:str)->str:
 CREATE INDEX provider_webhook_pending_idx ON {s}.provider_webhook_inbox(next_attempt_at,received_at) WHERE state='pending';
 """
 
+def migration_v6_sql(schema:str)->str:
+    s=_schema(schema)
+    return f"""CREATE TABLE {s}.ledger_journals(journal_id uuid PRIMARY KEY,merchant_id text NOT NULL REFERENCES {s}.merchants(merchant_id),currency char(3) NOT NULL CHECK(currency ~ '^[A-Z]{{3}}$'),kind text NOT NULL,reference_id text NOT NULL,reversal_of uuid REFERENCES {s}.ledger_journals(journal_id),journal_digest char(64) NOT NULL CHECK(journal_digest ~ '^[0-9a-f]{{64}}$'),created_at timestamptz NOT NULL DEFAULT now(),UNIQUE(merchant_id,reference_id,kind));
+CREATE TABLE {s}.ledger_entries(journal_id uuid NOT NULL REFERENCES {s}.ledger_journals(journal_id),sequence smallint NOT NULL CHECK(sequence>0),account text NOT NULL CHECK(account IN ('provider_receivable','merchant_payable','platform_fee_revenue','pg_fee_payable')),side text NOT NULL CHECK(side IN ('debit','credit')),amount bigint NOT NULL CHECK(amount>0),PRIMARY KEY(journal_id,sequence));
+CREATE TABLE {s}.settlements(settlement_id uuid PRIMARY KEY,merchant_id text NOT NULL REFERENCES {s}.merchants(merchant_id),currency char(3) NOT NULL CHECK(currency ~ '^[A-Z]{{3}}$'),cycle_start date NOT NULL,cycle_end date NOT NULL CHECK(cycle_end>=cycle_start),amount bigint NOT NULL CHECK(amount>=0),reserve bigint NOT NULL DEFAULT 0 CHECK(reserve>=0 AND reserve<=amount),state text NOT NULL CHECK(state IN ('draft','review','approved','payable','paid','held','adjusted','canceled')),version integer NOT NULL DEFAULT 1,hold_reason text,created_at timestamptz NOT NULL DEFAULT now(),UNIQUE(merchant_id,currency,cycle_start,cycle_end));
+CREATE TABLE {s}.payout_requests(payout_id uuid PRIMARY KEY,settlement_id uuid NOT NULL REFERENCES {s}.settlements(settlement_id),merchant_id text NOT NULL REFERENCES {s}.merchants(merchant_id),currency char(3) NOT NULL,amount bigint NOT NULL CHECK(amount>0),requested_by text NOT NULL,idempotency_key text NOT NULL,state text NOT NULL CHECK(state IN ('pending_approval','approved','canceled')),created_at timestamptz NOT NULL DEFAULT now(),UNIQUE(merchant_id,idempotency_key));
+CREATE TABLE {s}.payout_approvals(payout_id uuid NOT NULL REFERENCES {s}.payout_requests(payout_id),principal_id text NOT NULL,approved_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(payout_id,principal_id));
+CREATE FUNCTION {s}.reject_ledger_mutation() RETURNS trigger LANGUAGE plpgsql AS $$BEGIN RAISE EXCEPTION 'ledger is append-only';END$$;
+CREATE FUNCTION {s}.verify_balanced_journal() RETURNS trigger LANGUAGE plpgsql AS $$DECLARE d bigint;c bigint;n integer;BEGIN SELECT COALESCE(sum(amount) FILTER(WHERE side='debit'),0),COALESCE(sum(amount) FILTER(WHERE side='credit'),0),count(*) INTO d,c,n FROM {s}.ledger_entries WHERE journal_id=NEW.journal_id;IF n<2 OR d<>c THEN RAISE EXCEPTION 'unbalanced journal';END IF;RETURN NULL;END$$;
+CREATE CONSTRAINT TRIGGER ledger_journal_has_balance AFTER INSERT ON {s}.ledger_journals DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION {s}.verify_balanced_journal();
+CREATE CONSTRAINT TRIGGER ledger_entries_balanced AFTER INSERT ON {s}.ledger_entries DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION {s}.verify_balanced_journal();
+CREATE TRIGGER ledger_journals_immutable BEFORE UPDATE OR DELETE ON {s}.ledger_journals FOR EACH ROW EXECUTE FUNCTION {s}.reject_ledger_mutation();
+CREATE TRIGGER ledger_entries_immutable BEFORE UPDATE OR DELETE ON {s}.ledger_entries FOR EACH ROW EXECUTE FUNCTION {s}.reject_ledger_mutation();
+"""
+
 
 def _checksum(version: int) -> str:
-    sql = {1:migration_v1_sql,2:migration_v2_sql,3:migration_v3_sql,4:migration_v4_sql,5:migration_v5_sql}[version]("nurion_pg_checksum")
+    sql = {1:migration_v1_sql,2:migration_v2_sql,3:migration_v3_sql,4:migration_v4_sql,5:migration_v5_sql,6:migration_v6_sql}[version]("nurion_pg_checksum")
     return sha256(sql.encode()).hexdigest()
 
 
@@ -116,12 +131,21 @@ INSERT INTO {s}.schema_migrations(version,checksum) VALUES (3,'{_checksum(3)}');
 INSERT INTO {s}.schema_migrations(version,checksum) VALUES (4,'{_checksum(4)}');
 {migration_v5_sql(s)}
 INSERT INTO {s}.schema_migrations(version,checksum) VALUES (5,'{_checksum(5)}');
+{migration_v6_sql(s)}
+INSERT INTO {s}.schema_migrations(version,checksum) VALUES (6,'{_checksum(6)}');
 """
 
 
 def migration_down_sql(schema: str) -> str:
     s = _schema(schema)
-    return f"""DROP TABLE IF EXISTS {s}.provider_webhook_inbox;
+    return f"""DROP TABLE IF EXISTS {s}.payout_approvals;
+DROP TABLE IF EXISTS {s}.payout_requests;
+DROP TABLE IF EXISTS {s}.settlements;
+DROP TABLE IF EXISTS {s}.ledger_entries;
+DROP TABLE IF EXISTS {s}.ledger_journals;
+DROP FUNCTION IF EXISTS {s}.verify_balanced_journal();
+DROP FUNCTION IF EXISTS {s}.reject_ledger_mutation();
+DROP TABLE IF EXISTS {s}.provider_webhook_inbox;
 DROP TABLE IF EXISTS {s}.payment_command_receipts;
 DROP TABLE IF EXISTS {s}.payment_operations;
 DROP TABLE IF EXISTS {s}.payment_intents;
@@ -209,10 +233,10 @@ class PostgresFoundation:
                 self.connection.execute(f"ALTER TABLE {self.schema}.schema_migrations ADD COLUMN checksum char(64)")
                 self.connection.execute(f"UPDATE {self.schema}.schema_migrations SET checksum=%s WHERE version=1", (_checksum(1),))
             rows = dict(self.connection.execute(f"SELECT version,checksum FROM {self.schema}.schema_migrations ORDER BY version").fetchall())
-            unknown = set(rows) - {1, 2, 3, 4, 5}
+            unknown = set(rows) - {1, 2, 3, 4, 5, 6}
             if unknown:
                 raise RuntimeError(f"unsupported database migration versions: {sorted(unknown)}")
-            for version, sql in ((1, migration_v1_sql(self.schema)), (2, migration_v2_sql(self.schema)), (3, migration_v3_sql(self.schema)), (4,migration_v4_sql(self.schema)), (5,migration_v5_sql(self.schema))):
+            for version, sql in ((1, migration_v1_sql(self.schema)), (2, migration_v2_sql(self.schema)), (3, migration_v3_sql(self.schema)), (4,migration_v4_sql(self.schema)), (5,migration_v5_sql(self.schema)), (6,migration_v6_sql(self.schema))):
                 expected = _checksum(version)
                 if version in rows:
                     if rows[version].strip() != expected:
