@@ -1,0 +1,19 @@
+{
+  "schema_version": "auth-rbac-closure-v1",
+  "scope": "AUTHENTICATION_MERCHANT_ISOLATION_RBAC",
+  "required_criteria": [
+    "HASH_ONLY_CREDENTIALS",
+    "CONSTANT_TIME_SECRET_CHECK",
+    "PERSISTENT_PRINCIPAL_RESOLUTION",
+    "MERCHANT_STATUS_ENFORCEMENT",
+    "PRINCIPAL_STATUS_ENFORCEMENT",
+    "EXPLICIT_PERMISSION_MATRIX",
+    "CROSS_TENANT_DENIAL",
+    "KEY_ROTATION_AND_REVOCATION",
+    "DURABLE_ACCESS_AUDIT",
+    "POSTGRES_INTEGRATION_GATE"
+  ],
+  "completion_percent": 100,
+  "plaintext_secret_storage_allowed": false,
+  "cross_tenant_access_allowed": false
+}
