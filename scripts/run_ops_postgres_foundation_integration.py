@@ -56,6 +56,9 @@ def main()->None:
         else:raise AssertionError("changed idempotent request must conflict")
         pending,replayed=service.request("merchant-ci",created.payment_intent_id,PaymentCommand.AUTHORIZE,None,1,"authorize-payment-1")
         assert replayed is False and pending.status.value=="authorization_pending" and pending.version==2
+        try:service.request("merchant-ci",created.payment_intent_id,PaymentCommand.CANCEL,None,2,"cancel-during-authorize")
+        except Exception as exc:assert getattr(exc,"code",None)=="INVALID_PAYMENT_STATE"
+        else:raise AssertionError("cancel must not overtake an in-flight authorization")
         operation_id=str(connection.execute(f"SELECT operation_id FROM {SCHEMA}.payment_operations WHERE payment_intent_id=%s",(created.payment_intent_id,)).fetchone()[0])
         authorized=payments.apply_provider_result("merchant-ci",created.payment_intent_id,operation_id,True)
         assert authorized.status.value=="authorized" and authorized.authorized_amount==12500 and authorized.version==3
@@ -67,7 +70,9 @@ def main()->None:
         refund_operation=str(connection.execute(f"SELECT operation_id FROM {SCHEMA}.payment_operations WHERE payment_intent_id=%s AND operation_type='refund'",(created.payment_intent_id,)).fetchone()[0])
         refunded=payments.apply_provider_result("merchant-ci",created.payment_intent_id,refund_operation,True)
         assert refund.status.value=="refund_pending" and refunded.status.value=="partially_refunded" and refunded.refunded_amount==2000
-        assert connection.execute(f"SELECT count(*) FROM {SCHEMA}.outbox_events WHERE aggregate_type='payment_intent'").fetchone()[0]==4
+        events=connection.execute(f"SELECT event_type FROM {SCHEMA}.outbox_events WHERE aggregate_type='payment_intent' ORDER BY created_at,event_id").fetchall()
+        assert len(events)==7
+        assert {row[0] for row in events} >= {"payment_intent.authorize_succeeded","payment_intent.capture_succeeded","payment_intent.refund_succeeded"}
         barrier=Barrier(2)
         def concurrent_create():
             worker=psycopg.connect(connect_timeout=5,autocommit=True)
