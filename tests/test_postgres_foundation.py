@@ -13,7 +13,8 @@ class PostgresMigrationContractTests(unittest.TestCase):
         self.assertIn("lease_owner",sql)
         for table in ("payment_intents","payment_operations","payment_command_receipts"):
             self.assertIn(table,sql)
-        self.assertEqual(MIGRATION_VERSION,5)
+        self.assertEqual(MIGRATION_VERSION,6)
+        for table in ("ledger_journals","ledger_entries","settlements","payout_requests"):self.assertIn(table,sql)
         self.assertIn("provider_webhook_inbox",sql)
 
     def test_schema_identifier_is_fail_closed(self):

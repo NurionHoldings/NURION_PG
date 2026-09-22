@@ -8,6 +8,9 @@ from nurion_pg.payments import PaymentCommand,PaymentService
 from nurion_pg.storage.payment_repository import PostgresPaymentRepository
 from nurion_pg.storage.webhook_repository import PostgresWebhookRepository
 from nurion_pg.webhook_reconciliation import WebhookEvidence
+from nurion_pg.ledger import capture_journal,refund_journal,reversal,SettlementState,LedgerError
+from nurion_pg.storage.ledger_repository import PostgresLedgerRepository,PostgresSettlementRepository
+from uuid import uuid4
 
 
 SCHEMA="nurion_pg_ops_e03_ci"
@@ -25,7 +28,7 @@ def main()->None:
             connection.execute(f"INSERT INTO {SCHEMA}.schema_migrations(version) VALUES (1)")
         assert foundation.migrate_up() is True
         assert foundation.migrate_up() is False
-        assert connection.execute(f"SELECT version,length(trim(checksum)) FROM {SCHEMA}.schema_migrations ORDER BY version").fetchall()==[(1,64),(2,64),(3,64),(4,64),(5,64)]
+        assert connection.execute(f"SELECT version,length(trim(checksum)) FROM {SCHEMA}.schema_migrations ORDER BY version").fetchall()==[(1,64),(2,64),(3,64),(4,64),(5,64),(6,64)]
         event_id=foundation.provision_principal("merchant-ci","principal-ci","key-ci",sha256(b"ci-secret").hexdigest(),["merchant_admin"])
         principal=connection.execute(f"SELECT merchant_id,status,roles FROM {SCHEMA}.principals WHERE principal_id='principal-ci'").fetchone()
         event=connection.execute(f"SELECT aggregate_id,event_type,payload,published_at FROM {SCHEMA}.outbox_events WHERE event_id=%s",(event_id,)).fetchone()
@@ -104,6 +107,42 @@ def main()->None:
         webhook_repo=PostgresWebhookRepository(connection,payments,SCHEMA)
         webhook_repo.quarantine(webhook_results[0][0],"merchant-ci","FAULT_INJECTED_LOOKUP_TIMEOUT")
         assert webhook_repo.approve_retry("merchant-ci",webhook_results[0][0],"operator-ci") is True
+        ledger=PostgresLedgerRepository(connection,SCHEMA);capture=capture_journal(str(uuid4()),"merchant-ci","KRW","capture-ci",10000,500,300)
+        assert ledger.post(capture)[1] is False and ledger.post(capture)[1] is True and ledger.balance("merchant-ci","KRW","merchant_payable")==9200
+        concurrent_journal=capture_journal(str(uuid4()),"merchant-ci","KRW","capture-concurrent",1000,50,30);barrier=Barrier(2)
+        def concurrent_post():
+            worker=psycopg.connect(connect_timeout=5,autocommit=True)
+            try:barrier.wait();return PostgresLedgerRepository(worker,SCHEMA).post(concurrent_journal)
+            finally:worker.close()
+        with ThreadPoolExecutor(max_workers=2) as pool:posted=list(pool.map(lambda _:concurrent_post(),range(2)))
+        assert sorted(x[1] for x in posted)==[False,True]
+        try:
+            with connection.transaction():
+                bad=str(uuid4());connection.execute(f"INSERT INTO {SCHEMA}.ledger_journals(journal_id,merchant_id,currency,kind,reference_id,journal_digest) VALUES (%s,'merchant-ci','KRW','fault','partial-failure',%s)",(bad,"0"*64));connection.execute(f"INSERT INTO {SCHEMA}.ledger_entries(journal_id,sequence,account,side,amount) VALUES (%s,1,'provider_receivable','debit',999)",(bad,))
+        except psycopg.errors.RaiseException:pass
+        else:raise AssertionError("partial unbalanced journal must rollback")
+        assert connection.execute(f"SELECT count(*) FROM {SCHEMA}.ledger_journals WHERE reference_id='partial-failure'").fetchone()[0]==0
+        correction=reversal(str(uuid4()),capture);ledger.post(correction);ledger.post(capture_journal(str(uuid4()),"merchant-ci","KRW","capture-ci-corrected",10000,400,300))
+        try:connection.execute(f"UPDATE {SCHEMA}.ledger_entries SET amount=1 WHERE journal_id=%s",(capture.journal_id,))
+        except psycopg.errors.RaiseException:pass
+        else:raise AssertionError("ledger mutation must fail")
+        settlements=PostgresSettlementRepository(connection,SCHEMA);sid=str(uuid4());settlements.create_draft(sid,"merchant-ci","KRW","2026-09-01","2026-09-30",9300,300)
+        assert settlements.transition(sid,"merchant-ci",SettlementState.REVIEW,1)=="review"
+        assert settlements.transition(sid,"merchant-ci",SettlementState.APPROVED,2,reconciliation_difference=1)=="held"
+        assert settlements.transition(sid,"merchant-ci",SettlementState.ADJUSTED,3)=="adjusted" and settlements.transition(sid,"merchant-ci",SettlementState.REVIEW,4)=="review"
+        assert settlements.transition(sid,"merchant-ci",SettlementState.APPROVED,5)=="approved" and settlements.transition(sid,"merchant-ci",SettlementState.PAYABLE,6)=="payable"
+        pid=str(uuid4());settlements.create_payout(pid,sid,"merchant-ci","KRW",1000,"requester","payout-ci",{"payout_requester"})
+        try:settlements.create_payout(str(uuid4()),sid,"merchant-ci","KRW",9000,"requester","payout-over-settlement",{"payout_requester"})
+        except LedgerError:pass
+        else:raise AssertionError("payout must not exceed settlement remainder")
+        try:settlements.approve_payout(pid,"merchant-ci","requester",{"payout_approver"})
+        except LedgerError:pass
+        else:raise AssertionError("self approval must fail")
+        assert settlements.approve_payout(pid,"merchant-ci","approver-1",{"payout_approver"})=="pending_approval"
+        assert settlements.approve_payout(pid,"merchant-ci","approver-2",{"payout_approver"})=="approved"
+        try:settlements.mark_paid(pid)
+        except LedgerError:pass
+        else:raise AssertionError("live payout must remain blocked")
         barrier=Barrier(2)
         def concurrent_claim(worker_id):
             worker=psycopg.connect(connect_timeout=5,autocommit=True)
