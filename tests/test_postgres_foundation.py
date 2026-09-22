@@ -1,5 +1,5 @@
 import unittest
-from nurion_pg.storage.postgres import PostgresFoundation,migration_down_sql,migration_up_sql
+from nurion_pg.storage.postgres import MIGRATION_VERSION,OutboxRepository,PostgresFoundation,migration_down_sql,migration_up_sql
 
 
 class PostgresMigrationContractTests(unittest.TestCase):
@@ -9,6 +9,9 @@ class PostgresMigrationContractTests(unittest.TestCase):
             self.assertIn(table,sql)
         self.assertIn("WHERE published_at IS NULL",sql)
         self.assertIn("REFERENCES nurion_pg_test.merchants",sql)
+        self.assertIn("available_at",sql)
+        self.assertIn("lease_owner",sql)
+        self.assertEqual(MIGRATION_VERSION,2)
 
     def test_schema_identifier_is_fail_closed(self):
         for value in ("", "Public", "bad-name", "x; DROP SCHEMA public"):
@@ -22,6 +25,12 @@ class PostgresMigrationContractTests(unittest.TestCase):
     def test_foundation_rejects_implicit_transaction_connections(self):
         connection=type("Connection",(),{"autocommit":False})()
         with self.assertRaises(ValueError):PostgresFoundation(connection)
+
+    def test_outbox_rejects_unsafe_parameters(self):
+        repository=OutboxRepository(type("Connection",(),{"autocommit":True})())
+        for args in (("",1,60),("worker",0,60),("worker",1001,60),("worker",1,0)):
+            with self.assertRaises(ValueError):repository.claim(*args)
+        with self.assertRaises(ValueError):repository.mark_failed("event","worker","",30)
 
 
 if __name__=="__main__":unittest.main()

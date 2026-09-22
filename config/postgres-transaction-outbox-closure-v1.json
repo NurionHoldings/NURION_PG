@@ -1,0 +1,12 @@
+{
+  "contract": "postgres-transaction-outbox-closure-v1",
+  "completion_percent": 100,
+  "criteria": [
+    "sequential-migrations", "advisory-lock", "checksum-drift-rejection",
+    "explicit-transactions", "atomic-domain-and-outbox-write", "skip-locked-claim",
+    "bounded-lease-recovery", "owner-guarded-transition", "retry-scheduling",
+    "ephemeral-postgresql-integration"
+  ],
+  "production_deployment_authorized": false,
+  "financial_operations_authorized": false
+}
