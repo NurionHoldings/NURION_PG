@@ -23,7 +23,7 @@ def main()->None:
             connection.execute(f"INSERT INTO {SCHEMA}.schema_migrations(version) VALUES (1)")
         assert foundation.migrate_up() is True
         assert foundation.migrate_up() is False
-        assert connection.execute(f"SELECT version,length(trim(checksum)) FROM {SCHEMA}.schema_migrations ORDER BY version").fetchall()==[(1,64),(2,64),(3,64)]
+        assert connection.execute(f"SELECT version,length(trim(checksum)) FROM {SCHEMA}.schema_migrations ORDER BY version").fetchall()==[(1,64),(2,64),(3,64),(4,64)]
         event_id=foundation.provision_principal("merchant-ci","principal-ci","key-ci",sha256(b"ci-secret").hexdigest(),["merchant_admin"])
         principal=connection.execute(f"SELECT merchant_id,status,roles FROM {SCHEMA}.principals WHERE principal_id='principal-ci'").fetchone()
         event=connection.execute(f"SELECT aggregate_id,event_type,payload,published_at FROM {SCHEMA}.outbox_events WHERE event_id=%s",(event_id,)).fetchone()
@@ -60,8 +60,13 @@ def main()->None:
         except Exception as exc:assert getattr(exc,"code",None)=="INVALID_PAYMENT_STATE"
         else:raise AssertionError("cancel must not overtake an in-flight authorization")
         operation_id=str(connection.execute(f"SELECT operation_id FROM {SCHEMA}.payment_operations WHERE payment_intent_id=%s",(created.payment_intent_id,)).fetchone()[0])
-        authorized=payments.apply_provider_result("merchant-ci",created.payment_intent_id,operation_id,True)
+        payments.bind_provider_payment_key("merchant-ci",operation_id,"sandbox-payment-key")
+        provider_command=payments.operation_for_provider("merchant-ci",operation_id)
+        assert provider_command.amount==12500 and provider_command.payment_key=="sandbox-payment-key" and provider_command.order_id=="order-ci"
+        authorized=payments.apply_provider_result("merchant-ci",created.payment_intent_id,operation_id,True,provider_name="toss_payments",provider_payment_key="sandbox-payment-key",provider_status="DONE")
         assert authorized.status.value=="authorized" and authorized.authorized_amount==12500 and authorized.version==3
+        provider_row=connection.execute(f"SELECT provider_name,provider_payment_key,provider_status FROM {SCHEMA}.payment_operations WHERE operation_id=%s",(operation_id,)).fetchone()
+        assert provider_row==("toss_payments","sandbox-payment-key","DONE")
         capture,_=service.request("merchant-ci",created.payment_intent_id,PaymentCommand.CAPTURE,5000,3,"capture-payment-1")
         capture_operation=str(connection.execute(f"SELECT operation_id FROM {SCHEMA}.payment_operations WHERE payment_intent_id=%s AND operation_type='capture'",(created.payment_intent_id,)).fetchone()[0])
         captured=payments.apply_provider_result("merchant-ci",created.payment_intent_id,capture_operation,True)

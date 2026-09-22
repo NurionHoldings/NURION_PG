@@ -9,7 +9,7 @@ from typing import Any
 from uuid import uuid4
 
 SCHEMA_NAME = re.compile(r"^[a-z][a-z0-9_]{0,62}$")
-MIGRATION_VERSION = 3
+MIGRATION_VERSION = 4
 MIGRATION_LOCK = 73192003
 
 
@@ -77,9 +77,15 @@ CREATE TABLE {s}.payment_command_receipts (
 );
 """
 
+def migration_v4_sql(schema:str)->str:
+    s=_schema(schema)
+    return f"""ALTER TABLE {s}.payment_operations ADD COLUMN provider_name text, ADD COLUMN provider_payment_key text, ADD COLUMN provider_status text, ADD COLUMN provider_error_code text;
+CREATE INDEX payment_operations_provider_key_idx ON {s}.payment_operations(provider_name,provider_payment_key) WHERE provider_payment_key IS NOT NULL;
+"""
+
 
 def _checksum(version: int) -> str:
-    sql = {1:migration_v1_sql,2:migration_v2_sql,3:migration_v3_sql}[version]("nurion_pg_checksum")
+    sql = {1:migration_v1_sql,2:migration_v2_sql,3:migration_v3_sql,4:migration_v4_sql}[version]("nurion_pg_checksum")
     return sha256(sql.encode()).hexdigest()
 
 
@@ -94,6 +100,8 @@ INSERT INTO {s}.schema_migrations(version,checksum) VALUES (1,'{_checksum(1)}');
 INSERT INTO {s}.schema_migrations(version,checksum) VALUES (2,'{_checksum(2)}');
 {migration_v3_sql(s)}
 INSERT INTO {s}.schema_migrations(version,checksum) VALUES (3,'{_checksum(3)}');
+{migration_v4_sql(s)}
+INSERT INTO {s}.schema_migrations(version,checksum) VALUES (4,'{_checksum(4)}');
 """
 
 
@@ -186,10 +194,10 @@ class PostgresFoundation:
                 self.connection.execute(f"ALTER TABLE {self.schema}.schema_migrations ADD COLUMN checksum char(64)")
                 self.connection.execute(f"UPDATE {self.schema}.schema_migrations SET checksum=%s WHERE version=1", (_checksum(1),))
             rows = dict(self.connection.execute(f"SELECT version,checksum FROM {self.schema}.schema_migrations ORDER BY version").fetchall())
-            unknown = set(rows) - {1, 2, 3}
+            unknown = set(rows) - {1, 2, 3, 4}
             if unknown:
                 raise RuntimeError(f"unsupported database migration versions: {sorted(unknown)}")
-            for version, sql in ((1, migration_v1_sql(self.schema)), (2, migration_v2_sql(self.schema)), (3, migration_v3_sql(self.schema))):
+            for version, sql in ((1, migration_v1_sql(self.schema)), (2, migration_v2_sql(self.schema)), (3, migration_v3_sql(self.schema)), (4,migration_v4_sql(self.schema))):
                 expected = _checksum(version)
                 if version in rows:
                     if rows[version].strip() != expected:
