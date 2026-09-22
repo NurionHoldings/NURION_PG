@@ -1,4 +1,4 @@
-# OPS-E03 — Operational PostgreSQL foundation
+# OPS-E03 — PostgreSQL, transaction, and Outbox closure (100%)
 
 ## Delivered boundary
 
@@ -10,6 +10,8 @@ The migration creates:
 - `merchants`, `principals`, and hash-only `api_keys` with foreign keys and status constraints;
 - append-oriented `access_audit` metadata;
 - transactional `outbox_events` with an unpublished partial index.
+- immutable migration checksums and v1→v2 upgrades;
+- lease, retry, attempt, and error metadata for reliable dispatch.
 
 ## Guarantees
 
@@ -20,17 +22,19 @@ The migration creates:
 - A uniqueness or constraint failure rolls the entire provisioning transaction back.
 - Rollback removes dependent tables in foreign-key-safe order and then removes the isolated schema.
 - Schema identifiers are strictly validated before interpolation; record values use bound parameters.
+- Concurrent workers claim disjoint batches with `FOR UPDATE SKIP LOCKED`.
+- Publish and failure transitions require lease ownership; expired leases are recoverable.
 
 ## CI proof
 
 `scripts/run_ops_postgres_foundation_integration.py` uses the ephemeral PostgreSQL service to prove:
 
-1. clean rollback and fresh migration;
-2. idempotent reapplication;
-3. atomic principal provisioning and outbox creation;
-4. full rollback after a duplicate-principal failure;
-5. schema removal by the down migration.
+1. historical v1 to v2 upgrade and idempotent reapplication;
+2. atomic principal provisioning and outbox creation;
+3. full rollback after a duplicate-principal failure;
+4. disjoint worker claims, retry/requeue, ownership enforcement, and idempotent publish;
+5. checksum-drift rejection and schema removal by the down migration.
 
 ## Safety and next gate
 
-No route writes these tables yet, no plaintext API key is persisted, and no payment state exists. OPS-E04 may build Payment Intent APIs only after wiring runtime connection lifecycle, repository error mapping, idempotency storage, and tenant-scoped queries onto this foundation.
+No plaintext API key is persisted and no payment state exists. This closure proves the database and delivery mechanics; it does not authorize production deployment or financial operations.
