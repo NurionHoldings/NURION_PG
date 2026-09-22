@@ -17,6 +17,7 @@ from .auth import ApiKeyRegistry,Authenticator,Permission,Principal,authorize
 from .settings import Settings
 from nurion_pg.payments import PaymentCommand,PaymentProblem,PaymentService
 from nurion_pg.observability import MetricsRegistry,structured_log
+from nurion_pg.operations import LimitedOperationPolicy,PostgresOperationsRepository
 
 correlation_id_var:ContextVar[str]=ContextVar("correlation_id",default="")
 LOGGER=logging.getLogger("nurion_pg.api")
@@ -47,7 +48,7 @@ class PaymentCommandRequest(BaseModel):
     amount:int|None=None
 
 
-def create_app(settings:Settings|None=None,api_key_registry:Authenticator|None=None,payment_service:PaymentService|None=None)->FastAPI:
+def create_app(settings:Settings|None=None,api_key_registry:Authenticator|None=None,payment_service:PaymentService|None=None,operations_repository=None)->FastAPI:
     runtime=settings or Settings.from_env();_configure_logging(runtime.log_level)
     registry=api_key_registry or ApiKeyRegistry.from_json(runtime.api_keys_json)
     @asynccontextmanager
@@ -62,12 +63,13 @@ def create_app(settings:Settings|None=None,api_key_registry:Authenticator|None=N
             PostgresFoundation(connection,runtime.database_schema).migrate_up()
             application.state.api_key_registry=PostgresAuthRepository(connection,runtime.database_schema)
             application.state.payment_service=PaymentService(PostgresPaymentRepository(connection,runtime.database_schema))
+            application.state.operations_repository=PostgresOperationsRepository(connection,runtime.database_schema)
         try:yield
         finally:
             if connection is not None:connection.close()
     app=FastAPI(title="NURION PG API",version="0.1.0",docs_url="/docs" if runtime.environment!="production" else None,redoc_url=None,lifespan=lifespan)
     durable_ready=bool(runtime.database_url or payment_service is not None)
-    app.state.settings=runtime;app.state.ready=runtime.environment in {"development","test"} or durable_ready;app.state.api_key_registry=registry;app.state.payment_service=payment_service;app.state.metrics=MetricsRegistry()
+    app.state.settings=runtime;app.state.ready=runtime.environment in {"development","test"} or durable_ready;app.state.api_key_registry=registry;app.state.payment_service=payment_service;app.state.operations_repository=operations_repository;app.state.metrics=MetricsRegistry();app.state.limited_policy=LimitedOperationPolicy.from_values(runtime.limited_operation_enabled,runtime.limited_operation_merchants,runtime.limited_operation_max_amount,runtime.limited_operation_approval_sha256)
 
     @app.middleware("http")
     async def request_context(request:Request,call_next):
@@ -141,6 +143,27 @@ def create_app(settings:Settings|None=None,api_key_registry:Authenticator|None=N
             raise AuthError(403,"METRICS_READ_DENIED","Audit read permission is required")
         audit(principal,"metrics:read","allowed");return principal
 
+    def operations_reader(merchant_id:str,principal:Principal=Depends(current_principal))->Principal:
+        if not authorize(principal,Permission.AUDIT_READ,merchant_id):
+            audit(principal,"operations:read","denied",merchant_id)
+            raise AuthError(403,"OPERATIONS_READ_DENIED","Audit read permission is required for this merchant")
+        audit(principal,"operations:read","allowed",merchant_id);return principal
+
+    def operations_writer(merchant_id:str,principal:Principal=Depends(current_principal))->Principal:
+        if not authorize(principal,Permission.OPERATIONS_WRITE,merchant_id):
+            audit(principal,"operations:write","denied",merchant_id)
+            raise AuthError(403,"OPERATIONS_WRITE_DENIED","Operations write permission is required for this merchant")
+        audit(principal,"operations:write","allowed",merchant_id);return principal
+
+    def ops_repository():
+        if app.state.operations_repository is None:raise AuthError(503,"OPERATIONS_STORAGE_UNAVAILABLE","Operations storage is unavailable")
+        return app.state.operations_repository
+
+    def require_limited(merchant_id:str,amount:int|None=None)->None:
+        if runtime.environment=="production":
+            try:app.state.limited_policy.require(merchant_id,amount)
+            except PermissionError as exc:raise AuthError(403,"LIMITED_OPERATION_DENIED",str(exc)) from exc
+
     def payments()->PaymentService:
         if app.state.payment_service is None:raise PaymentProblem(503,"PAYMENT_STORAGE_UNAVAILABLE","Payment storage is unavailable")
         return app.state.payment_service
@@ -159,6 +182,28 @@ def create_app(settings:Settings|None=None,api_key_registry:Authenticator|None=N
     @app.get("/runtime/info",include_in_schema=False)
     async def runtime_info():return runtime.public_view()
 
+    @app.get("/v1/operations/readiness")
+    async def operation_readiness(principal:Principal=Depends(current_principal)):
+        if not authorize(principal,Permission.AUDIT_READ):raise AuthError(403,"OPERATIONS_READ_DENIED","Audit read permission is required")
+        return app.state.limited_policy.public_view()
+
+    @app.get("/v1/merchants/{merchant_id}/operations/payments")
+    async def operation_payments(merchant_id:str,status:str|None=None,limit:int=50,_principal:Principal=Depends(operations_reader),repo=Depends(ops_repository)):return {"items":repo.payments(merchant_id,status,limit)}
+
+    @app.get("/v1/merchants/{merchant_id}/operations/webhooks")
+    async def operation_webhooks(merchant_id:str,state:str="quarantined",limit:int=50,_principal:Principal=Depends(operations_reader),repo=Depends(ops_repository)):return {"items":repo.webhooks(merchant_id,state,limit)}
+
+    @app.post("/v1/merchants/{merchant_id}/operations/webhooks/{inbox_id}/retry")
+    async def retry_webhook(merchant_id:str,inbox_id:str,principal:Principal=Depends(operations_writer),repo=Depends(ops_repository)):
+        if not repo.approve_webhook_retry(merchant_id,inbox_id,principal.principal_id,correlation_id_var.get()):raise AuthError(409,"WEBHOOK_NOT_QUARANTINED","Webhook is not available for retry")
+        return {"status":"pending","inbox_id":inbox_id}
+
+    @app.get("/v1/merchants/{merchant_id}/operations/settlements")
+    async def operation_settlements(merchant_id:str,state:str|None=None,limit:int=50,_principal:Principal=Depends(operations_reader),repo=Depends(ops_repository)):return {"items":repo.settlements(merchant_id,state,limit)}
+
+    @app.get("/v1/merchants/{merchant_id}/operations/audit")
+    async def operation_audit(merchant_id:str,limit:int=100,_principal:Principal=Depends(operations_reader),repo=Depends(ops_repository)):return {"items":repo.audits(merchant_id,limit)}
+
     @app.get("/metrics",include_in_schema=False)
     async def metrics(_principal:Principal=Depends(metrics_reader)):return PlainTextResponse(app.state.metrics.render(),media_type="text/plain; version=0.0.4")
 
@@ -172,6 +217,7 @@ def create_app(settings:Settings|None=None,api_key_registry:Authenticator|None=N
 
     @app.post("/v1/merchants/{merchant_id}/payment-intents")
     async def create_payment_intent(merchant_id:str,body:PaymentIntentCreate,idempotency_key:str|None=Header(default=None,alias="Idempotency-Key"),_principal:Principal=Depends(merchant_writer),service:PaymentService=Depends(payments)):
+        require_limited(merchant_id,body.amount)
         intent,replayed=service.create(merchant_id,body.amount,body.currency,idempotency_key or "",body.external_reference,body.metadata)
         return JSONResponse(status_code=200 if replayed else 201,content=intent.public_view(),headers={"idempotent-replay":"true" if replayed else "false"})
 
@@ -180,6 +226,7 @@ def create_app(settings:Settings|None=None,api_key_registry:Authenticator|None=N
         return service.get(merchant_id,payment_intent_id).public_view()
 
     async def command_payment(merchant_id:str,payment_intent_id:str,command:PaymentCommand,body:PaymentCommandRequest,idempotency_key:str|None,service:PaymentService):
+        require_limited(merchant_id,body.amount)
         intent,replayed=service.request(merchant_id,payment_intent_id,command,body.amount,body.expected_version,idempotency_key or "")
         return JSONResponse(status_code=200 if replayed else 202,content=intent.public_view(),headers={"idempotent-replay":"true" if replayed else "false"})
 
