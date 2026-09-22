@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="NURION PG 게스트 운영 콘솔 체험">
+  <title>NURION PG · 게스트 콘솔</title>
+  <link rel="stylesheet" href="/guest/assets/styles.css"><script src="/guest/assets/app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">본문으로 바로가기</a>
+<div class="shell">
+  <aside class="sidebar" aria-label="주요 메뉴">
+    <a class="brand" href="/guest" aria-label="NURION PG 홈"><span>N</span><strong>NURION<small>PAYMENT GRID</small></strong></a>
+    <nav><a class="active" href="/guest" aria-current="page"><i>⌂</i>개요</a><a href="#payments"><i>↗</i>결제</a><a href="#settlement"><i>≋</i>정산</a><a href="#risk"><i>◇</i>위험 관리</a><a href="#developers"><i>{ }</i>개발자</a></nav>
+    <div class="side-foot"><span class="pulse"></span><div><b>데모 시스템 정상</b><small>실제 거래와 분리됨</small></div></div>
+  </aside>
+  <main id="content">
+    <header><button class="menu" type="button" aria-label="메뉴 열기" aria-expanded="false">☰</button><div class="environment"><span>체험 환경</span> 합성 데이터 전용</div><div class="head-actions"><button class="auth-preview" type="button" data-dialog="commercial">로그인·회원가입</button><button class="icon-button" type="button" aria-label="합성 알림 2건">○<b>2</b></button><button class="guest-chip" type="button" data-dialog="guest"><span>G</span><span>게스트<small>읽기 전용</small></span></button></div></header>
+    <section class="notice" role="status"><b>게스트 분석 모드</b><span>화면의 모든 거래는 가상 예시입니다. 실제 결제·고객·가맹점 정보에는 접근하지 않습니다.</span><button type="button" data-dialog="access">권한 범위</button></section>
+    <section class="hero"><div><p class="eyebrow">TODAY · SYNTHETIC OVERVIEW</p><h1>결제 흐름을 한눈에<br><em>안전하게 탐색하세요.</em></h1><p>승인부터 정산까지 운영 구조를 체험할 수 있습니다.</p></div><div class="hero-actions"><button class="secondary" type="button" data-dialog="report">분석 리포트</button><button class="primary" type="button" disabled title="게스트는 결제를 만들 수 없습니다">＋ 결제 생성 <span>잠김</span></button></div></section>
+    <section class="metrics" aria-label="주요 지표">
+      <article><div><span>오늘 거래액</span><b class="good">+12.8%</b></div><strong>₩128,460,000</strong><small>어제 대비 <b>₩14.5M 증가</b></small><svg viewBox="0 0 120 28" aria-hidden="true"><path d="M1 25 C20 19 27 24 40 15 S63 19 74 10 S98 14 119 2"/></svg></article>
+      <article><div><span>승인율</span><b class="good">+0.6%</b></div><strong>98.42%</strong><small>목표 기준 97.5%</small><div class="bar"><i class="approval-rate"></i></div></article>
+      <article><div><span>거래 건수</span><b class="good">+8.2%</b></div><strong>2,847건</strong><small>평균 객단가 ₩45,121</small><div class="mini-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></article>
+      <article><div><span>주의 필요</span><b class="warn">확인</b></div><strong>3건</strong><small>결제 2 · 웹훅 1</small><a href="#risk">검토 항목 보기 →</a></article>
+    </section>
+    <section class="workspace" id="payments">
+      <article class="panel chart-panel"><div class="panel-title"><div><h2>거래 추이</h2><p>최근 7일 · 가상 데이터</p></div><div class="legend"><span><i></i>거래액</span><span><i></i>승인</span></div></div><div class="chart" aria-label="최근 7일 거래액 추이 그래프"><div class="y-labels"><span>₩30M</span><span>₩20M</span><span>₩10M</span><span>₩0</span></div><svg viewBox="0 0 700 210" preserveAspectRatio="none" role="img" aria-label="완만하게 상승하는 거래액"><defs><linearGradient id="fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#73b8ff" stop-opacity=".26"/><stop offset="1" stop-color="#73b8ff" stop-opacity="0"/></linearGradient></defs><path class="area" d="M0 172 C55 158 80 168 120 136 S205 145 250 118 S335 135 382 88 S465 108 514 70 S600 79 700 30 L700 210 L0 210Z"/><path class="line" d="M0 172 C55 158 80 168 120 136 S205 145 250 118 S335 135 382 88 S465 108 514 70 S600 79 700 30"/></svg><div class="x-labels"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span>일</span></div></div></article>
+      <article class="panel status-panel"><div class="panel-title"><div><h2>결제 상태</h2><p>오늘 2,847건</p></div><button type="button" class="more" aria-label="결제 상태 도움말" data-dialog="status">•••</button></div><div class="donut" aria-label="승인 93.7%, 처리 중 4.2%, 실패 2.1%"><div><strong>93.7%</strong><small>정상 승인</small></div></div><ul><li><i class="blue"></i><span>승인</span><b>2,668</b><small>93.7%</small></li><li><i class="cyan"></i><span>처리 중</span><b>119</b><small>4.2%</small></li><li><i class="red"></i><span>실패</span><b>60</b><small>2.1%</small></li></ul></article>
+    </section>
+    <section class="panel recent"><div class="panel-title"><div><h2>최근 결제</h2><p>선택하면 합성 거래의 상세 흐름을 확인합니다.</p></div><label class="search"><span>⌕</span><input type="search" placeholder="주문·결제 ID 검색" aria-label="최근 결제 검색"></label></div><div class="table-wrap"><table><thead><tr><th>결제 ID</th><th>가상 고객</th><th>결제수단</th><th>금액</th><th>상태</th><th>시간</th><th><span class="sr-only">상세</span></th></tr></thead><tbody id="payment-rows"></tbody></table><p class="empty" hidden>검색 결과가 없습니다.</p></div></section>
+    <section class="preview-grid" aria-label="운영 전 구간 미리보기"><article class="panel" id="settlement"><p class="eyebrow">SETTLEMENT</p><h2>정산 흐름</h2><p>가상 정산 주기, 보류 사유와 지급 준비 상태를 읽기 전용으로 분석합니다.</p><span class="preview-state">합성 정산 4건</span></article><article class="panel" id="risk"><p class="eyebrow">RISK CONTROL</p><h2>위험 관리</h2><p>실패 결제와 격리 Webhook의 검토 흐름을 실행 없이 확인합니다.</p><span class="preview-state warn-state">검토 예시 3건</span></article><article class="panel" id="developers"><p class="eyebrow">DEVELOPERS</p><h2>개발자 연동</h2><p>멱등성, 서명 검증과 오류계약을 비밀키가 없는 예시로 안내합니다.</p><span class="preview-state">API 예시 전용</span></article></section>
+    <footer><span>NURION PG Preview · Synthetic data only</span><span>접근성 · 개인정보 보호 · 보안 설계</span></footer>
+  </main>
+</div>
+<dialog><button class="dialog-close" type="button" aria-label="닫기">×</button><h2></h2><div class="dialog-copy"></div></dialog>
+</body></html>

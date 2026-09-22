@@ -1,0 +1,185 @@
+from __future__ import annotations
+from hashlib import sha256
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
+import psycopg
+from nurion_pg.storage.postgres import OutboxRepository,PostgresFoundation,migration_v1_sql
+from nurion_pg.payments import PaymentCommand,PaymentService
+from nurion_pg.storage.payment_repository import PostgresPaymentRepository
+from nurion_pg.storage.webhook_repository import PostgresWebhookRepository
+from nurion_pg.webhook_reconciliation import WebhookEvidence
+from nurion_pg.ledger import capture_journal,refund_journal,reversal,SettlementState,LedgerError
+from nurion_pg.storage.ledger_repository import PostgresLedgerRepository,PostgresSettlementRepository
+from uuid import uuid4
+from nurion_pg.payment_runtime import PaymentOperationWorker,ProviderCallbackBoundary
+from nurion_pg.providers import ProviderResult,ProviderDisposition
+
+
+SCHEMA="nurion_pg_ops_e03_ci"
+
+
+def main()->None:
+    connection=psycopg.connect(connect_timeout=5,autocommit=True)
+    foundation=PostgresFoundation(connection,SCHEMA)
+    foundation.rollback()
+    try:
+        with connection.transaction():
+            connection.execute(f"CREATE SCHEMA {SCHEMA}")
+            connection.execute(f"CREATE TABLE {SCHEMA}.schema_migrations (version integer PRIMARY KEY,applied_at timestamptz NOT NULL DEFAULT now())")
+            connection.execute(migration_v1_sql(SCHEMA))
+            connection.execute(f"INSERT INTO {SCHEMA}.schema_migrations(version) VALUES (1)")
+        assert foundation.migrate_up() is True
+        assert foundation.migrate_up() is False
+        assert connection.execute(f"SELECT version,length(trim(checksum)) FROM {SCHEMA}.schema_migrations ORDER BY version").fetchall()==[(1,64),(2,64),(3,64),(4,64),(5,64),(6,64),(7,64)]
+        event_id=foundation.provision_principal("merchant-ci","principal-ci","key-ci",sha256(b"ci-secret").hexdigest(),["merchant_admin"])
+        principal=connection.execute(f"SELECT merchant_id,status,roles FROM {SCHEMA}.principals WHERE principal_id='principal-ci'").fetchone()
+        event=connection.execute(f"SELECT aggregate_id,event_type,payload,published_at FROM {SCHEMA}.outbox_events WHERE event_id=%s",(event_id,)).fetchone()
+        assert principal[0:2]==("merchant-ci","active")
+        assert principal[2]==["merchant_admin"]
+        assert event[0:2]==("principal-ci","principal.provisioned") and event[3] is None
+        try:
+            foundation.provision_principal("merchant-rollback","principal-ci","key-rollback",sha256(b"other").hexdigest(),["auditor"])
+        except psycopg.errors.UniqueViolation:pass
+        else:raise AssertionError("duplicate principal must fail")
+        assert connection.execute(f"SELECT count(*) FROM {SCHEMA}.merchants WHERE merchant_id='merchant-rollback'").fetchone()[0]==0
+        repository=OutboxRepository(connection,SCHEMA)
+        foundation.provision_principal("merchant-ci-2","principal-ci-2","key-ci-2",sha256(b"ci-secret-2").hexdigest(),["auditor"])
+        first=repository.claim("worker-a",1);second=repository.claim("worker-b",1)
+        assert len(first)==len(second)==1 and first[0].event_id!=second[0].event_id
+        assert repository.mark_published(first[0].event_id,"worker-b") is False
+        assert repository.mark_published(first[0].event_id,"worker-a") is True
+        assert repository.mark_published(first[0].event_id,"worker-a") is False
+        assert repository.mark_failed(second[0].event_id,"worker-b","temporary",0) is True
+        retry=repository.claim("worker-c",1)
+        assert retry[0].event_id==second[0].event_id and retry[0].attempt_count==2
+        assert repository.mark_published(retry[0].event_id,"worker-c") is True
+        payments=PostgresPaymentRepository(connection,SCHEMA);service=PaymentService(payments)
+        created,replayed=service.create("merchant-ci",12500,"KRW","create-payment-1","order-ci",{"channel":"test"})
+        assert replayed is False and created.version==1 and created.status.value=="requires_authorization"
+        same,replayed=service.create("merchant-ci",12500,"KRW","create-payment-1","order-ci",{"channel":"test"})
+        assert replayed is True and same.payment_intent_id==created.payment_intent_id
+        try:service.create("merchant-ci",13000,"KRW","create-payment-1","order-ci",{})
+        except Exception as exc:assert getattr(exc,"code",None)=="IDEMPOTENCY_CONFLICT"
+        else:raise AssertionError("changed idempotent request must conflict")
+        pending,replayed=service.request("merchant-ci",created.payment_intent_id,PaymentCommand.AUTHORIZE,None,1,"authorize-payment-1")
+        assert replayed is False and pending.status.value=="authorization_pending" and pending.version==2
+        try:service.request("merchant-ci",created.payment_intent_id,PaymentCommand.CANCEL,None,2,"cancel-during-authorize")
+        except Exception as exc:assert getattr(exc,"code",None)=="INVALID_PAYMENT_STATE"
+        else:raise AssertionError("cancel must not overtake an in-flight authorization")
+        operation_id=str(connection.execute(f"SELECT operation_id FROM {SCHEMA}.payment_operations WHERE payment_intent_id=%s",(created.payment_intent_id,)).fetchone()[0])
+        payments.bind_provider_payment_key("merchant-ci",operation_id,"sandbox-payment-key")
+        provider_command=payments.operation_for_provider("merchant-ci",operation_id)
+        assert provider_command.amount==12500 and provider_command.payment_key=="sandbox-payment-key" and provider_command.order_id=="order-ci"
+        authorized=payments.apply_provider_result("merchant-ci",created.payment_intent_id,operation_id,True,provider_name="toss_payments",provider_payment_key="sandbox-payment-key",provider_status="DONE")
+        assert authorized.status.value=="authorized" and authorized.authorized_amount==12500 and authorized.version==3
+        provider_row=connection.execute(f"SELECT provider_name,provider_payment_key,provider_status FROM {SCHEMA}.payment_operations WHERE operation_id=%s",(operation_id,)).fetchone()
+        assert provider_row==("toss_payments","sandbox-payment-key","DONE")
+        capture,_=service.request("merchant-ci",created.payment_intent_id,PaymentCommand.CAPTURE,5000,3,"capture-payment-1")
+        capture_operation=str(connection.execute(f"SELECT operation_id FROM {SCHEMA}.payment_operations WHERE payment_intent_id=%s AND operation_type='capture'",(created.payment_intent_id,)).fetchone()[0])
+        captured=payments.apply_provider_result("merchant-ci",created.payment_intent_id,capture_operation,True)
+        assert capture.status.value=="capture_pending" and captured.status.value=="partially_captured" and captured.captured_amount==5000
+        refund,_=service.request("merchant-ci",created.payment_intent_id,PaymentCommand.REFUND,2000,captured.version,"refund-payment-1")
+        refund_operation=str(connection.execute(f"SELECT operation_id FROM {SCHEMA}.payment_operations WHERE payment_intent_id=%s AND operation_type='refund'",(created.payment_intent_id,)).fetchone()[0])
+        refunded=payments.apply_provider_result("merchant-ci",created.payment_intent_id,refund_operation,True)
+        assert refund.status.value=="refund_pending" and refunded.status.value=="partially_refunded" and refunded.refunded_amount==2000
+        events=connection.execute(f"SELECT event_type FROM {SCHEMA}.outbox_events WHERE aggregate_type='payment_intent' ORDER BY created_at,event_id").fetchall()
+        assert len(events)==7
+        assert {row[0] for row in events} >= {"payment_intent.authorize_succeeded","payment_intent.capture_succeeded","payment_intent.refund_succeeded"}
+        execution_ledger=PostgresLedgerRepository(connection,SCHEMA);runtime_payments=PostgresPaymentRepository(connection,SCHEMA,execution_ledger);runtime_service=PaymentService(runtime_payments)
+        runtime_intent,_=runtime_service.create("merchant-ci",3300,"KRW","runtime-create","runtime-order",{})
+        runtime_service.request("merchant-ci",runtime_intent.payment_intent_id,PaymentCommand.AUTHORIZE,None,1,"runtime-authorize")
+        runtime_op=str(connection.execute(f"SELECT operation_id FROM {SCHEMA}.payment_operations WHERE payment_intent_id=%s",(runtime_intent.payment_intent_id,)).fetchone()[0])
+        ProviderCallbackBoundary(runtime_payments).bind("merchant-ci",runtime_op,"runtime-payment-key","runtime-order",3300,"principal-ci",{"payment_operator"})
+        class TestProvider:
+            name="toss_payments"
+            def execute(self,_):return ProviderResult(ProviderDisposition.SUCCEEDED,"DONE","runtime-payment-key","runtime-order",3300,True)
+            def lookup(self,key):return self.execute(None)
+        barrier=Barrier(2)
+        def concurrent_runtime(worker_id):
+            worker=psycopg.connect(connect_timeout=5,autocommit=True)
+            try:
+                repo=PostgresPaymentRepository(worker,SCHEMA,PostgresLedgerRepository(worker,SCHEMA));barrier.wait();return PaymentOperationWorker(repo,TestProvider(),worker_id).run_once()
+            finally:worker.close()
+        with ThreadPoolExecutor(max_workers=2) as pool:runtime_reports=list(pool.map(concurrent_runtime,("runtime-a","runtime-b")))
+        assert sum(x["completed"] for x in runtime_reports)==1 and execution_ledger.balance("merchant-ci","KRW","merchant_payable")>=3300
+        assert connection.execute(f"SELECT count(*) FROM {SCHEMA}.ledger_journals WHERE reference_id=%s",(runtime_op,)).fetchone()[0]==1
+        barrier=Barrier(2)
+        def concurrent_create():
+            worker=psycopg.connect(connect_timeout=5,autocommit=True)
+            try:
+                barrier.wait()
+                return PaymentService(PostgresPaymentRepository(worker,SCHEMA)).create("merchant-ci",777,"KRW","concurrent-create",None,{})
+            finally:worker.close()
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            results=list(pool.map(lambda _value:concurrent_create(),range(2)))
+        assert results[0][0].payment_intent_id==results[1][0].payment_intent_id
+        assert sorted(result[1] for result in results)==[False,True]
+        webhook=WebhookEvidence("merchant-ci","toss_payments","event-ci","PAYMENT_STATUS_CHANGED","a"*64,"sandbox-payment-key","order-ci","DONE")
+        barrier=Barrier(2)
+        def concurrent_webhook():
+            worker=psycopg.connect(connect_timeout=5,autocommit=True)
+            try:
+                barrier.wait();repo=PostgresWebhookRepository(worker,PostgresPaymentRepository(worker,SCHEMA),SCHEMA)
+                return repo.ingest(webhook,{"paymentKey":"sandbox-payment-key","orderId":"order-ci","status":"DONE"})
+            finally:worker.close()
+        with ThreadPoolExecutor(max_workers=2) as pool:webhook_results=list(pool.map(lambda _:concurrent_webhook(),range(2)))
+        assert webhook_results[0][0]==webhook_results[1][0] and sorted(x[1] for x in webhook_results)==[False,True]
+        webhook_repo=PostgresWebhookRepository(connection,payments,SCHEMA)
+        webhook_repo.quarantine(webhook_results[0][0],"merchant-ci","FAULT_INJECTED_LOOKUP_TIMEOUT")
+        assert webhook_repo.approve_retry("merchant-ci",webhook_results[0][0],"operator-ci") is True
+        ledger=PostgresLedgerRepository(connection,SCHEMA);capture=capture_journal(str(uuid4()),"merchant-ci","KRW","capture-ci",10000,500,300)
+        assert ledger.post(capture)[1] is False and ledger.post(capture)[1] is True and ledger.balance("merchant-ci","KRW","merchant_payable")==12500
+        concurrent_journal=capture_journal(str(uuid4()),"merchant-ci","KRW","capture-concurrent",1000,50,30);barrier=Barrier(2)
+        def concurrent_post():
+            worker=psycopg.connect(connect_timeout=5,autocommit=True)
+            try:barrier.wait();return PostgresLedgerRepository(worker,SCHEMA).post(concurrent_journal)
+            finally:worker.close()
+        with ThreadPoolExecutor(max_workers=2) as pool:posted=list(pool.map(lambda _:concurrent_post(),range(2)))
+        assert sorted(x[1] for x in posted)==[False,True]
+        try:
+            with connection.transaction():
+                bad=str(uuid4());connection.execute(f"INSERT INTO {SCHEMA}.ledger_journals(journal_id,merchant_id,currency,kind,reference_id,journal_digest) VALUES (%s,'merchant-ci','KRW','fault','partial-failure',%s)",(bad,"0"*64));connection.execute(f"INSERT INTO {SCHEMA}.ledger_entries(journal_id,sequence,account,side,amount) VALUES (%s,1,'provider_receivable','debit',999)",(bad,))
+        except psycopg.errors.RaiseException:pass
+        else:raise AssertionError("partial unbalanced journal must rollback")
+        assert connection.execute(f"SELECT count(*) FROM {SCHEMA}.ledger_journals WHERE reference_id='partial-failure'").fetchone()[0]==0
+        correction=reversal(str(uuid4()),capture);ledger.post(correction);ledger.post(capture_journal(str(uuid4()),"merchant-ci","KRW","capture-ci-corrected",10000,400,300))
+        try:connection.execute(f"UPDATE {SCHEMA}.ledger_entries SET amount=1 WHERE journal_id=%s",(capture.journal_id,))
+        except psycopg.errors.RaiseException:pass
+        else:raise AssertionError("ledger mutation must fail")
+        settlements=PostgresSettlementRepository(connection,SCHEMA);sid=str(uuid4());settlements.create_draft(sid,"merchant-ci","KRW","2026-09-01","2026-09-30",9300,300)
+        assert settlements.transition(sid,"merchant-ci",SettlementState.REVIEW,1)=="review"
+        assert settlements.transition(sid,"merchant-ci",SettlementState.APPROVED,2,reconciliation_difference=1)=="held"
+        assert settlements.transition(sid,"merchant-ci",SettlementState.ADJUSTED,3)=="adjusted" and settlements.transition(sid,"merchant-ci",SettlementState.REVIEW,4)=="review"
+        assert settlements.transition(sid,"merchant-ci",SettlementState.APPROVED,5)=="approved" and settlements.transition(sid,"merchant-ci",SettlementState.PAYABLE,6)=="payable"
+        pid=str(uuid4());settlements.create_payout(pid,sid,"merchant-ci","KRW",1000,"requester","payout-ci",{"payout_requester"})
+        try:settlements.create_payout(str(uuid4()),sid,"merchant-ci","KRW",9000,"requester","payout-over-settlement",{"payout_requester"})
+        except LedgerError:pass
+        else:raise AssertionError("payout must not exceed settlement remainder")
+        try:settlements.approve_payout(pid,"merchant-ci","requester",{"payout_approver"})
+        except LedgerError:pass
+        else:raise AssertionError("self approval must fail")
+        assert settlements.approve_payout(pid,"merchant-ci","approver-1",{"payout_approver"})=="pending_approval"
+        assert settlements.approve_payout(pid,"merchant-ci","approver-2",{"payout_approver"})=="approved"
+        try:settlements.mark_paid(pid)
+        except LedgerError:pass
+        else:raise AssertionError("live payout must remain blocked")
+        barrier=Barrier(2)
+        def concurrent_claim(worker_id):
+            worker=psycopg.connect(connect_timeout=5,autocommit=True)
+            try:barrier.wait();return PostgresWebhookRepository(worker,PostgresPaymentRepository(worker,SCHEMA),SCHEMA).claim(worker_id,1)
+            finally:worker.close()
+        with ThreadPoolExecutor(max_workers=2) as pool:claimed=list(pool.map(concurrent_claim,("webhook-a","webhook-b")))
+        assert sorted(len(x) for x in claimed)==[0,1]
+        connection.execute(f"UPDATE {SCHEMA}.schema_migrations SET checksum=%s WHERE version=1",("0"*64,))
+        try:foundation.migrate_up()
+        except RuntimeError:pass
+        else:raise AssertionError("migration checksum drift must fail closed")
+    finally:
+        foundation.rollback();connection.close()
+    verify=psycopg.connect(connect_timeout=5,autocommit=True)
+    assert verify.execute("SELECT 1 FROM pg_namespace WHERE nspname=%s",(SCHEMA,)).fetchone() is None
+    verify.close()
+    print("OPS-E03 PostgreSQL foundation integration: PASS")
+
+
+if __name__=="__main__":main()

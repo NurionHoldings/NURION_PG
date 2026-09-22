@@ -1,0 +1,8 @@
+{
+ "scope":"OPS-E07 ledger settlement payout",
+ "completion_percent":100,
+ "criteria":["append-only journal","per-currency zero balance","minor-unit integers","capture posting","refund posting","PG fee posting","platform fee posting","merchant payable","reversal correction","settlement cycle","pending reserve hold balance","settlement state machine","reconciliation auto hold","payout RBAC boundary","payout idempotency","dual approval","self approval forbidden","bank adapter disconnected","atomic ledger outbox","PostgreSQL concurrency and recovery"],
+ "bank_adapter_connected":false,
+ "live_transfer_executed":false,
+ "production_credentials_configured":false
+}

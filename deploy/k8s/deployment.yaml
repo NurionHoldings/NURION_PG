@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: nurion-pg}
+spec:
+  replicas: 2
+  minReadySeconds: 10
+  progressDeadlineSeconds: 300
+  strategy: {type: RollingUpdate, rollingUpdate: {maxUnavailable: 0, maxSurge: 1}}
+  selector: {matchLabels: {app: nurion-pg}}
+  template:
+    metadata: {labels: {app: nurion-pg}}
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 45
+      securityContext: {runAsNonRoot: true, seccompProfile: {type: RuntimeDefault}}
+      containers:
+        - name: api
+          image: ${NURION_PG_IMAGE_REPOSITORY}@${NURION_PG_IMAGE_DIGEST}
+          imagePullPolicy: IfNotPresent
+          ports: [{name: http, containerPort: 8080}]
+          envFrom: [{secretRef: {name: nurion-pg-runtime}}]
+          securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
+          volumeMounts: [{name: tmp, mountPath: /tmp}]
+          startupProbe: {httpGet: {path: /health/startup, port: http}, failureThreshold: 30, periodSeconds: 2}
+          readinessProbe: {httpGet: {path: /health/ready, port: http}, failureThreshold: 3, periodSeconds: 5}
+          livenessProbe: {httpGet: {path: /health/live, port: http}, failureThreshold: 3, periodSeconds: 10}
+          lifecycle: {preStop: {exec: {command: ["/bin/sh", "-c", "sleep 5"]}}}
+          resources: {requests: {cpu: 100m, memory: 128Mi}, limits: {cpu: "1", memory: 512Mi}}
+      volumes: [{name: tmp, emptyDir: {sizeLimit: 64Mi}}]
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: {name: nurion-pg}
+spec:
+  minAvailable: 1
+  selector: {matchLabels: {app: nurion-pg}}

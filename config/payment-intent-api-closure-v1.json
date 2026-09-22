@@ -1,0 +1,13 @@
+{
+  "contract": "payment-intent-api-closure-v1",
+  "completion_percent": 100,
+  "criteria": [
+    "merchant-isolation", "payment-rbac", "minor-unit-money", "currency-validation",
+    "concurrent-idempotent-create-and-commands", "optimistic-version-control", "state-machine-guards",
+    "capture-and-refund-limits", "atomic-payment-operation-outbox", "provider-success-not-public",
+    "postgresql-roundtrip", "stable-error-contract"
+  ],
+  "external_provider_connected": false,
+  "production_deployment_authorized": false,
+  "financial_operations_authorized": false
+}

@@ -460,6 +460,54 @@
       "ethernian_remediation_reference": "ETH-18301-AUDIT-001",
       "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_postgres_recovery_disposition_proof.py"},
       "revalidation_evidence": {"suite": "tests.test_synthetic_postgres_recovery_disposition_proof", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-18701-001",
+      "discovery_scope": "#18301-#18700 PostgreSQL recovery disposition proof self-audit",
+      "defect_category": "append-only-disposition-supersession-lineage-gap",
+      "root_cause": "the immutable base disposition intentionally allowed only one row per case and therefore had no database-enforced way to record a later independent reconsideration without mutation",
+      "exploit_scenario": "a caller overwrites the base disposition, forks one predecessor, submits against a stale head, aliases a predecessor digest, skips a version, reuses a sequence, or turns a reconsideration record into execution authority",
+      "mandatory_prevention_rules": ["immutable-base-disposition-and-append-only-successors", "exact-base-and-predecessor-composite-foreign-keys", "database-enforced-single-genesis-and-single-successor", "monotonic-version-and-lineage-sequence", "deterministic-domain-separated-supersession-identity", "same-envelope-one-row-convergence", "changed-cross-key-fork-stale-and-alias-fail-closed", "one-derived-current-head-per-case", "inherently-read-only-operator-view-with-dml-rejection", "zero-payment-receipt-retry-approval-execution-authority", "multinode-preflight-preserved-without-overclaim", "narrow-cleanup-and-content-addressed-artifact"],
+      "required_negative_tests": ["test_deterministic_identity_binds_predecessor_payload_and_version", "test_fork_stale_alias_authority_and_overclaim_fail_closed", "test_database_constraints_replace_application_only_race_checks", "test_missing_extra_cleanup_and_prior_mutation_fail_closed", "test_recovery_guidance_complete_and_actionable", "test_multinode_preflight_remains_contract_only"],
+      "ethernian_remediation_reference": "ETH-18701-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_postgres_recovery_supersession_proof.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_postgres_recovery_supersession_proof", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-19101-001",
+      "discovery_scope": "#18701-#19100 PostgreSQL recovery supersession proof self-audit",
+      "defect_category": "current-head-review-snapshot-and-receipt-binding-gap",
+      "root_cause": "the append-only supersession lineage exposed one current head but did not freeze that exact head for an independent review or bind one non-executable review receipt to the frozen snapshot",
+      "exploit_scenario": "a stale head is reviewed, a snapshot is replayed with changed content or another case, a receipt is replaced under a different reviewer or result, or review evidence is treated as payment, approval, retry, or execution authority",
+      "mandatory_prevention_rules": ["exact-current-head-composite-foreign-key-and-insert-trigger", "domain-separated-deterministic-snapshot-and-receipt-identities", "same-envelope-one-row-convergence", "stale-head-changed-payload-and-cross-case-fail-closed", "single-receipt-per-snapshot", "snapshot-and-receipt-append-only", "fresh-read-only-operator-view-with-dml-rejection", "zero-payment-receipt-retry-approval-execution-authority", "multinode-preflight-preserved-without-overclaim", "narrow-cleanup-and-content-addressed-artifact"],
+      "required_negative_tests": ["test_snapshot_identity_binds_exact_current_head", "test_receipt_identity_binds_snapshot_reviewer_and_result", "test_database_constraints_replace_application_only_checks", "test_tamper_authority_and_overclaim_fail_closed", "test_missing_extra_cleanup_and_prior_mutation_fail_closed", "test_recovery_guidance_complete_and_actionable", "test_multinode_preflight_remains_contract_only"],
+      "ethernian_remediation_reference": "ETH-19101-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_postgres_recovery_review_receipt_proof.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_postgres_recovery_review_receipt_proof", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-19501-001",
+      "discovery_scope": "#19101-#19500 PostgreSQL recovery review receipt proof self-audit",
+      "defect_category": "non-executable-recommendation-and-independent-concurrence-gap",
+      "root_cause": "the exact review receipt recorded review completion but did not bind a proposed recovery action and risk assessment to that receipt or preserve independent concurring and conflicting judgments",
+      "exploit_scenario": "a recommendation is attached to another receipt, its action or risk is replaced, its author self-reviews, one reviewer submits conflicting verdicts, disagreement is erased, or non-executable advice is treated as approval or execution authority",
+      "mandatory_prevention_rules": ["exact-review-receipt-composite-foreign-key", "domain-separated-recommendation-and-concurrence-identities", "action-and-risk-digest-binding", "author-reviewer-separation", "one-verdict-per-reviewer-per-recommendation", "conflicting-verdict-preserves-hold", "same-envelope-one-row-convergence", "changed-action-and-cross-receipt-fail-closed", "recommendation-and-concurrence-append-only", "read-only-operator-view-and-zero-authority", "narrow-cleanup-and-content-addressed-artifact"],
+      "required_negative_tests": ["test_recommendation_identity_binds_receipt_author_action_and_risk", "test_concurrence_identity_binds_recommendation_reviewer_verdict_and_rationale", "test_database_constraints_replace_application_only_checks", "test_conflict_authority_and_overclaim_fail_closed", "test_missing_extra_cleanup_and_prior_mutation_fail_closed", "test_recovery_guidance_complete_and_actionable", "test_multinode_preflight_remains_contract_only"],
+      "ethernian_remediation_reference": "ETH-19501-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_postgres_recovery_recommendation_concurrence_proof.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_postgres_recovery_recommendation_concurrence_proof", "result": "PASS"}
+    },
+    {
+      "lesson_id": "ARL-19901-001",
+      "discovery_scope": "#19501-#19900 PostgreSQL recovery recommendation concurrence proof self-audit",
+      "defect_category": "conflict-set-resolution-docket-and-rereview-lineage-gap",
+      "root_cause": "conflicting concurrence correctly preserved HOLD but had no immutable canonical conflict set, resolution docket, or predecessor-bound independent rereview lineage",
+      "exploit_scenario": "a conflict is omitted, added, reordered, overwritten, resolved against another recommendation, forked from one predecessor, self-reviewed, or treated as execution approval",
+      "mandatory_prevention_rules": ["canonical-exact-conflict-set-digest", "resolution-docket-recommendation-binding", "domain-separated-docket-and-round-identities", "single-genesis-and-single-successor-rounds", "exact-monotonic-predecessor-binding", "author-reviewer-separation", "append-only-docket-round-and-source", "changed-cross-stale-fork-fail-closed", "conflict-hold-and-zero-authority", "read-only-operator-view", "narrow-cleanup-and-content-addressed-artifact"],
+      "required_negative_tests": ["test_conflict_set_missing_added_and_changed_fail_identity", "test_duplicate_conflict_rejected", "test_round_requires_independent_reviewer_and_exact_predecessor", "test_single_genesis_and_successor_fork_rejected", "test_hold_and_zero_authority", "test_invalid_verdict_and_non_monotonic_round_rejected", "test_database_contract_contains_required_constraints"],
+      "ethernian_remediation_reference": "ETH-19901-AUDIT-001",
+      "arkaon_acknowledgement": {"acknowledged": true, "applied_in": "src/nurion_pg/synthetic_postgres_recovery_conflict_resolution_proof.py"},
+      "revalidation_evidence": {"suite": "tests.test_synthetic_postgres_recovery_conflict_resolution_proof", "result": "PASS"}
     }
   ],
   "next_stage_gate": {

@@ -44,8 +44,8 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.11"
-      - name: Install test-only PostgreSQL driver
-        run: python -m pip install "psycopg[binary]==3.2.10"
+      - name: Install runtime with PostgreSQL driver
+        run: python -m pip install .
       - name: Prove isolated migration repository and concurrency
         run: PYTHONPATH=src python scripts/run_postgres_ephemeral_repository_integration.py
       - name: Prove bounded retry and commit-unknown recovery
@@ -58,6 +58,20 @@ jobs:
         run: PYTHONPATH=src:. python scripts/run_postgres_recovery_quarantine_integration.py
       - name: Prove append-only recovery disposition boundaries
         run: PYTHONPATH=src:. python scripts/run_postgres_recovery_disposition_integration.py
+      - name: Prove append-only recovery supersession lineage
+        run: PYTHONPATH=src:. python scripts/run_postgres_recovery_supersession_integration.py
+      - name: Prove exact current-head recovery review receipt
+        run: PYTHONPATH=src:. python scripts/run_postgres_recovery_review_receipt_integration.py
+      - name: Prove recovery recommendation and independent concurrence
+        run: PYTHONPATH=src:. python scripts/run_postgres_recovery_recommendation_concurrence_integration.py
+      - name: Prove append-only recovery conflict resolution lineage
+        run: PYTHONPATH=src:. python scripts/run_postgres_recovery_conflict_resolution_integration.py
+      - name: Prove OPS-E03 migrations, atomic repository, outbox, and rollback
+        run: PYTHONPATH=src:. python scripts/run_ops_postgres_foundation_integration.py
+      - name: Prove OPS-E02 persistent auth, rotation, revocation, and audit
+        run: PYTHONPATH=src:. python scripts/run_ops_auth_rbac_integration.py
+      - name: Prove OPS-E09 backup restore and invariants
+        run: PYTHONPATH=src:. python scripts/run_ops_dr_drill.py
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: postgres-ephemeral-repository-proof
@@ -74,24 +88,62 @@ jobs:
             build/postgres-recovery-quarantine-integration-evidence.json.sha256
             build/postgres-recovery-disposition-integration-evidence.json
             build/postgres-recovery-disposition-integration-evidence.json.sha256
+            build/postgres-recovery-supersession-integration-evidence.json
+            build/postgres-recovery-supersession-integration-evidence.json.sha256
+            build/postgres-recovery-review-receipt-integration-evidence.json
+            build/postgres-recovery-review-receipt-integration-evidence.json.sha256
+            build/postgres-recovery-recommendation-concurrence-integration-evidence.json
+            build/postgres-recovery-recommendation-concurrence-integration-evidence.json.sha256
+            build/postgres-recovery-conflict-resolution-integration-evidence.json
+            build/postgres-recovery-conflict-resolution-integration-evidence.json.sha256
+            build/ops-e09-dr-drill-evidence.json
+            build/ops-e09-dr-drill-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
 
   governed-bootstrap:
     name: ARKAON governed synthetic bootstrap
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.11"
+      - name: Install runtime and test dependencies
+        run: python -m pip install ".[test]"
       - name: Compile source
         run: python -m compileall -q src scripts tests
+      - name: Generate software bill of materials
+        run: python scripts/generate_sbom.py
+      - name: Verify deploy observability and DR closure
+        run: PYTHONPATH=src:. python -m unittest tests.test_deploy_observability_dr -v && PYTHONPATH=src:. python scripts/validate_deploy_observability_dr_closure.py
+      - name: Verify operator console and limited-operation readiness
+        run: PYTHONPATH=src:. python -m unittest tests.test_operations_console -v && PYTHONPATH=src:. python scripts/validate_operator_console_limited_readiness.py
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nurion-pg-sbom
+          path: |
+            build/nurion-pg-sbom.cdx.json
+            build/nurion-pg-sbom.cdx.json.sha256
+          if-no-files-found: error
+          retention-days: 30
+      - name: Verify API runtime skeleton
+        run: PYTHONPATH=src python -m unittest tests.test_api_runtime -v
+      - name: Verify API runtime closure
+        run: PYTHONPATH=src:. python -m unittest tests.test_runtime_closure -v && PYTHONPATH=src:. python scripts/validate_runtime_closure.py
+      - name: Verify principal and merchant authorization boundary
+        run: PYTHONPATH=src python -m unittest tests.test_api_auth -v
+      - name: Verify authentication and RBAC closure
+        run: PYTHONPATH=src:. python -m unittest tests.test_auth_rbac_closure -v && PYTHONPATH=src:. python scripts/validate_auth_rbac_closure.py
+      - name: Verify OPS-E03 migration contracts
+        run: PYTHONPATH=src python -m unittest tests.test_postgres_foundation -v
       - name: Unit and policy tests
         run: PYTHONPATH=src python -m unittest discover -s tests -v
       - name: Validate governance manifests
         run: PYTHONPATH=src python scripts/validate_governance.py
+      - name: Validate frozen synthetic control closure
+        run: PYTHONPATH=src:. python scripts/validate_synthetic_control_closure.py
       - name: Generate deterministic bootstrap evidence
         run: PYTHONPATH=src python scripts/run_bootstrap_evidence.py
       - name: Validate official regulatory evidence registry
@@ -328,12 +380,22 @@ jobs:
         run: PYTHONPATH=src python scripts/run_synthetic_postgres_recovery_quarantine_proof_evidence.py
       - name: Verify PostgreSQL recovery disposition proof contract #18301-#18700
         run: PYTHONPATH=src python scripts/run_synthetic_postgres_recovery_disposition_proof_evidence.py
+      - name: Verify PostgreSQL recovery supersession proof contract #18701-#19100
+        run: PYTHONPATH=src python scripts/run_synthetic_postgres_recovery_supersession_proof_evidence.py
+      - name: Verify PostgreSQL recovery review receipt proof contract #19101-#19500
+        run: PYTHONPATH=src python scripts/run_synthetic_postgres_recovery_review_receipt_proof_evidence.py
+      - name: Verify PostgreSQL recovery recommendation concurrence contract #19501-#19900
+        run: PYTHONPATH=src python scripts/run_synthetic_postgres_recovery_recommendation_concurrence_proof_evidence.py
+      - name: Verify PostgreSQL recovery conflict resolution contract #19901-#20300
+        run: PYTHONPATH=src python scripts/run_synthetic_postgres_recovery_conflict_resolution_proof_evidence.py
       - name: Verify clean source formatting
         run: git diff --check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: arkaon-bootstrap-evidence
           path: |
+            build/synthetic-control-closure-evidence.json
+            build/synthetic-control-closure-evidence.json.sha256
             build/arkaon-bootstrap-evidence.json
             build/arkaon-bootstrap-evidence.json.sha256
             build/regulatory-evidence-report.json
@@ -546,6 +608,14 @@ jobs:
             build/synthetic-postgres-recovery-quarantine-proof-evidence.json.sha256
             build/synthetic-postgres-recovery-disposition-proof-evidence.json
             build/synthetic-postgres-recovery-disposition-proof-evidence.json.sha256
+            build/synthetic-postgres-recovery-supersession-proof-evidence.json
+            build/synthetic-postgres-recovery-supersession-proof-evidence.json.sha256
+            build/synthetic-postgres-recovery-review-receipt-proof-evidence.json
+            build/synthetic-postgres-recovery-review-receipt-proof-evidence.json.sha256
+            build/synthetic-postgres-recovery-recommendation-concurrence-proof-evidence.json
+            build/synthetic-postgres-recovery-recommendation-concurrence-proof-evidence.json.sha256
+            build/synthetic-postgres-recovery-conflict-resolution-proof-evidence.json
+            build/synthetic-postgres-recovery-conflict-resolution-proof-evidence.json.sha256
             build/synthetic-rebuttal-correction-submission-validation-evidence.json
             build/synthetic-rebuttal-correction-submission-validation-evidence.json.sha256
             build/synthetic-rebuttal-correction-independent-rereview-evidence.json

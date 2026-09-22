@@ -16,6 +16,8 @@ Synthetic canary readiness docket controls #1501-#1700 are documented in
 현재 단계는 `UNREGISTERED_SYNTHETIC_ONLY`입니다. 실제 결제, 승인, 취소, 환불,
 송금, 정산, 가맹점 승인, 계약 체결, 운영 자격증명 접근 및 배포를 수행하지 않습니다.
 
+> **#20300 통합 감사:** 동결된 합성 통제·감사 범위는 [종결 계약](docs/96-synthetic-control-audit-closure.md)의 10개 기준을 모두 충족해 100% 종결했습니다. 이는 실제 PG나 상용 운영 완성을 뜻하지 않습니다. 실제 PG 운영 플랫폼은 실행 가능한 운영 서비스 epic `OPS-E01~E10`으로 별도 진행합니다. 근거와 계획은 [운영 완성도 통합 감사](docs/91-production-readiness-integration-audit.md) 및 [운영 플랫폼 전환 로드맵](docs/92-production-build-roadmap.md)을 참고하십시오.
+
 ## 최초 기능 묶음
 
 - ARKAON 능력 프로필과 권한 경계
@@ -134,6 +136,10 @@ Synthetic canary readiness docket controls #1501-#1700 are documented in
 - #17501~#17900을 `PostgreSQL actual backend termination·commit outcome reconciliation proof 계약` 계층으로 구현: disposable PostgreSQL worker PID를 별도 admin 연결의 `pg_terminate_backend`로 실제 종료하고 57P01/08006 allowlist만 수락한다. pre-commit 종료는 fresh read-only 연결에서 정확한 row absence를 확인하고 blind retry 없이 HOLD하며, acknowledged commit 뒤 종료는 exact idempotency key와 payload digest를 새 read-only 연결로 확인한다. 이는 실제 network partition·failover 또는 COMMIT response loss의 증명이 아니며 권한·SQLSTATE 환경 차이는 fail-closed, 운영 쓰기·승인·발급·병합·배포는 0이다.
 - #17901~#18300을 `PostgreSQL append-only recovery quarantine proof 계약` 계층으로 구현: pre-commit connection-loss의 `HOLD_NOT_COMMITTED`를 자동 재시도하지 않고 별도 disposable schema의 비실행 quarantine case로 전환한다. source event·idempotency key·payload·SQLSTATE·provenance·observed time·sequence·state를 결정적 case identity에 결속하며 동일 envelope는 1행으로 수렴하고 변경 payload·교차 key는 fail-closed한다. fresh read-only operator packet/view로만 조회하며 payment·receipt·retry·approval 권한과 source write/retry는 0이다. 실제 network partition·failover·운영처리는 미주장한다.
 - #18301~#18700을 `PostgreSQL post-quarantine recovery disposition proof 계약` 계층으로 구현: 인간 검토 결과를 exact quarantine case digest에 결속한 append-only `HOLD_FOR_MANUAL_RECOVERY_NON_EXECUTABLE` 처분으로 기록한다. 동일 envelope는 1행으로 수렴하고 변경 payload·교차 key는 fail-closed하며 quarantine 원본과 operator view는 수정 불가다. payment·receipt·retry·approval·execution 권한은 모두 false이고, multi-node failover는 실제 수행하지 않은 명시적 preflight 계약으로만 남긴다.
+- #18701~#19100을 `PostgreSQL append-only recovery supersession proof 계약` 계층으로 구현: base 처분은 수정하지 않고 exact predecessor digest에 결속된 successor만 추가한다. DB 복합 FK·partial unique index가 단일 genesis, 단일 successor, 단조 version/sequence, 단일 current head를 강제하며 변경 payload·교차 key·fork·stale head·predecessor alias는 fail-closed한다. operator view와 원장은 수정 불가이고 모든 payment·receipt·retry·approval·execution 권한은 false다. 실제 network partition·failover·fault injection은 주장하지 않는다.
+- #19101~#19500을 `PostgreSQL exact current-head review snapshot·receipt proof 계약` 계층으로 구현: 검토 시작 시점의 exact current head `(case, supersession, digest, version)`를 append-only snapshot으로 봉인하고 독립 reviewer와 result digest를 단일 비실행 receipt에 결속한다. stale head·변경 snapshot·cross-case·receipt 변조는 fail-closed하고 snapshot·receipt·operator view의 UPDATE/DELETE/DML을 거부한다. 이 receipt는 결제·영수증 발급·재시도·승인·실행 권한을 생성하지 않으며 실제 network partition·failover·fault injection은 주장하지 않는다.
+- #19501~#19900을 `PostgreSQL recovery recommendation·independent concurrence proof 계약` 계층으로 구현: exact review receipt에 action/risk digest와 독립 author를 결속한 비실행 recommendation을 기록하고, author와 다른 reviewer들의 concurrence 또는 conflict verdict를 append-only로 보존한다. reviewer별 단일 verdict를 강제하고 하나라도 conflict가 있으면 HOLD를 유지하며, recommendation과 concurrence는 결제·영수증 발급·재시도·승인·실행 권한을 만들지 않는다.
+- #19901~#20300을 `PostgreSQL append-only conflict-resolution docket·rereview lineage proof 계약` 계층으로 구현: recommendation의 정확한 conflict 집합을 canonical digest로 봉인하고 resolution docket과 predecessor-bound 재검토 round를 추가한다. 단일 genesis·단일 successor, actor separation, stale/fork 차단과 append-only를 유지하며 resolution 기록만으로 승인·결제·재시도·실행 권한은 생성되지 않는다.
 - 에테르니언 감사 교훈은 [ARKAON 감사 재발방지 지도사항](docs/70-arkaon-audit-recurrence-prevention.md)과 기계검증 정책으로 환류
 - 에테르니언 보완 커밋은 versioned lesson registry의 entry·ack·부정 테스트·재검증 증적이 없으면 전용 evidence 생성이 fail-closed
 

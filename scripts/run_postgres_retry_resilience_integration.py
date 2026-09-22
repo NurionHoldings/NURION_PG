@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from hashlib import sha256
 import json,os
 from pathlib import Path
-from threading import Barrier,Lock
+from threading import Barrier,Event,Lock
 
 from nurion_pg.arkaon.governance import GovernanceRejected
 from nurion_pg.synthetic_postgres_ephemeral_repository_proof import validated_disposable_target,validated_pg_environment,migration_sql,insert_or_read,TABLE
@@ -29,9 +29,14 @@ def main():
             cur.execute(f'CREATE TABLE "{SCHEMA}"."retry_cycle" (slot text PRIMARY KEY, marker integer NOT NULL)')
             cur.execute(f'INSERT INTO "{SCHEMA}"."retry_cycle" VALUES (%s,0),(%s,0)',("a","b"))
         admin.commit()
-        barrier=Barrier(2);guard=Lock();failures=[];connection_ids=[]
+        barrier=Barrier(2);initial_commit_done=Event();guard=Lock();failures=[];connection_ids=[]
         def participant(own,other):
             def operation(attempt):
+                # The first attempt deliberately overlaps to produce a real 40001.
+                # A loser must not immediately race the still-committing winner on
+                # every bounded retry; wait for that exact initial cycle to settle.
+                if attempt>1 and not initial_commit_done.wait(timeout=5):
+                    raise RuntimeError("initial serialization winner did not commit")
                 c=connect(psycopg,dsn)
                 try:
                     with c.cursor() as cur:
@@ -40,6 +45,7 @@ def main():
                         if attempt==1:barrier.wait()
                         cur.execute(f'UPDATE "{SCHEMA}"."retry_cycle" SET marker=marker+1 WHERE slot=%s',(own,))
                     c.commit()
+                    if attempt==1:initial_commit_done.set()
                     with guard:connection_ids.append((own,attempt,c.info.backend_pid))
                     return own
                 except Exception as exc:
