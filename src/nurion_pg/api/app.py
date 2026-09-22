@@ -4,6 +4,7 @@ from __future__ import annotations
 from contextvars import ContextVar
 from contextlib import asynccontextmanager
 import logging
+from pathlib import Path
 import time
 from uuid import uuid4
 
@@ -11,7 +12,8 @@ from fastapi import Depends,FastAPI,Header,Request
 from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel,Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from fastapi.responses import JSONResponse,PlainTextResponse
+from fastapi.responses import FileResponse,JSONResponse,PlainTextResponse
+from fastapi.staticfiles import StaticFiles
 
 from .auth import ApiKeyRegistry,Authenticator,Permission,Principal,authorize
 from .settings import Settings
@@ -28,7 +30,7 @@ def _configure_logging(level:str)->None:
 
 
 def _secure(response,correlation_id:str):
-    response.headers["x-correlation-id"]=correlation_id;response.headers["x-content-type-options"]="nosniff";response.headers["x-frame-options"]="DENY";response.headers["referrer-policy"]="no-referrer";response.headers["cache-control"]="no-store";return response
+    response.headers["x-correlation-id"]=correlation_id;response.headers["x-content-type-options"]="nosniff";response.headers["x-frame-options"]="DENY";response.headers["referrer-policy"]="no-referrer";response.headers["cache-control"]="no-store";response.headers["permissions-policy"]="camera=(), microphone=(), geolocation=(), payment=()";response.headers["content-security-policy"]="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'";return response
 
 
 class AuthError(Exception):
@@ -68,6 +70,8 @@ def create_app(settings:Settings|None=None,api_key_registry:Authenticator|None=N
         finally:
             if connection is not None:connection.close()
     app=FastAPI(title="NURION PG API",version="0.1.0",docs_url="/docs" if runtime.environment!="production" else None,redoc_url=None,lifespan=lifespan)
+    guest_ui=Path(__file__).with_name("guest_ui")
+    if runtime.guest_preview_enabled:app.mount("/guest/assets",StaticFiles(directory=guest_ui),name="guest-assets")
     durable_ready=bool(runtime.database_url or payment_service is not None)
     app.state.settings=runtime;app.state.ready=runtime.environment in {"development","test"} or durable_ready;app.state.api_key_registry=registry;app.state.payment_service=payment_service;app.state.operations_repository=operations_repository;app.state.metrics=MetricsRegistry();app.state.limited_policy=LimitedOperationPolicy.from_values(runtime.limited_operation_enabled,runtime.limited_operation_merchants,runtime.limited_operation_max_amount,runtime.limited_operation_approval_sha256)
 
@@ -181,6 +185,19 @@ def create_app(settings:Settings|None=None,api_key_registry:Authenticator|None=N
 
     @app.get("/runtime/info",include_in_schema=False)
     async def runtime_info():return runtime.public_view()
+
+    @app.get("/",include_in_schema=False)
+    @app.get("/guest",include_in_schema=False)
+    async def guest_home():
+        if not runtime.guest_preview_enabled:raise StarletteHTTPException(status_code=404)
+        return FileResponse(guest_ui/"index.html",media_type="text/html")
+
+    @app.get("/guest/payments/{demo_payment_id}",include_in_schema=False)
+    async def guest_payment_detail(demo_payment_id:str):
+        # Browser-side synthetic fixtures use the identifier. This route has no
+        # repository dependency and deliberately performs no production lookup.
+        if not runtime.guest_preview_enabled or demo_payment_id not in {"demo-pay-001","demo-pay-002","demo-pay-003","demo-pay-004"}:raise StarletteHTTPException(status_code=404)
+        return FileResponse(guest_ui/"detail.html",media_type="text/html")
 
     @app.get("/v1/operations/readiness")
     async def operation_readiness(principal:Principal=Depends(current_principal)):

@@ -22,6 +22,7 @@ class Settings:
     limited_operation_merchants: str = ""
     limited_operation_max_amount: int = 0
     limited_operation_approval_sha256: str = ""
+    guest_preview_enabled: bool = True
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -47,7 +48,9 @@ class Settings:
         except ValueError as exc:raise ValueError("limited operation max amount must be an integer") from exc
         from nurion_pg.operations import LimitedOperationPolicy
         LimitedOperationPolicy.from_values(limited,limited_merchants,limited_max,approval)
-        return cls(environment=environment,log_level=log_level,host=host,port=port,api_keys_json=api_keys_json,max_request_bytes=max_request_bytes,graceful_shutdown_seconds=graceful_shutdown_seconds,database_url=database_url,database_schema=database_schema,limited_operation_enabled=limited,limited_operation_merchants=limited_merchants,limited_operation_max_amount=limited_max,limited_operation_approval_sha256=approval)
+        guest_raw=os.getenv("NURION_PG_GUEST_PREVIEW_ENABLED","disabled" if environment=="production" else "enabled").strip().lower()
+        if guest_raw not in {"enabled","disabled"}:raise ValueError("guest preview flag must be enabled or disabled")
+        return cls(environment=environment,log_level=log_level,host=host,port=port,api_keys_json=api_keys_json,max_request_bytes=max_request_bytes,graceful_shutdown_seconds=graceful_shutdown_seconds,database_url=database_url,database_schema=database_schema,limited_operation_enabled=limited,limited_operation_merchants=limited_merchants,limited_operation_max_amount=limited_max,limited_operation_approval_sha256=approval,guest_preview_enabled=guest_raw=="enabled")
 
     def public_view(self)->dict[str,object]:
         return {"service_name":self.service_name,"environment":self.environment,"log_level":self.log_level,"host":self.host,"port":self.port,"max_request_bytes":self.max_request_bytes,"graceful_shutdown_seconds":self.graceful_shutdown_seconds}

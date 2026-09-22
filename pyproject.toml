@@ -23,3 +23,6 @@ nurion-pg-api = "nurion_pg.api.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"nurion_pg.api" = ["guest_ui/*.html", "guest_ui/*.css", "guest_ui/*.js"]
