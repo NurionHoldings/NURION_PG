@@ -25,10 +25,11 @@ class Permission(StrEnum):
     PAYMENT_READ="payment:read"
     PAYMENT_WRITE="payment:write"
     AUDIT_READ="audit:read"
+    OPERATIONS_WRITE="operations:write"
 
 
 ROLE_PERMISSIONS={
-    Role.MERCHANT_ADMIN:frozenset({Permission.TENANT_READ,Permission.PRINCIPAL_ADMIN,Permission.PAYMENT_READ,Permission.PAYMENT_WRITE,Permission.AUDIT_READ}),
+    Role.MERCHANT_ADMIN:frozenset({Permission.TENANT_READ,Permission.PRINCIPAL_ADMIN,Permission.PAYMENT_READ,Permission.PAYMENT_WRITE,Permission.AUDIT_READ,Permission.OPERATIONS_WRITE}),
     Role.PAYMENT_OPERATOR:frozenset({Permission.TENANT_READ,Permission.PAYMENT_READ,Permission.PAYMENT_WRITE}),
     Role.AUDITOR:frozenset({Permission.TENANT_READ,Permission.PAYMENT_READ,Permission.AUDIT_READ}),
 }

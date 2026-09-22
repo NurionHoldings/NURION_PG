@@ -18,6 +18,10 @@ class Settings:
     graceful_shutdown_seconds: int = 30
     database_url: str = ""
     database_schema: str = "nurion_pg"
+    limited_operation_enabled: bool = False
+    limited_operation_merchants: str = ""
+    limited_operation_max_amount: int = 0
+    limited_operation_approval_sha256: str = ""
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -38,7 +42,12 @@ class Settings:
         database_url=os.getenv("NURION_PG_DATABASE_URL","").strip();database_schema=os.getenv("NURION_PG_DATABASE_SCHEMA","nurion_pg").strip()
         if database_url and not database_url.startswith(("postgresql://","postgres://")):raise ValueError("NURION_PG_DATABASE_URL must be PostgreSQL")
         if not re.fullmatch(r"[a-z][a-z0-9_]{0,62}",database_schema):raise ValueError("invalid NURION_PG_DATABASE_SCHEMA")
-        return cls(environment=environment,log_level=log_level,host=host,port=port,api_keys_json=api_keys_json,max_request_bytes=max_request_bytes,graceful_shutdown_seconds=graceful_shutdown_seconds,database_url=database_url,database_schema=database_schema)
+        limited=os.getenv("NURION_PG_LIMITED_OPERATION_ENABLED","")=="certified";limited_merchants=os.getenv("NURION_PG_LIMITED_OPERATION_MERCHANTS","");approval=os.getenv("NURION_PG_LIMITED_OPERATION_APPROVAL_SHA256","")
+        try:limited_max=int(os.getenv("NURION_PG_LIMITED_OPERATION_MAX_AMOUNT","0"))
+        except ValueError as exc:raise ValueError("limited operation max amount must be an integer") from exc
+        from nurion_pg.operations import LimitedOperationPolicy
+        LimitedOperationPolicy.from_values(limited,limited_merchants,limited_max,approval)
+        return cls(environment=environment,log_level=log_level,host=host,port=port,api_keys_json=api_keys_json,max_request_bytes=max_request_bytes,graceful_shutdown_seconds=graceful_shutdown_seconds,database_url=database_url,database_schema=database_schema,limited_operation_enabled=limited,limited_operation_merchants=limited_merchants,limited_operation_max_amount=limited_max,limited_operation_approval_sha256=approval)
 
     def public_view(self)->dict[str,object]:
         return {"service_name":self.service_name,"environment":self.environment,"log_level":self.log_level,"host":self.host,"port":self.port,"max_request_bytes":self.max_request_bytes,"graceful_shutdown_seconds":self.graceful_shutdown_seconds}

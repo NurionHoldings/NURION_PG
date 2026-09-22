@@ -46,7 +46,7 @@ class AuthBoundaryTests(unittest.TestCase):
     def test_valid_key_resolves_principal_without_returning_secret(self):
         response=self.client.get("/v1/auth/context",headers=self.headers)
         self.assertEqual(response.status_code,200)
-        self.assertEqual(response.json(),{"principal_id":"principal1","merchant_id":"merchant1","roles":["merchant_admin"],"permissions":["audit:read","payment:read","payment:write","principal:admin","tenant:read"],"key_id":"admin1"})
+        self.assertEqual(response.json(),{"principal_id":"principal1","merchant_id":"merchant1","roles":["merchant_admin"],"permissions":["audit:read","operations:write","payment:read","payment:write","principal:admin","tenant:read"],"key_id":"admin1"})
         self.assertNotIn("alpha",response.text)
 
     def test_disabled_and_wrong_keys_fail_closed(self):

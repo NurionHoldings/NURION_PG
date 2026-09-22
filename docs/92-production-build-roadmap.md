@@ -19,9 +19,9 @@
 | OPS-E05 | Provider adapter | provider port, sandbox adapter, error mapping | timeout·duplicate·unknown outcome E2E | 14% |
 | OPS-E06 | Webhook inbox·적용 | signature, durable inbox, outbox, reconciliation | 재전송·역순·변조·crash recovery | 10% |
 | OPS-E07 | Ledger·settlement | double-entry ledger, fee, settlement batch, reversal | 원장 균형·마감·재실행 E2E | 12% |
-| OPS-E08 | 운영 콘솔 | 거래검색, HOLD queue, 수동검토, audit export | 권한분리·PII 마스킹·이력 | 8% |
+| OPS-E08 | 운영 콘솔 | 거래검색, HOLD queue, 수동검토, audit export | **완료: 권한분리·민감값 비노출·이력** | 8% |
 | OPS-E09 | 보안·관측·DR | secret/KMS port, metrics, alerts, backup/restore | SLO·복구훈련·보안점검 | 8% |
-| OPS-E10 | 제한 운영 전환 | sandbox certification, runbook, canary, rollback | 외부 승인 후 제한 트래픽 | 4% |
+| OPS-E10 | 제한 운영 전환 | sandbox certification, runbook, canary, rollback | **구현 완료: 외부 승인 전 트래픽 차단** | 4% |
 
 ## 첫 구현 묶음: OPS-E01
 
