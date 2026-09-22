@@ -11,7 +11,7 @@ from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.responses import JSONResponse
 
-from .auth import ApiKeyRegistry,Principal,Role
+from .auth import ApiKeyRegistry,Authenticator,Permission,Principal,authorize
 from .settings import Settings
 
 correlation_id_var:ContextVar[str]=ContextVar("correlation_id",default="")
@@ -31,7 +31,7 @@ class AuthError(Exception):
         self.status_code=status_code;self.code=code;self.message=message
 
 
-def create_app(settings:Settings|None=None,api_key_registry:ApiKeyRegistry|None=None)->FastAPI:
+def create_app(settings:Settings|None=None,api_key_registry:Authenticator|None=None)->FastAPI:
     runtime=settings or Settings.from_env();_configure_logging(runtime.log_level)
     registry=api_key_registry or ApiKeyRegistry.from_json(runtime.api_keys_json)
     app=FastAPI(title="NURION PG API",version="0.1.0",docs_url="/docs" if runtime.environment!="production" else None,redoc_url=None)
@@ -68,20 +68,26 @@ def create_app(settings:Settings|None=None,api_key_registry:ApiKeyRegistry|None=
         correlation_id=correlation_id_var.get()
         return JSONResponse(status_code=exc.status_code,content={"error":{"code":exc.code,"message":exc.message,"correlation_id":correlation_id}})
 
+    def audit(principal:Principal|None,action:str,outcome:str,merchant_id:str|None=None)->None:
+        recorder=getattr(registry,"record_audit",None)
+        if recorder:recorder(principal.principal_id if principal else None,merchant_id or (principal.merchant_id if principal else None),action,outcome,correlation_id_var.get())
+
     async def current_principal(x_api_key:str|None=Header(default=None))->Principal:
         principal=registry.authenticate(x_api_key or "")
         if principal is None:
+            audit(None,"authenticate","denied")
             LOGGER.warning("authentication_failed correlation_id=%s",correlation_id_var.get())
             raise AuthError(401,"UNAUTHENTICATED","Valid API credentials are required")
+        audit(principal,"authenticate","allowed")
         LOGGER.info("authentication_succeeded principal_id=%s merchant_id=%s key_id=%s correlation_id=%s",principal.principal_id,principal.merchant_id,principal.key_id,correlation_id_var.get())
         return principal
 
     def merchant_reader(merchant_id:str,principal:Principal=Depends(current_principal))->Principal:
-        if principal.merchant_id!=merchant_id:
+        if not authorize(principal,Permission.TENANT_READ,merchant_id):
+            audit(principal,"tenant:read","denied",merchant_id)
             LOGGER.warning("authorization_denied principal_id=%s requested_merchant_id=%s correlation_id=%s",principal.principal_id,merchant_id,correlation_id_var.get())
             raise AuthError(403,"CROSS_TENANT_ACCESS_DENIED","Access to another merchant is denied")
-        if not principal.roles.intersection({Role.MERCHANT_ADMIN,Role.PAYMENT_OPERATOR,Role.AUDITOR}):
-            raise AuthError(403,"INSUFFICIENT_ROLE","The principal role does not allow this operation")
+        audit(principal,"tenant:read","allowed",merchant_id)
         return principal
 
     @app.get("/health/live",include_in_schema=False)
@@ -100,7 +106,7 @@ def create_app(settings:Settings|None=None,api_key_registry:ApiKeyRegistry|None=
 
     @app.get("/v1/auth/context")
     async def auth_context(principal:Principal=Depends(current_principal)):
-        return {"principal_id":principal.principal_id,"merchant_id":principal.merchant_id,"roles":sorted(principal.roles),"key_id":principal.key_id}
+        return {"principal_id":principal.principal_id,"merchant_id":principal.merchant_id,"roles":sorted(principal.roles),"permissions":sorted(principal.permissions),"key_id":principal.key_id}
 
     @app.get("/v1/merchants/{merchant_id}/context")
     async def merchant_context(merchant_id:str,principal:Principal=Depends(merchant_reader)):

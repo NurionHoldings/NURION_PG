@@ -68,6 +68,8 @@ jobs:
         run: PYTHONPATH=src:. python scripts/run_postgres_recovery_conflict_resolution_integration.py
       - name: Prove OPS-E03 migrations, atomic repository, outbox, and rollback
         run: PYTHONPATH=src:. python scripts/run_ops_postgres_foundation_integration.py
+      - name: Prove OPS-E02 persistent auth, rotation, revocation, and audit
+        run: PYTHONPATH=src:. python scripts/run_ops_auth_rbac_integration.py
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: postgres-ephemeral-repository-proof
@@ -114,6 +116,8 @@ jobs:
         run: PYTHONPATH=src:. python -m unittest tests.test_runtime_closure -v && PYTHONPATH=src:. python scripts/validate_runtime_closure.py
       - name: Verify principal and merchant authorization boundary
         run: PYTHONPATH=src python -m unittest tests.test_api_auth -v
+      - name: Verify authentication and RBAC closure
+        run: PYTHONPATH=src:. python -m unittest tests.test_auth_rbac_closure -v && PYTHONPATH=src:. python scripts/validate_auth_rbac_closure.py
       - name: Verify OPS-E03 migration contracts
         run: PYTHONPATH=src python -m unittest tests.test_postgres_foundation -v
       - name: Unit and policy tests

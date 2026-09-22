@@ -4,11 +4,16 @@ import unittest
 from fastapi.testclient import TestClient
 
 from nurion_pg.api.app import create_app
-from nurion_pg.api.auth import ApiKeyRecord,ApiKeyRegistry,Role,secret_digest
+from nurion_pg.api.auth import ApiKeyRecord,ApiKeyRegistry,Permission,Role,authorize,secret_digest
 from nurion_pg.api.settings import Settings
 
 
 class ApiKeyRegistryTests(unittest.TestCase):
+    def test_role_permission_matrix_is_explicit_and_fail_closed(self):
+        admin=ApiKeyRegistry([ApiKeyRecord("a",secret_digest("s"),"u","m",frozenset({Role.MERCHANT_ADMIN}))]).authenticate("npg_a_s")
+        auditor=ApiKeyRegistry([ApiKeyRecord("b",secret_digest("s"),"v","m",frozenset({Role.AUDITOR}))]).authenticate("npg_b_s")
+        self.assertTrue(authorize(admin,Permission.PRINCIPAL_ADMIN,"m"));self.assertTrue(authorize(admin,Permission.PAYMENT_WRITE,"m"))
+        self.assertTrue(authorize(auditor,Permission.AUDIT_READ,"m"));self.assertFalse(authorize(auditor,Permission.PAYMENT_WRITE,"m"));self.assertFalse(authorize(admin,Permission.TENANT_READ,"other"))
     def test_registry_rejects_duplicate_key_ids_and_plaintext_digest(self):
         record=ApiKeyRecord("key1",secret_digest("secret"),"user1","merchant1",frozenset({Role.MERCHANT_ADMIN}))
         with self.assertRaises(ValueError):ApiKeyRegistry([record,record])
@@ -41,7 +46,7 @@ class AuthBoundaryTests(unittest.TestCase):
     def test_valid_key_resolves_principal_without_returning_secret(self):
         response=self.client.get("/v1/auth/context",headers=self.headers)
         self.assertEqual(response.status_code,200)
-        self.assertEqual(response.json(),{"principal_id":"principal1","merchant_id":"merchant1","roles":["merchant_admin"],"key_id":"admin1"})
+        self.assertEqual(response.json(),{"principal_id":"principal1","merchant_id":"merchant1","roles":["merchant_admin"],"permissions":["audit:read","payment:read","payment:write","principal:admin","tenant:read"],"key_id":"admin1"})
         self.assertNotIn("alpha",response.text)
 
     def test_disabled_and_wrong_keys_fail_closed(self):

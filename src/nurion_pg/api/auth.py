@@ -7,7 +7,7 @@ import hashlib
 import hmac
 import json
 import re
-from typing import Iterable
+from typing import Iterable,Protocol
 
 
 IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$")
@@ -19,12 +19,39 @@ class Role(StrEnum):
     AUDITOR = "auditor"
 
 
+class Permission(StrEnum):
+    TENANT_READ="tenant:read"
+    PRINCIPAL_ADMIN="principal:admin"
+    PAYMENT_READ="payment:read"
+    PAYMENT_WRITE="payment:write"
+    AUDIT_READ="audit:read"
+
+
+ROLE_PERMISSIONS={
+    Role.MERCHANT_ADMIN:frozenset({Permission.TENANT_READ,Permission.PRINCIPAL_ADMIN,Permission.PAYMENT_READ,Permission.PAYMENT_WRITE,Permission.AUDIT_READ}),
+    Role.PAYMENT_OPERATOR:frozenset({Permission.TENANT_READ,Permission.PAYMENT_READ,Permission.PAYMENT_WRITE}),
+    Role.AUDITOR:frozenset({Permission.TENANT_READ,Permission.PAYMENT_READ,Permission.AUDIT_READ}),
+}
+
+
 @dataclass(frozen=True)
 class Principal:
     principal_id: str
     merchant_id: str
     roles: frozenset[Role]
     key_id: str
+
+    @property
+    def permissions(self)->frozenset[Permission]:
+        return frozenset(permission for role in self.roles for permission in ROLE_PERMISSIONS[role])
+
+
+class Authenticator(Protocol):
+    def authenticate(self,credential:str)->Principal|None:...
+
+
+def authorize(principal:Principal,permission:Permission,merchant_id:str|None=None)->bool:
+    return permission in principal.permissions and (merchant_id is None or merchant_id==principal.merchant_id)
 
 
 @dataclass(frozen=True)

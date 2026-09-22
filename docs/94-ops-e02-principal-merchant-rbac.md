@@ -13,7 +13,7 @@ OPS-E02 adds fail-closed authentication and authorization to the executable API 
 
 ## Provisioning format
 
-Until OPS-E03 supplies a persistent repository, the service reads a hash-only JSON registry from `NURION_PG_API_KEYS_JSON`:
+The environment registry remains available for isolated development. Operational persistence is supplied by `PostgresAuthRepository`, which resolves active API keys only when the key, principal, and merchant are all active:
 
 ```json
 [
@@ -41,4 +41,4 @@ The merchant context route is an authorization proof route, not a payment operat
 
 ## Rollback and next gate
 
-OPS-E02 has no schema or external side effects. Rollback is a code revert and service restart. OPS-E03 must replace the environment registry with a versioned PostgreSQL principal/API-key repository and durable append-only access audit while preserving these fail-closed contracts.
+OPS-E02 is complete against the ten machine-checked criteria in `config/auth-rbac-closure-v1.json`. The PostgreSQL integration gate proves persistent resolution, wrong-key rejection, rotation, old-key invalidation, revocation, durable audit, and transactional outbox creation. Rollback remains a code/schema rollback; no payment or provider action is authorized.
