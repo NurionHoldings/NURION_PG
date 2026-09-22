@@ -18,7 +18,7 @@ class PostgresLedgerRepository:
     return str(existing[0]),True
    self.connection.execute(f"INSERT INTO {self.schema}.ledger_journals(journal_id,merchant_id,currency,kind,reference_id,reversal_of,journal_digest) VALUES (%s,%s,%s,%s,%s,%s,%s)",(journal.journal_id,journal.merchant_id,journal.currency,journal.kind,journal.reference_id,journal.reversal_of,digest))
    for sequence,e in enumerate(journal.entries,1):self.connection.execute(f"INSERT INTO {self.schema}.ledger_entries(journal_id,sequence,account,side,amount) VALUES (%s,%s,%s,%s,%s)",(journal.journal_id,sequence,e.account,e.side.value,e.amount))
-   self.connection.execute(f"INSERT INTO {self.schema}.outbox_events(event_id,aggregate_type,aggregate_id,event_type,payload) VALUES (gen_random_uuid(),'ledger_journal',%s,'ledger.journal_posted',jsonb_build_object('journal_id',%s,'merchant_id',%s,'currency',%s,'kind',%s))",(journal.journal_id,journal.journal_id,journal.merchant_id,journal.currency,journal.kind))
+   self.connection.execute(f"INSERT INTO {self.schema}.outbox_events(event_id,aggregate_type,aggregate_id,event_type,payload) VALUES (gen_random_uuid(),'ledger_journal',%s,'ledger.journal_posted',jsonb_build_object('journal_id',%s::text,'merchant_id',%s::text,'currency',%s::text,'kind',%s::text))",(journal.journal_id,journal.journal_id,journal.merchant_id,journal.currency,journal.kind))
   return journal.journal_id,False
  def balance(self,merchant_id:str,currency:str,account:str)->int:
   row=self.connection.execute(f"SELECT COALESCE(sum(CASE WHEN e.side='credit' THEN e.amount ELSE -e.amount END),0) FROM {self.schema}.ledger_entries e JOIN {self.schema}.ledger_journals j USING(journal_id) WHERE j.merchant_id=%s AND j.currency=%s AND e.account=%s",(merchant_id,currency,account)).fetchone();return row[0]
@@ -45,7 +45,7 @@ class PostgresSettlementRepository:
    if actual not in allowed.get(row[0],set()):raise LedgerError("invalid settlement transition")
    hold=(reason or "RECONCILIATION_DIFFERENCE") if actual=="held" else None
    self.connection.execute(f"UPDATE {self.schema}.settlements SET state=%s,version=version+1,hold_reason=%s WHERE settlement_id=%s",(actual,hold,settlement_id))
-   self.connection.execute(f"INSERT INTO {self.schema}.outbox_events(event_id,aggregate_type,aggregate_id,event_type,payload) VALUES (gen_random_uuid(),'settlement',%s,%s,jsonb_build_object('settlement_id',%s,'merchant_id',%s,'state',%s,'version',%s))",(settlement_id,f"settlement.{actual}",settlement_id,merchant_id,actual,expected_version+1))
+   self.connection.execute(f"INSERT INTO {self.schema}.outbox_events(event_id,aggregate_type,aggregate_id,event_type,payload) VALUES (gen_random_uuid(),'settlement',%s,%s,jsonb_build_object('settlement_id',%s::text,'merchant_id',%s::text,'state',%s::text,'version',%s::integer))",(settlement_id,f"settlement.{actual}",settlement_id,merchant_id,actual,expected_version+1))
   return actual
  def create_payout(self,payout_id:str,settlement_id:str,merchant_id:str,currency:str,amount:int,requested_by:str,key:str,roles:set[str])->tuple[str,bool]:
   if "payout_requester" not in roles:raise PermissionError("payout requester role required")
