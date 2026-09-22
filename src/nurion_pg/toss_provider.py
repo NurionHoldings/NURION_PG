@@ -5,7 +5,7 @@ import base64,json,random,time
 from dataclasses import dataclass
 from typing import Callable
 from urllib.error import HTTPError,URLError
-from urllib.parse import quote
+from urllib.parse import quote,urlsplit
 from urllib.request import Request,urlopen
 
 from nurion_pg.payments import PaymentCommand
@@ -35,8 +35,15 @@ def redact(value:str)->str:
 class TossPaymentsAdapter:
     name="toss_payments"
     def __init__(self,secret_key:str,*,base_url:str="https://api.tosspayments.com",transport:Transport=urllib_transport,timeout:float=5,retries:int=2,breaker:CircuitBreaker|None=None,sleep=time.sleep)->None:
-        if not secret_key.startswith("test_sk_") or not base_url.startswith(("https://","http://127.0.0.1","http://localhost")):raise ValueError("only Toss test secrets and secure/local endpoints are allowed")
+        endpoint=urlsplit(base_url);official=endpoint.scheme=="https" and endpoint.hostname=="api.tosspayments.com";loopback=endpoint.scheme in {"http","https"} and endpoint.hostname in {"127.0.0.1","localhost"}
+        if not secret_key.startswith("test_sk_") or not (official or loopback) or endpoint.username or endpoint.password or endpoint.query or endpoint.fragment or endpoint.path not in {"","/"}:raise ValueError("only Toss test secrets and official or loopback endpoints are allowed")
         self._secret=secret_key;self.base=base_url.rstrip("/");self.transport=transport;self.timeout=timeout;self.retries=retries;self.breaker=breaker or CircuitBreaker();self.sleep=sleep
+    @classmethod
+    def from_test_environment(cls,env:dict[str,str],**kwargs):
+        if env.get("NURION_TOSS_TEST_EXECUTION")!="enabled":raise ValueError("Toss test execution is disabled")
+        secret=env.get("TOSS_TEST_SECRET_KEY","");base=env.get("TOSS_TEST_BASE_URL","")
+        if not base:raise ValueError("Toss test base URL is required")
+        return cls(secret,base_url=base,**kwargs)
     def _headers(self,operation_id:str|None)->dict[str,str]:
         auth=base64.b64encode((self._secret+":").encode()).decode()
         headers={"Authorization":"Basic "+auth,"Content-Type":"application/json","User-Agent":"nurion-pg/1"}

@@ -1,0 +1,6 @@
+{
+ "scope":"OPS-E08 Toss test payment execution",
+ "completion_percent":100,
+ "criteria":["durable operation claim","lease recovery","bounded retry","dead letter","restart recovery","callback binding","merchant order amount validation","test secret fail closed","local or TLS endpoint","confirm DONE single stage","cancel key inheritance","refund amount reason","UNKNOWN reconciliation first","provider idempotency","terminal state application","capture ledger once","refund ledger once","uncertain no ledger","worker RBAC audit outbox","HTTP emulator E2E","PostgreSQL concurrency recovery"],
+ "toss_test_only":true,"live_commercial_payment_allowed":false,"external_live_call_performed":false,"bank_transfer_connected":false
+}

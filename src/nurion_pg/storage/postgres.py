@@ -9,7 +9,7 @@ from typing import Any
 from uuid import uuid4
 
 SCHEMA_NAME = re.compile(r"^[a-z][a-z0-9_]{0,62}$")
-MIGRATION_VERSION = 6
+MIGRATION_VERSION = 7
 MIGRATION_LOCK = 73192003
 
 
@@ -110,9 +110,15 @@ CREATE TRIGGER ledger_journals_immutable BEFORE UPDATE OR DELETE ON {s}.ledger_j
 CREATE TRIGGER ledger_entries_immutable BEFORE UPDATE OR DELETE ON {s}.ledger_entries FOR EACH ROW EXECUTE FUNCTION {s}.reject_ledger_mutation();
 """
 
+def migration_v7_sql(schema:str)->str:
+    s=_schema(schema)
+    return f"""ALTER TABLE {s}.payment_operations ADD COLUMN dispatch_attempts integer NOT NULL DEFAULT 0 CHECK(dispatch_attempts>=0),ADD COLUMN next_attempt_at timestamptz NOT NULL DEFAULT now(),ADD COLUMN lease_owner text,ADD COLUMN leased_at timestamptz,ADD COLUMN dead_lettered_at timestamptz,ADD COLUMN last_dispatch_error text,ADD COLUMN reconciliation_required boolean NOT NULL DEFAULT false,ADD CONSTRAINT payment_operation_lease_pair CHECK((lease_owner IS NULL)=(leased_at IS NULL));
+CREATE INDEX payment_operations_dispatch_idx ON {s}.payment_operations(next_attempt_at,created_at) WHERE status='pending' AND dead_lettered_at IS NULL;
+"""
+
 
 def _checksum(version: int) -> str:
-    sql = {1:migration_v1_sql,2:migration_v2_sql,3:migration_v3_sql,4:migration_v4_sql,5:migration_v5_sql,6:migration_v6_sql}[version]("nurion_pg_checksum")
+    sql = {1:migration_v1_sql,2:migration_v2_sql,3:migration_v3_sql,4:migration_v4_sql,5:migration_v5_sql,6:migration_v6_sql,7:migration_v7_sql}[version]("nurion_pg_checksum")
     return sha256(sql.encode()).hexdigest()
 
 
@@ -133,6 +139,8 @@ INSERT INTO {s}.schema_migrations(version,checksum) VALUES (4,'{_checksum(4)}');
 INSERT INTO {s}.schema_migrations(version,checksum) VALUES (5,'{_checksum(5)}');
 {migration_v6_sql(s)}
 INSERT INTO {s}.schema_migrations(version,checksum) VALUES (6,'{_checksum(6)}');
+{migration_v7_sql(s)}
+INSERT INTO {s}.schema_migrations(version,checksum) VALUES (7,'{_checksum(7)}');
 """
 
 
@@ -233,10 +241,10 @@ class PostgresFoundation:
                 self.connection.execute(f"ALTER TABLE {self.schema}.schema_migrations ADD COLUMN checksum char(64)")
                 self.connection.execute(f"UPDATE {self.schema}.schema_migrations SET checksum=%s WHERE version=1", (_checksum(1),))
             rows = dict(self.connection.execute(f"SELECT version,checksum FROM {self.schema}.schema_migrations ORDER BY version").fetchall())
-            unknown = set(rows) - {1, 2, 3, 4, 5, 6}
+            unknown = set(rows) - {1, 2, 3, 4, 5, 6, 7}
             if unknown:
                 raise RuntimeError(f"unsupported database migration versions: {sorted(unknown)}")
-            for version, sql in ((1, migration_v1_sql(self.schema)), (2, migration_v2_sql(self.schema)), (3, migration_v3_sql(self.schema)), (4,migration_v4_sql(self.schema)), (5,migration_v5_sql(self.schema)), (6,migration_v6_sql(self.schema))):
+            for version, sql in ((1, migration_v1_sql(self.schema)), (2, migration_v2_sql(self.schema)), (3, migration_v3_sql(self.schema)), (4,migration_v4_sql(self.schema)), (5,migration_v5_sql(self.schema)), (6,migration_v6_sql(self.schema)), (7,migration_v7_sql(self.schema))):
                 expected = _checksum(version)
                 if version in rows:
                     if rows[version].strip() != expected:
