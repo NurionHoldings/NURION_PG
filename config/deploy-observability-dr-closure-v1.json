@@ -1,0 +1,6 @@
+{
+ "scope":"OPS-E09 deploy observability disaster recovery",
+ "completion_percent":100,
+ "criteria":["immutable image digest","environment manifest","deployment preflight","startup readiness liveness","graceful rollout rollback","migration predeploy lock","backward compatible migrations","nonroot readonly rootfs","secret-free manifests","SBOM evidence","pinned CI actions","structured safe logs","core metrics contract","alerts and SLO","linked runbooks","PITR policy","encrypted offsite boundary","restore invariant verification","disposable PostgreSQL DR drill","RPO RTO evidence","failover failback","secret rotation","incident audit trail"],
+ "deploy_ready":true,"production_deployed":false,"cloud_changed":false,"live_traffic_used":false,"production_credentials_accessed":false
+}

@@ -70,6 +70,8 @@ jobs:
         run: PYTHONPATH=src:. python scripts/run_ops_postgres_foundation_integration.py
       - name: Prove OPS-E02 persistent auth, rotation, revocation, and audit
         run: PYTHONPATH=src:. python scripts/run_ops_auth_rbac_integration.py
+      - name: Prove OPS-E09 backup restore and invariants
+        run: PYTHONPATH=src:. python scripts/run_ops_dr_drill.py
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: postgres-ephemeral-repository-proof
@@ -94,6 +96,8 @@ jobs:
             build/postgres-recovery-recommendation-concurrence-integration-evidence.json.sha256
             build/postgres-recovery-conflict-resolution-integration-evidence.json
             build/postgres-recovery-conflict-resolution-integration-evidence.json.sha256
+            build/ops-e09-dr-drill-evidence.json
+            build/ops-e09-dr-drill-evidence.json.sha256
           if-no-files-found: error
           retention-days: 14
 
@@ -110,6 +114,18 @@ jobs:
         run: python -m pip install ".[test]"
       - name: Compile source
         run: python -m compileall -q src scripts tests
+      - name: Generate software bill of materials
+        run: python scripts/generate_sbom.py
+      - name: Verify deploy observability and DR closure
+        run: PYTHONPATH=src:. python -m unittest tests.test_deploy_observability_dr -v && PYTHONPATH=src:. python scripts/validate_deploy_observability_dr_closure.py
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nurion-pg-sbom
+          path: |
+            build/nurion-pg-sbom.cdx.json
+            build/nurion-pg-sbom.cdx.json.sha256
+          if-no-files-found: error
+          retention-days: 30
       - name: Verify API runtime skeleton
         run: PYTHONPATH=src python -m unittest tests.test_api_runtime -v
       - name: Verify API runtime closure
