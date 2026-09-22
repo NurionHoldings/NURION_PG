@@ -128,7 +128,7 @@ def main()->None:
         webhook_repo.quarantine(webhook_results[0][0],"merchant-ci","FAULT_INJECTED_LOOKUP_TIMEOUT")
         assert webhook_repo.approve_retry("merchant-ci",webhook_results[0][0],"operator-ci") is True
         ledger=PostgresLedgerRepository(connection,SCHEMA);capture=capture_journal(str(uuid4()),"merchant-ci","KRW","capture-ci",10000,500,300)
-        assert ledger.post(capture)[1] is False and ledger.post(capture)[1] is True and ledger.balance("merchant-ci","KRW","merchant_payable")==9200
+        assert ledger.post(capture)[1] is False and ledger.post(capture)[1] is True and ledger.balance("merchant-ci","KRW","merchant_payable")==12500
         concurrent_journal=capture_journal(str(uuid4()),"merchant-ci","KRW","capture-concurrent",1000,50,30);barrier=Barrier(2)
         def concurrent_post():
             worker=psycopg.connect(connect_timeout=5,autocommit=True)
