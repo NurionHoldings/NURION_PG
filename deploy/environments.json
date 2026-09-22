@@ -1,0 +1,8 @@
+{
+  "schema":"nurion-pg-deployment-v1",
+  "environments":{"staging":{"replicas":2,"approval":"release_manager"},"production":{"replicas":3,"approval":"two_person_change"}},
+  "image_reference_format":"repository@sha256:<64 lowercase hex>",
+  "migration_order":["backup-check","advisory-lock","backward-compatible-migrate","canary","readiness","rolling-update"],
+  "rollback_order":["stop-rollout","previous-image-digest","readiness","incident-record"],
+  "external_deployment_performed":false
+}

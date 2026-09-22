@@ -1,0 +1,11 @@
+{
+ "slo":{"availability_30d":0.999,"write_latency_p95_ms":750,"provider_unknown_ratio_5m":0.01,"rpo_seconds":300,"rto_seconds":1800},
+ "alerts":[
+  {"name":"ApiErrorBudgetBurn","expr":"increase(http_request_errors_total[10m]) / clamp_min(increase(http_requests_total[10m]), 1) > 0.02","runbook":"docs/runbooks/api-incident.md"},
+  {"name":"PaymentDeadLetter","expr":"payment_operation_deadletter_total increase > 0","runbook":"docs/runbooks/payment-worker.md"},
+  {"name":"WebhookQuarantine","expr":"webhook_quarantine_total increase > 5 in 10m","runbook":"docs/runbooks/provider-reconciliation.md"},
+  {"name":"OutboxLag","expr":"outbox_oldest_unpublished_seconds > 300 for 5m","runbook":"docs/runbooks/outbox-recovery.md"},
+  {"name":"LedgerImbalance","expr":"ledger_imbalance != 0","runbook":"docs/runbooks/ledger-incident.md"},
+  {"name":"RestoreFreshness","expr":"backup_restore_age_seconds > 86400","runbook":"docs/runbooks/disaster-recovery.md"}
+ ]
+}

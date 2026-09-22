@@ -1,9 +1,10 @@
-FROM python:3.12-slim
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 NURION_PG_ENV=production
 WORKDIR /app
 COPY pyproject.toml README.md ./
 COPY src ./src
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir --no-compile . && rm -rf /root/.cache
 USER 65532:65532
 EXPOSE 8080
 STOPSIGNAL SIGTERM
