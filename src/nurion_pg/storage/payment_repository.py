@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from nurion_pg.payments import PaymentCommand,PaymentIntent,PaymentProblem,PaymentStatus,PENDING_STATUS,validate_command
 from .postgres import _schema
+from nurion_pg.providers import ProviderCommand
 
 
 class PostgresPaymentRepository:
@@ -24,6 +25,18 @@ class PostgresPaymentRepository:
         return self._intent(row) if row else None
 
     def get(self,merchant_id:str,payment_intent_id:str)->PaymentIntent|None:return self._get(merchant_id,payment_intent_id)
+
+    def operation_for_provider(self,merchant_id:str,operation_id:str)->ProviderCommand:
+        row=self.connection.execute(f"SELECT o.operation_id,o.payment_intent_id,o.operation_type,CASE WHEN o.operation_type='authorize' THEN p.amount ELSE o.amount END,p.currency,p.external_reference,o.provider_payment_key FROM {self.schema}.payment_operations o JOIN {self.schema}.payment_intents p ON p.payment_intent_id=o.payment_intent_id WHERE o.operation_id=%s AND o.merchant_id=%s AND o.status='pending'",(operation_id,merchant_id)).fetchone()
+        if row is None:raise PaymentProblem(404,"PAYMENT_OPERATION_NOT_FOUND","Pending payment operation was not found")
+        return ProviderCommand(str(row[0]),str(row[1]),PaymentCommand(row[2]),row[3],row[4].strip(),row[5] or str(row[1]),row[6])
+
+    def bind_provider_payment_key(self,merchant_id:str,operation_id:str,payment_key:str)->None:
+        """Bind the browser-returned opaque key before dispatch; it is never exposed publicly."""
+        if not payment_key or len(payment_key)>200:raise PaymentProblem(422,"INVALID_PROVIDER_PAYMENT_KEY","Provider payment key is invalid")
+        with self.connection.transaction():
+            row=self.connection.execute(f"UPDATE {self.schema}.payment_operations SET provider_payment_key=%s WHERE operation_id=%s AND merchant_id=%s AND status='pending' AND provider_payment_key IS NULL RETURNING operation_id",(payment_key,operation_id,merchant_id)).fetchone()
+            if row is None:raise PaymentProblem(409,"PROVIDER_BIND_CONFLICT","Provider key cannot be bound to this operation")
 
     def _replay(self,merchant_id:str,key:str,command_type:str,digest:str)->PaymentIntent|None:
         row=self.connection.execute(f"SELECT command_type,request_digest,response FROM {self.schema}.payment_command_receipts WHERE merchant_id=%s AND idempotency_key=%s",(merchant_id,key)).fetchone()
@@ -65,7 +78,7 @@ class PostgresPaymentRepository:
             self._receipt(merchant_id,idempotency_key,command.value,request_digest,updated)
         return updated,False
 
-    def apply_provider_result(self,merchant_id:str,payment_intent_id:str,operation_id:str,succeeded:bool)->PaymentIntent:
+    def apply_provider_result(self,merchant_id:str,payment_intent_id:str,operation_id:str,succeeded:bool,*,provider_name:str|None=None,provider_payment_key:str|None=None,provider_status:str|None=None,provider_error_code:str|None=None,provider_settled:bool=False)->PaymentIntent:
         """Internal adapter boundary; no public route can fabricate provider success."""
         with self.connection.transaction():
             intent=self._get(merchant_id,payment_intent_id,True)
@@ -81,12 +94,14 @@ class PostgresPaymentRepository:
                 elif command==PaymentCommand.CAPTURE:status=PaymentStatus.PARTIALLY_CAPTURED if captured else PaymentStatus.AUTHORIZED
                 elif command==PaymentCommand.CANCEL:status=PaymentStatus.AUTHORIZED if authorized else PaymentStatus.REQUIRES_AUTHORIZATION
                 else:status=PaymentStatus.PARTIALLY_REFUNDED if refunded else (PaymentStatus.CAPTURED if captured==authorized else PaymentStatus.PARTIALLY_CAPTURED)
-            elif command==PaymentCommand.AUTHORIZE:status=PaymentStatus.AUTHORIZED;authorized=intent.amount;captured=intent.captured_amount;refunded=intent.refunded_amount
+            elif command==PaymentCommand.AUTHORIZE:
+                authorized=intent.amount;captured=intent.amount if provider_settled else intent.captured_amount;refunded=intent.refunded_amount
+                status=PaymentStatus.CAPTURED if provider_settled else PaymentStatus.AUTHORIZED
             elif command==PaymentCommand.CAPTURE:captured=intent.captured_amount+amount;authorized=intent.authorized_amount;refunded=intent.refunded_amount;status=PaymentStatus.CAPTURED if captured==authorized else PaymentStatus.PARTIALLY_CAPTURED
             elif command==PaymentCommand.CANCEL:status=PaymentStatus.CANCELED;authorized=intent.authorized_amount;captured=intent.captured_amount;refunded=intent.refunded_amount
             else:refunded=intent.refunded_amount+amount;authorized=intent.authorized_amount;captured=intent.captured_amount;status=PaymentStatus.REFUNDED if refunded==captured else PaymentStatus.PARTIALLY_REFUNDED
             operation_status="succeeded" if succeeded else "failed"
-            self.connection.execute(f"UPDATE {self.schema}.payment_operations SET status=%s,completed_at=now() WHERE operation_id=%s",(operation_status,operation_id))
+            self.connection.execute(f"UPDATE {self.schema}.payment_operations SET status=%s,completed_at=now(),provider_name=%s,provider_payment_key=COALESCE(%s,provider_payment_key),provider_status=%s,provider_error_code=%s WHERE operation_id=%s",(operation_status,provider_name,provider_payment_key,provider_status,provider_error_code,operation_id))
             row=self.connection.execute(f"UPDATE {self.schema}.payment_intents SET status=%s,authorized_amount=%s,captured_amount=%s,refunded_amount=%s,version=version+1,updated_at=now() WHERE payment_intent_id=%s RETURNING payment_intent_id,merchant_id,amount,currency,status,authorized_amount,captured_amount,refunded_amount,version,external_reference,metadata",(status.value,authorized,captured,refunded,payment_intent_id)).fetchone()
             updated=self._intent(row)
             payload={"operation_id":operation_id,"payment_intent_id":payment_intent_id,"merchant_id":merchant_id,"operation_type":command.value,"operation_status":operation_status,"payment_status":updated.status.value,"version":updated.version}

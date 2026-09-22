@@ -1,0 +1,10 @@
+{
+  "scope":"OPS-E05 external PG/VAN provider adapter",
+  "completion_percent":100,
+  "reference_provider":"Toss Payments Core API",
+  "criteria":["provider-neutral SPI","Basic authorization","confirm contract","cancel/refund contract","lookup reconciliation","status mapping","safe error classification","bounded timeout and retry","circuit breaker","operation idempotency","secret redaction","response allowlist","webhook evidence boundary","PostgreSQL atomic completion"],
+  "sandbox_ready":true,
+  "production_credentials_configured":false,
+  "live_payment_executed":false,
+  "commercial_activation_authorized":false
+}
