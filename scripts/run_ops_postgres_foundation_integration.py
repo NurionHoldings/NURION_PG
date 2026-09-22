@@ -6,6 +6,8 @@ import psycopg
 from nurion_pg.storage.postgres import OutboxRepository,PostgresFoundation,migration_v1_sql
 from nurion_pg.payments import PaymentCommand,PaymentService
 from nurion_pg.storage.payment_repository import PostgresPaymentRepository
+from nurion_pg.storage.webhook_repository import PostgresWebhookRepository
+from nurion_pg.webhook_reconciliation import WebhookEvidence
 
 
 SCHEMA="nurion_pg_ops_e03_ci"
@@ -23,7 +25,7 @@ def main()->None:
             connection.execute(f"INSERT INTO {SCHEMA}.schema_migrations(version) VALUES (1)")
         assert foundation.migrate_up() is True
         assert foundation.migrate_up() is False
-        assert connection.execute(f"SELECT version,length(trim(checksum)) FROM {SCHEMA}.schema_migrations ORDER BY version").fetchall()==[(1,64),(2,64),(3,64),(4,64)]
+        assert connection.execute(f"SELECT version,length(trim(checksum)) FROM {SCHEMA}.schema_migrations ORDER BY version").fetchall()==[(1,64),(2,64),(3,64),(4,64),(5,64)]
         event_id=foundation.provision_principal("merchant-ci","principal-ci","key-ci",sha256(b"ci-secret").hexdigest(),["merchant_admin"])
         principal=connection.execute(f"SELECT merchant_id,status,roles FROM {SCHEMA}.principals WHERE principal_id='principal-ci'").fetchone()
         event=connection.execute(f"SELECT aggregate_id,event_type,payload,published_at FROM {SCHEMA}.outbox_events WHERE event_id=%s",(event_id,)).fetchone()
@@ -89,6 +91,26 @@ def main()->None:
             results=list(pool.map(lambda _value:concurrent_create(),range(2)))
         assert results[0][0].payment_intent_id==results[1][0].payment_intent_id
         assert sorted(result[1] for result in results)==[False,True]
+        webhook=WebhookEvidence("merchant-ci","toss_payments","event-ci","PAYMENT_STATUS_CHANGED","a"*64,"sandbox-payment-key","order-ci","DONE")
+        barrier=Barrier(2)
+        def concurrent_webhook():
+            worker=psycopg.connect(connect_timeout=5,autocommit=True)
+            try:
+                barrier.wait();repo=PostgresWebhookRepository(worker,PostgresPaymentRepository(worker,SCHEMA),SCHEMA)
+                return repo.ingest(webhook,{"paymentKey":"sandbox-payment-key","orderId":"order-ci","status":"DONE"})
+            finally:worker.close()
+        with ThreadPoolExecutor(max_workers=2) as pool:webhook_results=list(pool.map(lambda _:concurrent_webhook(),range(2)))
+        assert webhook_results[0][0]==webhook_results[1][0] and sorted(x[1] for x in webhook_results)==[False,True]
+        webhook_repo=PostgresWebhookRepository(connection,payments,SCHEMA)
+        webhook_repo.quarantine(webhook_results[0][0],"merchant-ci","FAULT_INJECTED_LOOKUP_TIMEOUT")
+        assert webhook_repo.approve_retry("merchant-ci",webhook_results[0][0],"operator-ci") is True
+        barrier=Barrier(2)
+        def concurrent_claim(worker_id):
+            worker=psycopg.connect(connect_timeout=5,autocommit=True)
+            try:barrier.wait();return PostgresWebhookRepository(worker,PostgresPaymentRepository(worker,SCHEMA),SCHEMA).claim(worker_id,1)
+            finally:worker.close()
+        with ThreadPoolExecutor(max_workers=2) as pool:claimed=list(pool.map(concurrent_claim,("webhook-a","webhook-b")))
+        assert sorted(len(x) for x in claimed)==[0,1]
         connection.execute(f"UPDATE {SCHEMA}.schema_migrations SET checksum=%s WHERE version=1",("0"*64,))
         try:foundation.migrate_up()
         except RuntimeError:pass

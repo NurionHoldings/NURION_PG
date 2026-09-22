@@ -9,7 +9,7 @@ from typing import Any
 from uuid import uuid4
 
 SCHEMA_NAME = re.compile(r"^[a-z][a-z0-9_]{0,62}$")
-MIGRATION_VERSION = 4
+MIGRATION_VERSION = 5
 MIGRATION_LOCK = 73192003
 
 
@@ -83,9 +83,21 @@ def migration_v4_sql(schema:str)->str:
 CREATE INDEX payment_operations_provider_key_idx ON {s}.payment_operations(provider_name,provider_payment_key) WHERE provider_payment_key IS NOT NULL;
 """
 
+def migration_v5_sql(schema:str)->str:
+    s=_schema(schema)
+    return f"""CREATE TABLE {s}.provider_webhook_inbox (
+ inbox_id uuid PRIMARY KEY,merchant_id text NOT NULL REFERENCES {s}.merchants(merchant_id),provider text NOT NULL,event_key text NOT NULL,event_type text NOT NULL,
+ raw_sha256 char(64) NOT NULL CHECK(raw_sha256 ~ '^[0-9a-f]{{64}}$'),payment_key text NOT NULL,order_id text,provider_status text NOT NULL,
+ sanitized_payload jsonb NOT NULL CHECK(jsonb_typeof(sanitized_payload)='object'),state text NOT NULL DEFAULT 'pending' CHECK(state IN ('pending','resolved','quarantined')),
+ attempt_count integer NOT NULL DEFAULT 0 CHECK(attempt_count>=0),next_attempt_at timestamptz NOT NULL DEFAULT now(),last_error text,lease_owner text,leased_at timestamptz,
+ approved_by text,approved_at timestamptz,CONSTRAINT provider_webhook_lease_pair CHECK((lease_owner IS NULL)=(leased_at IS NULL)),
+ received_at timestamptz NOT NULL DEFAULT now(),processed_at timestamptz,UNIQUE(provider,event_key));
+CREATE INDEX provider_webhook_pending_idx ON {s}.provider_webhook_inbox(next_attempt_at,received_at) WHERE state='pending';
+"""
+
 
 def _checksum(version: int) -> str:
-    sql = {1:migration_v1_sql,2:migration_v2_sql,3:migration_v3_sql,4:migration_v4_sql}[version]("nurion_pg_checksum")
+    sql = {1:migration_v1_sql,2:migration_v2_sql,3:migration_v3_sql,4:migration_v4_sql,5:migration_v5_sql}[version]("nurion_pg_checksum")
     return sha256(sql.encode()).hexdigest()
 
 
@@ -102,12 +114,15 @@ INSERT INTO {s}.schema_migrations(version,checksum) VALUES (2,'{_checksum(2)}');
 INSERT INTO {s}.schema_migrations(version,checksum) VALUES (3,'{_checksum(3)}');
 {migration_v4_sql(s)}
 INSERT INTO {s}.schema_migrations(version,checksum) VALUES (4,'{_checksum(4)}');
+{migration_v5_sql(s)}
+INSERT INTO {s}.schema_migrations(version,checksum) VALUES (5,'{_checksum(5)}');
 """
 
 
 def migration_down_sql(schema: str) -> str:
     s = _schema(schema)
-    return f"""DROP TABLE IF EXISTS {s}.payment_command_receipts;
+    return f"""DROP TABLE IF EXISTS {s}.provider_webhook_inbox;
+DROP TABLE IF EXISTS {s}.payment_command_receipts;
 DROP TABLE IF EXISTS {s}.payment_operations;
 DROP TABLE IF EXISTS {s}.payment_intents;
 DROP TABLE IF EXISTS {s}.outbox_events;
@@ -194,10 +209,10 @@ class PostgresFoundation:
                 self.connection.execute(f"ALTER TABLE {self.schema}.schema_migrations ADD COLUMN checksum char(64)")
                 self.connection.execute(f"UPDATE {self.schema}.schema_migrations SET checksum=%s WHERE version=1", (_checksum(1),))
             rows = dict(self.connection.execute(f"SELECT version,checksum FROM {self.schema}.schema_migrations ORDER BY version").fetchall())
-            unknown = set(rows) - {1, 2, 3, 4}
+            unknown = set(rows) - {1, 2, 3, 4, 5}
             if unknown:
                 raise RuntimeError(f"unsupported database migration versions: {sorted(unknown)}")
-            for version, sql in ((1, migration_v1_sql(self.schema)), (2, migration_v2_sql(self.schema)), (3, migration_v3_sql(self.schema)), (4,migration_v4_sql(self.schema))):
+            for version, sql in ((1, migration_v1_sql(self.schema)), (2, migration_v2_sql(self.schema)), (3, migration_v3_sql(self.schema)), (4,migration_v4_sql(self.schema)), (5,migration_v5_sql(self.schema))):
                 expected = _checksum(version)
                 if version in rows:
                     if rows[version].strip() != expected:

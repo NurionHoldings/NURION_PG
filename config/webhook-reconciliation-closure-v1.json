@@ -1,0 +1,10 @@
+{
+  "scope":"OPS-E06 webhook retry and reconciliation",
+  "completion_percent":100,
+  "criteria":["durable raw hash","received timestamp","provider event dedupe","event allowlist","payload minimization","merchant isolation","duplicate idempotency","out-of-order provider truth","delayed event handling","UNKNOWN lookup reconciliation","mismatch quarantine","operator retry approval","bounded backoff","atomic payment outbox completion","PostgreSQL concurrency contract"],
+  "provider_signature_claimed":false,
+  "provider_lookup_is_authority":true,
+  "production_credentials_configured":false,
+  "live_webhook_received":false,
+  "live_payment_executed":false
+}

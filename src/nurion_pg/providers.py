@@ -67,11 +67,23 @@ class ProviderExecutor:
     @staticmethod
     def _mismatch(command:ProviderCommand,result:ProviderResult)->ProviderResult|None:
         if result.disposition!=ProviderDisposition.SUCCEEDED:return None
+        if not provider_status_matches(command.command,result.provider_status):
+            return ProviderResult(ProviderDisposition.UNKNOWN,code="PROVIDER_STATUS_MISMATCH",message="Provider status requires reconciliation")
         if not result.payment_key or result.payment_key!=command.payment_key or result.order_id!=command.order_id:
             return ProviderResult(ProviderDisposition.UNKNOWN,code="PROVIDER_RESPONSE_MISMATCH",message="Provider identity requires reconciliation")
         if command.command==PaymentCommand.AUTHORIZE and result.total_amount!=command.amount:
             return ProviderResult(ProviderDisposition.UNKNOWN,code="PROVIDER_RESPONSE_MISMATCH",message="Provider amount requires reconciliation")
         return None
+
+
+def provider_status_matches(command:PaymentCommand,status:str|None)->bool:
+    expected={
+        PaymentCommand.AUTHORIZE:{"DONE"},
+        PaymentCommand.CAPTURE:set(),
+        PaymentCommand.CANCEL:{"CANCELED"},
+        PaymentCommand.REFUND:{"CANCELED","PARTIAL_CANCELED"},
+    }
+    return status in expected[command]
 
 
 class CircuitBreaker:
