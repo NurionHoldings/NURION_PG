@@ -9,7 +9,7 @@ from typing import Any
 from uuid import uuid4
 
 SCHEMA_NAME = re.compile(r"^[a-z][a-z0-9_]{0,62}$")
-MIGRATION_VERSION = 2
+MIGRATION_VERSION = 3
 MIGRATION_LOCK = 73192003
 
 
@@ -44,8 +44,42 @@ CREATE INDEX outbox_events_dispatch_idx ON {s}.outbox_events(available_at,create
 """
 
 
+def migration_v3_sql(schema: str) -> str:
+    s = _schema(schema)
+    statuses="'requires_authorization','authorization_pending','authorized','capture_pending','partially_captured','captured','cancel_pending','canceled','refund_pending','partially_refunded','refunded','failed'"
+    return f"""
+CREATE TABLE {s}.payment_intents (
+ payment_intent_id uuid PRIMARY KEY, merchant_id text NOT NULL REFERENCES {s}.merchants(merchant_id),
+ amount bigint NOT NULL CHECK (amount > 0), currency char(3) NOT NULL CHECK (currency ~ '^[A-Z]{{3}}$'),
+ status text NOT NULL CHECK (status IN ({statuses})),
+ authorized_amount bigint NOT NULL DEFAULT 0 CHECK (authorized_amount >= 0 AND authorized_amount <= amount),
+ captured_amount bigint NOT NULL DEFAULT 0 CHECK (captured_amount >= 0 AND captured_amount <= authorized_amount),
+ refunded_amount bigint NOT NULL DEFAULT 0 CHECK (refunded_amount >= 0 AND refunded_amount <= captured_amount),
+ version integer NOT NULL DEFAULT 1 CHECK (version > 0), external_reference text,
+ metadata jsonb NOT NULL DEFAULT '{{}}'::jsonb CHECK (jsonb_typeof(metadata)='object'),
+ created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(),
+ UNIQUE (merchant_id,payment_intent_id)
+);
+CREATE INDEX payment_intents_merchant_created_idx ON {s}.payment_intents(merchant_id,created_at DESC);
+CREATE TABLE {s}.payment_operations (
+ operation_id uuid PRIMARY KEY, payment_intent_id uuid NOT NULL, merchant_id text NOT NULL,
+ operation_type text NOT NULL CHECK (operation_type IN ('authorize','capture','cancel','refund')),
+ amount bigint CHECK (amount > 0), status text NOT NULL CHECK (status IN ('pending','succeeded','failed')),
+ idempotency_key text NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), completed_at timestamptz,
+ FOREIGN KEY (merchant_id,payment_intent_id) REFERENCES {s}.payment_intents(merchant_id,payment_intent_id),
+ UNIQUE (merchant_id,idempotency_key)
+);
+CREATE TABLE {s}.payment_command_receipts (
+ merchant_id text NOT NULL REFERENCES {s}.merchants(merchant_id), idempotency_key text NOT NULL,
+ command_type text NOT NULL, request_digest char(64) NOT NULL CHECK (request_digest ~ '^[0-9a-f]{{64}}$'),
+ response jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now(),
+ PRIMARY KEY (merchant_id,idempotency_key)
+);
+"""
+
+
 def _checksum(version: int) -> str:
-    sql = migration_v1_sql("nurion_pg_checksum") if version == 1 else migration_v2_sql("nurion_pg_checksum")
+    sql = {1:migration_v1_sql,2:migration_v2_sql,3:migration_v3_sql}[version]("nurion_pg_checksum")
     return sha256(sql.encode()).hexdigest()
 
 
@@ -58,12 +92,17 @@ CREATE TABLE IF NOT EXISTS {s}.schema_migrations (version integer PRIMARY KEY,ch
 INSERT INTO {s}.schema_migrations(version,checksum) VALUES (1,'{_checksum(1)}');
 {migration_v2_sql(s)}
 INSERT INTO {s}.schema_migrations(version,checksum) VALUES (2,'{_checksum(2)}');
+{migration_v3_sql(s)}
+INSERT INTO {s}.schema_migrations(version,checksum) VALUES (3,'{_checksum(3)}');
 """
 
 
 def migration_down_sql(schema: str) -> str:
     s = _schema(schema)
-    return f"""DROP TABLE IF EXISTS {s}.outbox_events;
+    return f"""DROP TABLE IF EXISTS {s}.payment_command_receipts;
+DROP TABLE IF EXISTS {s}.payment_operations;
+DROP TABLE IF EXISTS {s}.payment_intents;
+DROP TABLE IF EXISTS {s}.outbox_events;
 DROP TABLE IF EXISTS {s}.access_audit;
 DROP TABLE IF EXISTS {s}.api_keys;
 DROP TABLE IF EXISTS {s}.principals;
@@ -147,10 +186,10 @@ class PostgresFoundation:
                 self.connection.execute(f"ALTER TABLE {self.schema}.schema_migrations ADD COLUMN checksum char(64)")
                 self.connection.execute(f"UPDATE {self.schema}.schema_migrations SET checksum=%s WHERE version=1", (_checksum(1),))
             rows = dict(self.connection.execute(f"SELECT version,checksum FROM {self.schema}.schema_migrations ORDER BY version").fetchall())
-            unknown = set(rows) - {1, 2}
+            unknown = set(rows) - {1, 2, 3}
             if unknown:
                 raise RuntimeError(f"unsupported database migration versions: {sorted(unknown)}")
-            for version, sql in ((1, migration_v1_sql(self.schema)), (2, migration_v2_sql(self.schema))):
+            for version, sql in ((1, migration_v1_sql(self.schema)), (2, migration_v2_sql(self.schema)), (3, migration_v3_sql(self.schema))):
                 expected = _checksum(version)
                 if version in rows:
                     if rows[version].strip() != expected:

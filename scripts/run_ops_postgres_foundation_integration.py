@@ -1,7 +1,11 @@
 from __future__ import annotations
 from hashlib import sha256
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
 import psycopg
 from nurion_pg.storage.postgres import OutboxRepository,PostgresFoundation,migration_v1_sql
+from nurion_pg.payments import PaymentCommand,PaymentService
+from nurion_pg.storage.payment_repository import PostgresPaymentRepository
 
 
 SCHEMA="nurion_pg_ops_e03_ci"
@@ -19,7 +23,7 @@ def main()->None:
             connection.execute(f"INSERT INTO {SCHEMA}.schema_migrations(version) VALUES (1)")
         assert foundation.migrate_up() is True
         assert foundation.migrate_up() is False
-        assert connection.execute(f"SELECT version,length(trim(checksum)) FROM {SCHEMA}.schema_migrations ORDER BY version").fetchall()==[(1,64),(2,64)]
+        assert connection.execute(f"SELECT version,length(trim(checksum)) FROM {SCHEMA}.schema_migrations ORDER BY version").fetchall()==[(1,64),(2,64),(3,64)]
         event_id=foundation.provision_principal("merchant-ci","principal-ci","key-ci",sha256(b"ci-secret").hexdigest(),["merchant_admin"])
         principal=connection.execute(f"SELECT merchant_id,status,roles FROM {SCHEMA}.principals WHERE principal_id='principal-ci'").fetchone()
         event=connection.execute(f"SELECT aggregate_id,event_type,payload,published_at FROM {SCHEMA}.outbox_events WHERE event_id=%s",(event_id,)).fetchone()
@@ -42,6 +46,39 @@ def main()->None:
         retry=repository.claim("worker-c",1)
         assert retry[0].event_id==second[0].event_id and retry[0].attempt_count==2
         assert repository.mark_published(retry[0].event_id,"worker-c") is True
+        payments=PostgresPaymentRepository(connection,SCHEMA);service=PaymentService(payments)
+        created,replayed=service.create("merchant-ci",12500,"KRW","create-payment-1","order-ci",{"channel":"test"})
+        assert replayed is False and created.version==1 and created.status.value=="requires_authorization"
+        same,replayed=service.create("merchant-ci",12500,"KRW","create-payment-1","order-ci",{"channel":"test"})
+        assert replayed is True and same.payment_intent_id==created.payment_intent_id
+        try:service.create("merchant-ci",13000,"KRW","create-payment-1","order-ci",{})
+        except Exception as exc:assert getattr(exc,"code",None)=="IDEMPOTENCY_CONFLICT"
+        else:raise AssertionError("changed idempotent request must conflict")
+        pending,replayed=service.request("merchant-ci",created.payment_intent_id,PaymentCommand.AUTHORIZE,None,1,"authorize-payment-1")
+        assert replayed is False and pending.status.value=="authorization_pending" and pending.version==2
+        operation_id=str(connection.execute(f"SELECT operation_id FROM {SCHEMA}.payment_operations WHERE payment_intent_id=%s",(created.payment_intent_id,)).fetchone()[0])
+        authorized=payments.apply_provider_result("merchant-ci",created.payment_intent_id,operation_id,True)
+        assert authorized.status.value=="authorized" and authorized.authorized_amount==12500 and authorized.version==3
+        capture,_=service.request("merchant-ci",created.payment_intent_id,PaymentCommand.CAPTURE,5000,3,"capture-payment-1")
+        capture_operation=str(connection.execute(f"SELECT operation_id FROM {SCHEMA}.payment_operations WHERE payment_intent_id=%s AND operation_type='capture'",(created.payment_intent_id,)).fetchone()[0])
+        captured=payments.apply_provider_result("merchant-ci",created.payment_intent_id,capture_operation,True)
+        assert capture.status.value=="capture_pending" and captured.status.value=="partially_captured" and captured.captured_amount==5000
+        refund,_=service.request("merchant-ci",created.payment_intent_id,PaymentCommand.REFUND,2000,captured.version,"refund-payment-1")
+        refund_operation=str(connection.execute(f"SELECT operation_id FROM {SCHEMA}.payment_operations WHERE payment_intent_id=%s AND operation_type='refund'",(created.payment_intent_id,)).fetchone()[0])
+        refunded=payments.apply_provider_result("merchant-ci",created.payment_intent_id,refund_operation,True)
+        assert refund.status.value=="refund_pending" and refunded.status.value=="partially_refunded" and refunded.refunded_amount==2000
+        assert connection.execute(f"SELECT count(*) FROM {SCHEMA}.outbox_events WHERE aggregate_type='payment_intent'").fetchone()[0]==4
+        barrier=Barrier(2)
+        def concurrent_create():
+            worker=psycopg.connect(connect_timeout=5,autocommit=True)
+            try:
+                barrier.wait()
+                return PaymentService(PostgresPaymentRepository(worker,SCHEMA)).create("merchant-ci",777,"KRW","concurrent-create",None,{})
+            finally:worker.close()
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            results=list(pool.map(lambda _value:concurrent_create(),range(2)))
+        assert results[0][0].payment_intent_id==results[1][0].payment_intent_id
+        assert sorted(result[1] for result in results)==[False,True]
         connection.execute(f"UPDATE {SCHEMA}.schema_migrations SET checksum=%s WHERE version=1",("0"*64,))
         try:foundation.migrate_up()
         except RuntimeError:pass

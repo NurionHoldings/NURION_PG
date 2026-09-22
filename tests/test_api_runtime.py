@@ -8,10 +8,11 @@ from nurion_pg.api.settings import Settings
 
 class SettingsTests(unittest.TestCase):
     def test_defaults_and_public_view_exclude_environment_secrets(self):
-        with patch.dict(os.environ,{"NURION_PG_SECRET_TOKEN":"must-not-leak"},clear=True):
+        with patch.dict(os.environ,{"NURION_PG_SECRET_TOKEN":"must-not-leak","NURION_PG_DATABASE_URL":"postgresql://user:password@db/service"},clear=True):
             view=Settings.from_env().public_view();self.assertNotIn("secret",str(view).lower());self.assertNotIn("must-not-leak",str(view))
+            self.assertNotIn("password",str(view));self.assertNotIn("database",str(view).lower())
     def test_invalid_environment_port_and_log_level_fail_closed(self):
-        for values in ({"NURION_PG_ENV":"invalid"},{"NURION_PG_PORT":"zero"},{"NURION_PG_PORT":"70000"},{"NURION_PG_LOG_LEVEL":"TRACE"},{"NURION_PG_MAX_REQUEST_BYTES":"100"},{"NURION_PG_GRACEFUL_SHUTDOWN_SECONDS":"0"}):
+        for values in ({"NURION_PG_ENV":"invalid"},{"NURION_PG_PORT":"zero"},{"NURION_PG_PORT":"70000"},{"NURION_PG_LOG_LEVEL":"TRACE"},{"NURION_PG_MAX_REQUEST_BYTES":"100"},{"NURION_PG_GRACEFUL_SHUTDOWN_SECONDS":"0"},{"NURION_PG_DATABASE_URL":"sqlite:///bad"},{"NURION_PG_DATABASE_SCHEMA":"Bad-Schema"}):
             with patch.dict(os.environ,values,clear=True),self.assertRaises(ValueError):Settings.from_env()
 
 class RuntimeTests(unittest.TestCase):
@@ -31,8 +32,9 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(response.json(),{"error":{"code":"INTERNAL_ERROR","message":"Internal server error","correlation_id":"failure-123"}})
         self.assertNotIn("sensitive-detail",response.text)
     def test_production_disables_interactive_docs(self):
-        client=TestClient(create_app(Settings(environment="production")))
+        app=create_app(Settings(environment="production"));client=TestClient(app)
         self.assertEqual(client.get("/docs").status_code,404)
+        self.assertEqual(client.get("/health/ready").status_code,503)
     def test_security_headers_and_runtime_info_exclude_secrets(self):
         response=self.client.get("/runtime/info")
         for header in ("x-content-type-options","x-frame-options","referrer-policy","cache-control"):self.assertIn(header,response.headers)

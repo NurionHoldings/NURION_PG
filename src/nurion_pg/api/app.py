@@ -2,17 +2,20 @@
 from __future__ import annotations
 
 from contextvars import ContextVar
+from contextlib import asynccontextmanager
 import logging
 import time
 from uuid import uuid4
 
 from fastapi import Depends,FastAPI,Header,Request
 from fastapi.exceptions import RequestValidationError
+from pydantic import BaseModel,Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.responses import JSONResponse
 
 from .auth import ApiKeyRegistry,Authenticator,Permission,Principal,authorize
 from .settings import Settings
+from nurion_pg.payments import PaymentCommand,PaymentProblem,PaymentService
 
 correlation_id_var:ContextVar[str]=ContextVar("correlation_id",default="")
 LOGGER=logging.getLogger("nurion_pg.api")
@@ -31,11 +34,39 @@ class AuthError(Exception):
         self.status_code=status_code;self.code=code;self.message=message
 
 
-def create_app(settings:Settings|None=None,api_key_registry:Authenticator|None=None)->FastAPI:
+class PaymentIntentCreate(BaseModel):
+    amount:int
+    currency:str
+    external_reference:str|None=None
+    metadata:dict[str,object]=Field(default_factory=dict)
+
+
+class PaymentCommandRequest(BaseModel):
+    expected_version:int
+    amount:int|None=None
+
+
+def create_app(settings:Settings|None=None,api_key_registry:Authenticator|None=None,payment_service:PaymentService|None=None)->FastAPI:
     runtime=settings or Settings.from_env();_configure_logging(runtime.log_level)
     registry=api_key_registry or ApiKeyRegistry.from_json(runtime.api_keys_json)
-    app=FastAPI(title="NURION PG API",version="0.1.0",docs_url="/docs" if runtime.environment!="production" else None,redoc_url=None)
-    app.state.settings=runtime;app.state.ready=True;app.state.api_key_registry=registry
+    @asynccontextmanager
+    async def lifespan(application:FastAPI):
+        connection=None
+        if runtime.database_url and api_key_registry is None and payment_service is None:
+            import psycopg
+            from nurion_pg.storage.auth_repository import PostgresAuthRepository
+            from nurion_pg.storage.payment_repository import PostgresPaymentRepository
+            from nurion_pg.storage.postgres import PostgresFoundation
+            connection=psycopg.connect(runtime.database_url,connect_timeout=5,autocommit=True)
+            PostgresFoundation(connection,runtime.database_schema).migrate_up()
+            application.state.api_key_registry=PostgresAuthRepository(connection,runtime.database_schema)
+            application.state.payment_service=PaymentService(PostgresPaymentRepository(connection,runtime.database_schema))
+        try:yield
+        finally:
+            if connection is not None:connection.close()
+    app=FastAPI(title="NURION PG API",version="0.1.0",docs_url="/docs" if runtime.environment!="production" else None,redoc_url=None,lifespan=lifespan)
+    durable_ready=bool(runtime.database_url or payment_service is not None)
+    app.state.settings=runtime;app.state.ready=runtime.environment in {"development","test"} or durable_ready;app.state.api_key_registry=registry;app.state.payment_service=payment_service
 
     @app.middleware("http")
     async def request_context(request:Request,call_next):
@@ -68,12 +99,16 @@ def create_app(settings:Settings|None=None,api_key_registry:Authenticator|None=N
         correlation_id=correlation_id_var.get()
         return JSONResponse(status_code=exc.status_code,content={"error":{"code":exc.code,"message":exc.message,"correlation_id":correlation_id}})
 
+    @app.exception_handler(PaymentProblem)
+    async def payment_error(_request:Request,exc:PaymentProblem):
+        return JSONResponse(status_code=exc.status_code,content={"error":{"code":exc.code,"message":exc.message,"correlation_id":correlation_id_var.get()}})
+
     def audit(principal:Principal|None,action:str,outcome:str,merchant_id:str|None=None)->None:
-        recorder=getattr(registry,"record_audit",None)
+        recorder=getattr(app.state.api_key_registry,"record_audit",None)
         if recorder:recorder(principal.principal_id if principal else None,merchant_id or (principal.merchant_id if principal else None),action,outcome,correlation_id_var.get())
 
     async def current_principal(x_api_key:str|None=Header(default=None))->Principal:
-        principal=registry.authenticate(x_api_key or "")
+        principal=app.state.api_key_registry.authenticate(x_api_key or "")
         if principal is None:
             audit(None,"authenticate","denied")
             LOGGER.warning("authentication_failed correlation_id=%s",correlation_id_var.get())
@@ -89,6 +124,16 @@ def create_app(settings:Settings|None=None,api_key_registry:Authenticator|None=N
             raise AuthError(403,"CROSS_TENANT_ACCESS_DENIED","Access to another merchant is denied")
         audit(principal,"tenant:read","allowed",merchant_id)
         return principal
+
+    def merchant_writer(merchant_id:str,principal:Principal=Depends(current_principal))->Principal:
+        if not authorize(principal,Permission.PAYMENT_WRITE,merchant_id):
+            audit(principal,"payment:write","denied",merchant_id)
+            raise AuthError(403,"PAYMENT_WRITE_DENIED","Payment write permission is required for this merchant")
+        audit(principal,"payment:write","allowed",merchant_id);return principal
+
+    def payments()->PaymentService:
+        if app.state.payment_service is None:raise PaymentProblem(503,"PAYMENT_STORAGE_UNAVAILABLE","Payment storage is unavailable")
+        return app.state.payment_service
 
     @app.get("/health/live",include_in_schema=False)
     async def live():return {"status":"alive","service":runtime.service_name}
@@ -111,5 +156,34 @@ def create_app(settings:Settings|None=None,api_key_registry:Authenticator|None=N
     @app.get("/v1/merchants/{merchant_id}/context")
     async def merchant_context(merchant_id:str,principal:Principal=Depends(merchant_reader)):
         return {"principal_id":principal.principal_id,"merchant_id":merchant_id,"roles":sorted(principal.roles)}
+
+    @app.post("/v1/merchants/{merchant_id}/payment-intents")
+    async def create_payment_intent(merchant_id:str,body:PaymentIntentCreate,idempotency_key:str|None=Header(default=None,alias="Idempotency-Key"),_principal:Principal=Depends(merchant_writer),service:PaymentService=Depends(payments)):
+        intent,replayed=service.create(merchant_id,body.amount,body.currency,idempotency_key or "",body.external_reference,body.metadata)
+        return JSONResponse(status_code=200 if replayed else 201,content=intent.public_view(),headers={"idempotent-replay":"true" if replayed else "false"})
+
+    @app.get("/v1/merchants/{merchant_id}/payment-intents/{payment_intent_id}")
+    async def get_payment_intent(merchant_id:str,payment_intent_id:str,_principal:Principal=Depends(merchant_reader),service:PaymentService=Depends(payments)):
+        return service.get(merchant_id,payment_intent_id).public_view()
+
+    async def command_payment(merchant_id:str,payment_intent_id:str,command:PaymentCommand,body:PaymentCommandRequest,idempotency_key:str|None,service:PaymentService):
+        intent,replayed=service.request(merchant_id,payment_intent_id,command,body.amount,body.expected_version,idempotency_key or "")
+        return JSONResponse(status_code=200 if replayed else 202,content=intent.public_view(),headers={"idempotent-replay":"true" if replayed else "false"})
+
+    @app.post("/v1/merchants/{merchant_id}/payment-intents/{payment_intent_id}/authorize")
+    async def authorize_payment(merchant_id:str,payment_intent_id:str,body:PaymentCommandRequest,idempotency_key:str|None=Header(default=None,alias="Idempotency-Key"),_principal:Principal=Depends(merchant_writer),service:PaymentService=Depends(payments)):
+        return await command_payment(merchant_id,payment_intent_id,PaymentCommand.AUTHORIZE,body,idempotency_key,service)
+
+    @app.post("/v1/merchants/{merchant_id}/payment-intents/{payment_intent_id}/capture")
+    async def capture_payment(merchant_id:str,payment_intent_id:str,body:PaymentCommandRequest,idempotency_key:str|None=Header(default=None,alias="Idempotency-Key"),_principal:Principal=Depends(merchant_writer),service:PaymentService=Depends(payments)):
+        return await command_payment(merchant_id,payment_intent_id,PaymentCommand.CAPTURE,body,idempotency_key,service)
+
+    @app.post("/v1/merchants/{merchant_id}/payment-intents/{payment_intent_id}/cancel")
+    async def cancel_payment(merchant_id:str,payment_intent_id:str,body:PaymentCommandRequest,idempotency_key:str|None=Header(default=None,alias="Idempotency-Key"),_principal:Principal=Depends(merchant_writer),service:PaymentService=Depends(payments)):
+        return await command_payment(merchant_id,payment_intent_id,PaymentCommand.CANCEL,body,idempotency_key,service)
+
+    @app.post("/v1/merchants/{merchant_id}/payment-intents/{payment_intent_id}/refund")
+    async def refund_payment(merchant_id:str,payment_intent_id:str,body:PaymentCommandRequest,idempotency_key:str|None=Header(default=None,alias="Idempotency-Key"),_principal:Principal=Depends(merchant_writer),service:PaymentService=Depends(payments)):
+        return await command_payment(merchant_id,payment_intent_id,PaymentCommand.REFUND,body,idempotency_key,service)
 
     return app
