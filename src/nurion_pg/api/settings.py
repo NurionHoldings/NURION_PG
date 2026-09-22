@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import os
+import re
 
 
 @dataclass(frozen=True)
@@ -15,6 +16,8 @@ class Settings:
     api_keys_json: str = ""
     max_request_bytes: int = 1_048_576
     graceful_shutdown_seconds: int = 30
+    database_url: str = ""
+    database_schema: str = "nurion_pg"
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -32,7 +35,10 @@ class Settings:
         if not 1024<=max_request_bytes<=10_485_760:raise ValueError("NURION_PG_MAX_REQUEST_BYTES is out of range")
         if not 1<=graceful_shutdown_seconds<=300:raise ValueError("NURION_PG_GRACEFUL_SHUTDOWN_SECONDS is out of range")
         api_keys_json=os.getenv("NURION_PG_API_KEYS_JSON","")
-        return cls(environment=environment,log_level=log_level,host=host,port=port,api_keys_json=api_keys_json,max_request_bytes=max_request_bytes,graceful_shutdown_seconds=graceful_shutdown_seconds)
+        database_url=os.getenv("NURION_PG_DATABASE_URL","").strip();database_schema=os.getenv("NURION_PG_DATABASE_SCHEMA","nurion_pg").strip()
+        if database_url and not database_url.startswith(("postgresql://","postgres://")):raise ValueError("NURION_PG_DATABASE_URL must be PostgreSQL")
+        if not re.fullmatch(r"[a-z][a-z0-9_]{0,62}",database_schema):raise ValueError("invalid NURION_PG_DATABASE_SCHEMA")
+        return cls(environment=environment,log_level=log_level,host=host,port=port,api_keys_json=api_keys_json,max_request_bytes=max_request_bytes,graceful_shutdown_seconds=graceful_shutdown_seconds,database_url=database_url,database_schema=database_schema)
 
     def public_view(self)->dict[str,object]:
         return {"service_name":self.service_name,"environment":self.environment,"log_level":self.log_level,"host":self.host,"port":self.port,"max_request_bytes":self.max_request_bytes,"graceful_shutdown_seconds":self.graceful_shutdown_seconds}

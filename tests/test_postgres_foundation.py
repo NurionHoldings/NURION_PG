@@ -11,7 +11,9 @@ class PostgresMigrationContractTests(unittest.TestCase):
         self.assertIn("REFERENCES nurion_pg_test.merchants",sql)
         self.assertIn("available_at",sql)
         self.assertIn("lease_owner",sql)
-        self.assertEqual(MIGRATION_VERSION,2)
+        for table in ("payment_intents","payment_operations","payment_command_receipts"):
+            self.assertIn(table,sql)
+        self.assertEqual(MIGRATION_VERSION,3)
 
     def test_schema_identifier_is_fail_closed(self):
         for value in ("", "Public", "bad-name", "x; DROP SCHEMA public"):
