@@ -11,6 +11,8 @@ from nurion_pg.webhook_reconciliation import WebhookEvidence
 from nurion_pg.ledger import capture_journal,refund_journal,reversal,SettlementState,LedgerError
 from nurion_pg.storage.ledger_repository import PostgresLedgerRepository,PostgresSettlementRepository
 from uuid import uuid4
+from nurion_pg.payment_runtime import PaymentOperationWorker,ProviderCallbackBoundary
+from nurion_pg.providers import ProviderResult,ProviderDisposition
 
 
 SCHEMA="nurion_pg_ops_e03_ci"
@@ -28,7 +30,7 @@ def main()->None:
             connection.execute(f"INSERT INTO {SCHEMA}.schema_migrations(version) VALUES (1)")
         assert foundation.migrate_up() is True
         assert foundation.migrate_up() is False
-        assert connection.execute(f"SELECT version,length(trim(checksum)) FROM {SCHEMA}.schema_migrations ORDER BY version").fetchall()==[(1,64),(2,64),(3,64),(4,64),(5,64),(6,64)]
+        assert connection.execute(f"SELECT version,length(trim(checksum)) FROM {SCHEMA}.schema_migrations ORDER BY version").fetchall()==[(1,64),(2,64),(3,64),(4,64),(5,64),(6,64),(7,64)]
         event_id=foundation.provision_principal("merchant-ci","principal-ci","key-ci",sha256(b"ci-secret").hexdigest(),["merchant_admin"])
         principal=connection.execute(f"SELECT merchant_id,status,roles FROM {SCHEMA}.principals WHERE principal_id='principal-ci'").fetchone()
         event=connection.execute(f"SELECT aggregate_id,event_type,payload,published_at FROM {SCHEMA}.outbox_events WHERE event_id=%s",(event_id,)).fetchone()
@@ -83,6 +85,24 @@ def main()->None:
         events=connection.execute(f"SELECT event_type FROM {SCHEMA}.outbox_events WHERE aggregate_type='payment_intent' ORDER BY created_at,event_id").fetchall()
         assert len(events)==7
         assert {row[0] for row in events} >= {"payment_intent.authorize_succeeded","payment_intent.capture_succeeded","payment_intent.refund_succeeded"}
+        execution_ledger=PostgresLedgerRepository(connection,SCHEMA);runtime_payments=PostgresPaymentRepository(connection,SCHEMA,execution_ledger);runtime_service=PaymentService(runtime_payments)
+        runtime_intent,_=runtime_service.create("merchant-ci",3300,"KRW","runtime-create","runtime-order",{})
+        runtime_service.request("merchant-ci",runtime_intent.payment_intent_id,PaymentCommand.AUTHORIZE,None,1,"runtime-authorize")
+        runtime_op=str(connection.execute(f"SELECT operation_id FROM {SCHEMA}.payment_operations WHERE payment_intent_id=%s",(runtime_intent.payment_intent_id,)).fetchone()[0])
+        ProviderCallbackBoundary(runtime_payments).bind("merchant-ci",runtime_op,"runtime-payment-key","runtime-order",3300,"principal-ci",{"payment_operator"})
+        class TestProvider:
+            name="toss_payments"
+            def execute(self,_):return ProviderResult(ProviderDisposition.SUCCEEDED,"DONE","runtime-payment-key","runtime-order",3300,True)
+            def lookup(self,key):return self.execute(None)
+        barrier=Barrier(2)
+        def concurrent_runtime(worker_id):
+            worker=psycopg.connect(connect_timeout=5,autocommit=True)
+            try:
+                repo=PostgresPaymentRepository(worker,SCHEMA,PostgresLedgerRepository(worker,SCHEMA));barrier.wait();return PaymentOperationWorker(repo,TestProvider(),worker_id).run_once()
+            finally:worker.close()
+        with ThreadPoolExecutor(max_workers=2) as pool:runtime_reports=list(pool.map(concurrent_runtime,("runtime-a","runtime-b")))
+        assert sum(x["completed"] for x in runtime_reports)==1 and execution_ledger.balance("merchant-ci","KRW","merchant_payable")>=3300
+        assert connection.execute(f"SELECT count(*) FROM {SCHEMA}.ledger_journals WHERE reference_id=%s",(runtime_op,)).fetchone()[0]==1
         barrier=Barrier(2)
         def concurrent_create():
             worker=psycopg.connect(connect_timeout=5,autocommit=True)
