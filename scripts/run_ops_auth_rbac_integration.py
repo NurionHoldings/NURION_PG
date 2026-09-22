@@ -1,7 +1,8 @@
 from __future__ import annotations
 from hashlib import sha256
 import psycopg
-from nurion_pg.storage import PostgresAuthRepository,PostgresFoundation
+from nurion_pg.storage import PostgresFoundation
+from nurion_pg.storage.auth_repository import PostgresAuthRepository
 
 SCHEMA="nurion_pg_ops_e02_auth_ci"
 
