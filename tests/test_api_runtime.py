@@ -27,10 +27,12 @@ class RuntimeTests(unittest.TestCase):
     def test_unhandled_error_uses_safe_envelope(self):
         @self.app.get("/_test/boom")
         async def boom():raise RuntimeError("sensitive-detail")
-        response=self.client.get("/_test/boom",headers={"x-correlation-id":"failure-123"})
+        with self.assertLogs("nurion_pg.api",level="ERROR") as recorded:
+            response=self.client.get("/_test/boom",headers={"x-correlation-id":"failure-123"})
         self.assertEqual(response.status_code,500)
         self.assertEqual(response.json(),{"error":{"code":"INTERNAL_ERROR","message":"Internal server error","correlation_id":"failure-123"}})
         self.assertNotIn("sensitive-detail",response.text)
+        self.assertNotIn("sensitive-detail",str(recorded.output))
     def test_production_disables_interactive_docs(self):
         app=create_app(Settings(environment="production"));client=TestClient(app)
         self.assertEqual(client.get("/docs").status_code,404)
