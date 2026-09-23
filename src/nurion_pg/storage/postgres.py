@@ -256,6 +256,16 @@ class PostgresFoundation:
             self.connection.execute(f"ALTER TABLE {self.schema}.schema_migrations ALTER COLUMN checksum SET NOT NULL")
         return changed
 
+    def is_current(self) -> bool:
+        """Read-only readiness check; API replicas must never run migrations."""
+        try:
+            rows = self.connection.execute(
+                f"SELECT version,checksum FROM {self.schema}.schema_migrations ORDER BY version"
+            ).fetchall()
+            return dict(rows) == {version: _checksum(version) for version in range(1, 8)}
+        except Exception:
+            return False
+
     def rollback(self) -> None:
         with self.connection.transaction():
             self.connection.execute("SELECT pg_advisory_xact_lock(%s)", (MIGRATION_LOCK,))

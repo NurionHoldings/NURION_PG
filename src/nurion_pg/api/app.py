@@ -60,16 +60,24 @@ def create_app(settings:Settings|None=None,api_key_registry:Authenticator|None=N
             from nurion_pg.storage.payment_repository import PostgresPaymentRepository
             from nurion_pg.storage.postgres import PostgresFoundation
             connection=psycopg.connect(runtime.database_url,connect_timeout=5,autocommit=True)
-            PostgresFoundation(connection,runtime.database_schema).migrate_up()
-            application.state.api_key_registry=PostgresAuthRepository(connection,runtime.database_schema)
-            application.state.payment_service=PaymentService(PostgresPaymentRepository(connection,runtime.database_schema))
-            application.state.operations_repository=PostgresOperationsRepository(connection,runtime.database_schema)
+            try:
+                foundation=PostgresFoundation(connection,runtime.database_schema)
+                if not foundation.is_current():raise RuntimeError("database migration preflight failed")
+                application.state.db_foundation=foundation
+                application.state.api_key_registry=PostgresAuthRepository(connection,runtime.database_schema)
+                application.state.payment_service=PaymentService(PostgresPaymentRepository(connection,runtime.database_schema))
+                application.state.operations_repository=PostgresOperationsRepository(connection,runtime.database_schema)
+            except Exception:
+                connection.close()
+                raise
         try:yield
         finally:
-            if connection is not None:connection.close()
+            if connection is not None:
+                connection.close()
+                application.state.db_foundation=None
     app=FastAPI(title="NURION PG API",version="0.1.0",docs_url="/docs" if runtime.environment!="production" else None,redoc_url=None,lifespan=lifespan)
     durable_ready=bool(runtime.database_url or payment_service is not None)
-    app.state.settings=runtime;app.state.ready=runtime.environment in {"development","test"} or durable_ready;app.state.api_key_registry=registry;app.state.payment_service=payment_service;app.state.operations_repository=operations_repository;app.state.metrics=MetricsRegistry();app.state.limited_policy=LimitedOperationPolicy.from_values(runtime.limited_operation_enabled,runtime.limited_operation_merchants,runtime.limited_operation_max_amount,runtime.limited_operation_approval_sha256)
+    app.state.settings=runtime;app.state.ready=runtime.environment in {"development","test"} or durable_ready;app.state.db_foundation=None;app.state.api_key_registry=registry;app.state.payment_service=payment_service;app.state.operations_repository=operations_repository;app.state.metrics=MetricsRegistry();app.state.limited_policy=LimitedOperationPolicy.from_values(runtime.limited_operation_enabled,runtime.limited_operation_merchants,runtime.limited_operation_max_amount,runtime.limited_operation_approval_sha256)
 
     @app.middleware("http")
     async def request_context(request:Request,call_next):
@@ -87,7 +95,7 @@ def create_app(settings:Settings|None=None,api_key_registry:Authenticator|None=N
             return response
         except Exception:
             app.state.metrics.increment("http_requests_total");app.state.metrics.increment("http_request_errors_total");app.state.metrics.set("http_request_duration_seconds",time.monotonic()-started)
-            LOGGER.exception(structured_log("request_failed",correlation_id=correlation_id,method=request.method,path=request.url.path))
+            LOGGER.error(structured_log("request_failed",correlation_id=correlation_id,method=request.method,path=request.url.path))
             return JSONResponse(status_code=500,content={"error":{"code":"INTERNAL_ERROR","message":"Internal server error","correlation_id":correlation_id}},headers={"x-correlation-id":correlation_id})
         finally:correlation_id_var.reset(token)
 
@@ -173,7 +181,10 @@ def create_app(settings:Settings|None=None,api_key_registry:Authenticator|None=N
 
     @app.get("/health/ready",include_in_schema=False)
     async def ready():
-        if not app.state.ready:return JSONResponse(status_code=503,content={"status":"not_ready","service":runtime.service_name},headers={"retry-after":"5"})
+        foundation=app.state.db_foundation
+        healthy=app.state.ready and (foundation is None or foundation.is_current())
+        if runtime.environment in {"production","staging"} and foundation is None and payment_service is None:healthy=False
+        if not healthy:return JSONResponse(status_code=503,content={"status":"not_ready","service":runtime.service_name},headers={"retry-after":"5"})
         return {"status":"ready","service":runtime.service_name,"environment":runtime.environment}
 
     @app.get("/health/startup",include_in_schema=False)

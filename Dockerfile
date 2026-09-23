@@ -4,6 +4,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 NURION_PG_ENV=production
 WORKDIR /app
 COPY pyproject.toml README.md ./
 COPY src ./src
+COPY scripts/migrate_ops_database.py ./scripts/migrate_ops_database.py
 RUN pip install --no-cache-dir --no-compile . && rm -rf /root/.cache
 USER 65532:65532
 EXPOSE 8080
